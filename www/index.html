@@ -246,20 +246,17 @@
   }
 
   .timer-card {
-    padding: 20px 20px 18px;
+    padding: 18px 20px 18px;
     text-align: center;
     position: relative;
   }
-  .timer-card .timer-index {
-    position: absolute;
-    top: 12px;
-    left: 14px;
-    font-size: 11.5px;
-    color: var(--muted);
-    background: var(--tag-bg);
-    padding: 2px 8px;
-    border-radius: 999px;
-    letter-spacing: .3px;
+  .timer-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    word-break: break-word;
+    padding: 0 40px;
   }
   .timer-state {
     display: inline-block;
@@ -270,7 +267,6 @@
     color: var(--muted);
     letter-spacing: .3px;
     transition: all .2s;
-    margin-top: 6px;
   }
   .timer-state.active { background: var(--tag-ok); color: var(--ok); }
   .timer-state.paused {
@@ -278,11 +274,11 @@
     color: var(--warn);
   }
   .timer-clock {
-    font-size: clamp(34px, 12vw, 46px);
+    font-size: clamp(32px, 11vw, 44px);
     font-weight: 600;
     line-height: 1.15;
     letter-spacing: 1px;
-    margin: 12px 0 6px;
+    margin: 10px 0 6px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
   }
@@ -290,7 +286,7 @@
     font-size: 12.5px;
     color: var(--muted);
     min-height: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     word-break: break-word;
   }
 
@@ -307,7 +303,7 @@
     padding-left: 10px;
     padding-right: 10px;
     border-radius: 13px;
-    min-height: 52px;
+    min-height: 50px;
     font-size: 15px;
   }
   .timer-actions .btn.stop {
@@ -651,10 +647,8 @@
         </div>
       </div>
 
-      <!-- 计时器列表 -->
       <div id="timer-list" class="timer-list"></div>
 
-      <!-- 开始新计时 -->
       <button class="btn big new-timer" id="btn-start" type="button">＋ 开始计时</button>
 
       <h3 class="section-title">最近记录</h3>
@@ -832,16 +826,28 @@
   </div>
 </div>
 
-<!-- ==================== 结束计时输入 ==================== -->
-<div class="modal-backdrop" id="name-modal" hidden>
+<!-- ==================== 开始计时：输入名称 ==================== -->
+<div class="modal-backdrop" id="start-modal" hidden>
   <div class="modal">
-    <h3>结束计时</h3>
-    <p class="modal-sub" id="name-modal-dur"></p>
-    <input class="field" id="name-input" type="text" maxlength="40"
-           list="name-suggestions" placeholder="这件事叫什么？" autocomplete="off">
+    <h3>开始计时</h3>
+    <p class="modal-sub">给这次计时起个名字，方便区分多个计时</p>
+    <input class="field" id="start-input" type="text" maxlength="40"
+           list="name-suggestions" placeholder="例如：阅读、写代码、煮饭" autocomplete="off">
     <div class="modal-actions">
-      <button type="button" id="name-cancel">取消</button>
-      <button type="button" class="primary" id="name-ok">保存记录</button>
+      <button type="button" id="start-cancel">取消</button>
+      <button type="button" class="primary" id="start-ok">开始计时</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 停止计时：确认 ==================== -->
+<div class="modal-backdrop" id="stop-modal" hidden>
+  <div class="modal">
+    <h3>停止计时</h3>
+    <p class="modal-sub" id="stop-modal-info"></p>
+    <div class="modal-actions">
+      <button type="button" id="stop-cancel">继续计时</button>
+      <button type="button" class="primary" id="stop-ok">保存记录</button>
     </div>
   </div>
 </div>
@@ -866,13 +872,14 @@
 (function () {
   'use strict';
 
-  var KEY = 'time-tracker-v4';
-  var KEY_OLD = 'time-tracker-v3';
-  var KEY_OLDER = 'time-tracker-v2';
-  var KEY_OLDEST = 'time-tracker-v1';
+  var KEY = 'time-tracker-v5';
+  var KEY_OLD = 'time-tracker-v4';
+  var KEY_OLDER = 'time-tracker-v3';
+  var KEY_OLDEST = 'time-tracker-v2';
+  var KEY_ANCIENT = 'time-tracker-v1';
 
   var state = {
-    timers: [],          // [{ id, start, pauses: [], pausedAt }]
+    timers: [],          // [{ id, name, start, pauses: [], pausedAt }]
     records: [],
     checkins: [],
     settings: { showTotalCard: true }
@@ -887,7 +894,7 @@
   var timerFilterName = '';
   var searchQuery = '';
   var pendingCheckin = null;
-  var pendingTimer = null;      // { timerId, start, end, duration, pausedMs }
+  var pendingStopTimerId = null;
   var confirmResolve = null;
 
   /* ==================== 工具 ==================== */
@@ -999,10 +1006,11 @@
     toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400);
   }
 
-  /* ==================== 计时器：单个对象操作 ==================== */
+  /* ==================== 计时器操作 ==================== */
   function normalizeTimer(t) {
     if (!t || typeof t.start !== 'number') return null;
     if (!t.id) t.id = uid();
+    if (!t.name) t.name = '未命名';
     if (!Array.isArray(t.pauses)) t.pauses = [];
     if (typeof t.pausedAt !== 'number') t.pausedAt = null;
     return t;
@@ -1060,7 +1068,8 @@
       try {
         legacy = localStorage.getItem(KEY_OLD) ||
                  localStorage.getItem(KEY_OLDER) ||
-                 localStorage.getItem(KEY_OLDEST);
+                 localStorage.getItem(KEY_OLDEST) ||
+                 localStorage.getItem(KEY_ANCIENT);
       } catch (e2) { legacy = null; }
 
       if (legacy) {
@@ -1070,10 +1079,13 @@
           state.checkins = Array.isArray(od.checkins) ? od.checkins : [];
           state.settings = Object.assign({ showTotalCard: true }, od.settings || {});
 
-          // 旧的单 running → 新的 timers 数组
-          if (od.running && typeof od.running.start === 'number') {
+          // 旧版可能是 running 单个对象，也可能是 timers 数组
+          if (Array.isArray(od.timers)) {
+            state.timers = od.timers.map(normalizeTimer).filter(Boolean);
+          } else if (od.running && typeof od.running.start === 'number') {
             var single = normalizeTimer({
               id: uid(),
+              name: '未命名',
               start: od.running.start,
               pauses: od.running.pauses || [],
               pausedAt: od.running.pausedAt || null
@@ -1094,7 +1106,6 @@
       if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
     });
 
-    // 过滤掉开始时间在未来的异常计时器
     state.timers = state.timers.filter(function (t) {
       return t && t.start <= Date.now() + 60000;
     });
@@ -1138,6 +1149,11 @@
   /* ==================== 名称建议 ==================== */
   function updateSuggestions() {
     var seen = {}, names = [];
+
+    // 正在计时的名字也加入建议
+    state.timers.forEach(function (t) {
+      if (t.name && !seen[t.name]) { seen[t.name] = 1; names.push(t.name); }
+    });
 
     state.checkins.slice().sort(function (a, b) { return b.time - a.time; })
       .forEach(function (c) {
@@ -1247,17 +1263,31 @@
     renderAll();
   }
 
-  /* ==================== 计时：启动 / 暂停 / 停止 ==================== */
-  function startNewTimer() {
+  /* ==================== 计时：开始 / 暂停 / 停止 ==================== */
+  function openStartModal() {
+    $('#start-input').value = '';
+    showModal('#start-modal');
+    setTimeout(function () { $('#start-input').focus(); }, 60);
+  }
+
+  function confirmStartTimer() {
+    var name = $('#start-input').value.trim();
+    if (!name) { $('#start-input').focus(); return; }
+
     var t = normalizeTimer({
       id: uid(),
+      name: name,
       start: Date.now(),
       pauses: [],
       pausedAt: null
     });
     state.timers.push(t);
     save();
-    renderTimers();
+
+    hideModal('#start-modal');
+    updateSuggestions();
+    renderAll();
+    toast('已开始计时：' + name);
   }
 
   function pauseTimer(id) {
@@ -1290,58 +1320,52 @@
       end = t.start + paused + duration;
     }
 
-    pendingTimer = {
-      timerId: t.id,
-      start: t.start,
-      end: end,
-      duration: duration,
-      pausedMs: paused
-    };
+    pendingStopTimerId = id;
 
     var durText = fmtDurExact(duration);
     if (paused >= 1000) durText += '（暂停 ' + fmtDurExact(paused) + '）';
 
-    $('#name-modal-dur').textContent =
-      fmtDateTime(t.start) + ' → ' + fmtTime(end) + ' · ' + durText;
+    $('#stop-modal-info').textContent =
+      '「' + t.name + '」\n' +
+      fmtDateTime(t.start) + ' → ' + fmtTime(end) + '\n' +
+      '本次用时 ' + durText;
 
-    $('#name-input').value = '';
-    showModal('#name-modal');
-    setTimeout(function () { $('#name-input').focus(); }, 60);
+    showModal('#stop-modal');
   }
 
-  function saveTimerRecord() {
-    if (!pendingTimer) return;
+  function confirmStopTimer() {
+    if (!pendingStopTimerId) return;
+    var t = findTimer(pendingStopTimerId);
+    if (!t) {
+      pendingStopTimerId = null;
+      hideModal('#stop-modal');
+      return;
+    }
 
-    var name = $('#name-input').value.trim();
-    if (!name) { $('#name-input').focus(); return; }
+    var end = Date.now();
+    var paused = pausedMsOfTimer(t);
+    var duration = end - t.start - paused;
+    if (duration < 1000) duration = 1000;
 
     state.records.push({
       id: uid(),
-      name: name,
-      start: pendingTimer.start,
-      end: pendingTimer.end,
-      duration: pendingTimer.duration,
-      pausedMs: pendingTimer.pausedMs || 0,
+      name: t.name,
+      start: t.start,
+      end: end,
+      duration: duration,
+      pausedMs: paused,
       createdAt: Date.now()
     });
 
-    // 从列表中移除该计时器
-    state.timers = state.timers.filter(function (t) {
-      return t.id !== pendingTimer.timerId;
-    });
+    state.timers = state.timers.filter(function (x) { return x.id !== t.id; });
 
-    var finishedId = pendingTimer.timerId;
-    pendingTimer = null;
+    pendingStopTimerId = null;
     save();
 
-    hideModal('#name-modal');
+    hideModal('#stop-modal');
     updateSuggestions();
     renderAll();
-
-    if (!findTimer(finishedId)) {
-      // 顺带提示
-      toast('已保存：' + name);
-    }
+    toast('已保存：' + t.name + ' ' + fmtDurExact(duration));
   }
 
   function discardTimer(id) {
@@ -1351,7 +1375,7 @@
   }
 
   /* ==================== 渲染：计时器列表 ==================== */
-  function timerCardHTML(t, index) {
+  function timerCardHTML(t) {
     var paused = isTimerPaused(t);
     var el = elapsedMsOfTimer(t);
 
@@ -1368,7 +1392,7 @@
     }
 
     return '<div class="card timer-card" data-id="' + t.id + '">' +
-      '<span class="timer-index">计时 ' + (index + 1) + '</span>' +
+      '<div class="timer-name">' + esc(t.name) + '</div>' +
       '<div class="' + stateCls + '">' + stateText + '</div>' +
       '<div class="timer-clock">' + fmtClock(el) + '</div>' +
       '<div class="timer-hint">' + esc(hintText) + '</div>' +
@@ -1390,26 +1414,20 @@
     if (!state.timers.length) {
       list.innerHTML = '';
       startBtn.textContent = '＋ 开始计时';
-      startBtn.classList.remove('ghost');
       startBtn.classList.add('new-timer');
       return;
     }
 
-    // 按开始时间排序，最早的在前
     var sorted = state.timers.slice().sort(function (a, b) {
       return a.start - b.start;
     });
 
-    list.innerHTML = sorted.map(function (t, i) {
-      return timerCardHTML(t, i);
-    }).join('');
+    list.innerHTML = sorted.map(timerCardHTML).join('');
 
     startBtn.textContent = '＋ 开始新计时';
-    startBtn.classList.remove('new-timer');
     startBtn.classList.add('new-timer');
   }
 
-  /* 每 250ms 更新所有计时器显示 */
   function tickTimers() {
     if (activeTab !== 'home') return;
 
@@ -2109,7 +2127,7 @@
   async function exportData() {
     var payload = {
       app: 'time-tracker',
-      version: 4,
+      version: 5,
       exportedAt: new Date().toISOString(),
       timers: state.timers,
       records: state.records,
@@ -2347,7 +2365,18 @@
     });
 
     /* 开始新计时 */
-    $('#btn-start').addEventListener('click', startNewTimer);
+    $('#btn-start').addEventListener('click', openStartModal);
+
+    $('#start-ok').addEventListener('click', confirmStartTimer);
+    $('#start-cancel').addEventListener('click', function () {
+      hideModal('#start-modal');
+    });
+    $('#start-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'start-modal') hideModal('#start-modal');
+    });
+    $('#start-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); confirmStartTimer(); }
+    });
 
     /* 计时器卡片：暂停 / 停止 / 放弃 */
     $('#timer-list').addEventListener('click', async function (e) {
@@ -2377,27 +2406,24 @@
         var t2 = findTimer(id);
         if (!t2) return;
         var ok = await confirmDialog(
-          '放弃这个计时？\n开始于 ' + fmtDateTime(t2.start) + '，本次记录不会保存。',
+          '放弃「' + t2.name + '」这个计时？\n开始于 ' + fmtDateTime(t2.start) + '，本次记录不会保存。',
           '放弃');
         if (!ok) return;
         discardTimer(id);
       }
     });
 
-    /* 结束计时：保存 */
-    $('#name-ok').addEventListener('click', saveTimerRecord);
-    $('#name-cancel').addEventListener('click', function () {
-      pendingTimer = null;
-      hideModal('#name-modal');
+    /* 停止计时确认 */
+    $('#stop-ok').addEventListener('click', confirmStopTimer);
+    $('#stop-cancel').addEventListener('click', function () {
+      pendingStopTimerId = null;
+      hideModal('#stop-modal');
     });
-    $('#name-modal').addEventListener('click', function (e) {
-      if (e.target.id === 'name-modal') {
-        pendingTimer = null;
-        hideModal('#name-modal');
+    $('#stop-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'stop-modal') {
+        pendingStopTimerId = null;
+        hideModal('#stop-modal');
       }
-    });
-    $('#name-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); saveTimerRecord(); }
     });
 
     $('#confirm-ok').addEventListener('click', function () { resolveConfirm(true); });
@@ -2415,9 +2441,10 @@
         return;
       }
       if (!$('#makeup-modal').hidden) { hideModal('#makeup-modal'); return; }
-      if (!$('#name-modal').hidden) {
-        pendingTimer = null;
-        hideModal('#name-modal');
+      if (!$('#start-modal').hidden) { hideModal('#start-modal'); return; }
+      if (!$('#stop-modal').hidden) {
+        pendingStopTimerId = null;
+        hideModal('#stop-modal');
       }
     });
 
