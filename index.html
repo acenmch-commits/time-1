@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#4f6ef7">
-<title>时间记录 · 专注计时</title>
+<title>时间记录 · 打卡 · 计时</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -19,10 +19,13 @@
     --primary-soft: rgba(79, 110, 247, .12);
     --danger: #ef4757;
     --ok: #22b07d;
+    --pause: #f59e0b;
     --tag-bg: #eef0f6;
     --tag-danger: #fdecee;
     --tag-info: #e9efff;
     --tag-ok: #e8f7f0;
+    --tag-warn: #fff4e3;
+    --warn: #c07d0a;
     --shadow: 0 2px 14px rgba(24, 32, 64, .06);
     --radius: 14px;
   }
@@ -38,10 +41,13 @@
       --primary-soft: rgba(109, 134, 255, .16);
       --danger: #ff6b7a;
       --ok: #3ecf9a;
+      --pause: #fbbf24;
       --tag-bg: #262a36;
       --tag-danger: rgba(255, 107, 122, .16);
       --tag-info: rgba(109, 134, 255, .18);
       --tag-ok: rgba(62, 207, 154, .16);
+      --tag-warn: rgba(232, 176, 75, .16);
+      --warn: #e8b04b;
       --shadow: 0 2px 14px rgba(0, 0, 0, .3);
     }
   }
@@ -50,7 +56,7 @@
 
   body {
     margin: 0;
-    padding: 32px 16px 72px;
+    padding: 28px 16px 72px;
     min-height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
                  "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -63,7 +69,6 @@
 
   .app { max-width: 640px; margin: 0 auto; }
 
-  /* ---------- 头部 & 标签 ---------- */
   .header { padding: 0 2px; margin-bottom: 16px; }
   .header h1 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -.3px; }
   .header .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
@@ -79,7 +84,7 @@
   }
   .tab {
     flex: 1;
-    font: inherit; font-size: 14px; font-weight: 500;
+    font: inherit; font-size: 13.5px; font-weight: 500;
     color: var(--muted);
     background: transparent;
     border: none; border-radius: 9px;
@@ -90,7 +95,6 @@
   .tab.active { background: var(--primary); color: #fff; }
   .tab:not(.active):hover { color: var(--text); background: var(--tag-bg); }
 
-  /* ---------- 通用 ---------- */
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -140,6 +144,15 @@
   .btn:active { transform: scale(.98); }
   .btn.big { width: 100%; min-height: 52px; font-size: 16px; border-radius: 13px; }
   .btn.stop { background: var(--danger); }
+  .btn.pause { background: var(--pause); }
+  .btn.resume { background: var(--primary); }
+  .btn.checkin { background: var(--ok); }
+  .btn.ghost {
+    background: var(--tag-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn.ghost:hover { border-color: var(--primary); color: var(--primary); filter: none; }
 
   .icon-btn {
     font: inherit; font-size: 20px; line-height: 1;
@@ -174,11 +187,49 @@
   }
   .empty .emoji { display: block; font-size: 26px; margin-bottom: 8px; }
 
-  /* ---------- 计时卡片 ---------- */
-  .timer-card {
-    padding: 26px 20px 22px;
+  .clock-card {
+    padding: 22px 20px 20px;
     text-align: center;
-    margin-top: 4px;
+    margin-bottom: 14px;
+  }
+  .clock-date {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .live-clock {
+    font-size: clamp(42px, 14vw, 58px);
+    font-weight: 600;
+    letter-spacing: 1px;
+    line-height: 1.12;
+    margin-bottom: 18px;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  .checkin-actions { display: flex; gap: 10px; }
+  .checkin-actions .btn {
+    flex-grow: 0.618;
+    flex-shrink: 1;
+    flex-basis: 0;
+    width: auto;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .checkin-actions .btn.checkin {
+    flex-grow: 1;
+    box-shadow: 0 4px 14px rgba(34, 176, 125, .28);
+  }
+  @media (prefers-color-scheme: dark) {
+    .checkin-actions .btn.checkin {
+      box-shadow: 0 4px 14px rgba(62, 207, 154, .22);
+    }
+  }
+
+  .timer-card {
+    padding: 22px 20px 20px;
+    text-align: center;
   }
   .timer-state {
     display: inline-block;
@@ -190,16 +241,17 @@
     letter-spacing: .3px;
     transition: all .2s;
   }
-  .timer-state.active {
-    background: var(--tag-ok);
-    color: var(--ok);
+  .timer-state.active { background: var(--tag-ok); color: var(--ok); }
+  .timer-state.paused {
+    background: var(--tag-warn);
+    color: var(--warn);
   }
   .timer-clock {
-    font-size: clamp(38px, 13vw, 56px);
+    font-size: clamp(34px, 12vw, 50px);
     font-weight: 600;
     line-height: 1.15;
     letter-spacing: 1px;
-    margin: 14px 0 6px;
+    margin: 12px 0 6px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
   }
@@ -207,12 +259,38 @@
     font-size: 13px;
     color: var(--muted);
     min-height: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     word-break: break-word;
   }
-  .discard-row { text-align: center; margin-top: 12px; }
+  .discard-row { text-align: center; margin-top: 10px; }
 
-  /* ---------- 列表 ---------- */
+  .timer-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .timer-actions .btn {
+    flex-grow: 0.618;
+    flex-shrink: 1;
+    flex-basis: 0;
+    width: auto;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 13px;
+    min-height: 52px;
+    font-size: 15px;
+  }
+  .timer-actions .btn.stop {
+    flex-grow: 1;
+    font-size: 16px;
+    box-shadow: 0 4px 14px rgba(239, 71, 87, .26);
+  }
+  @media (prefers-color-scheme: dark) {
+    .timer-actions .btn.stop {
+      box-shadow: 0 4px 14px rgba(255, 107, 122, .2);
+    }
+  }
+
   .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 
   .item {
@@ -242,7 +320,9 @@
     font-size: 13.5px; font-weight: 600;
     color: var(--primary);
     white-space: nowrap; flex: none;
+    font-variant-numeric: tabular-nums;
   }
+  .rec-dur.checkin-time { color: var(--ok); }
 
   .meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
   .tag {
@@ -253,6 +333,10 @@
     color: var(--muted);
     white-space: nowrap;
   }
+  .tag.ok { background: var(--tag-ok); color: var(--ok); }
+  .tag.makeup { background: var(--tag-warn); color: var(--warn); }
+  .tag.op-time { background: var(--tag-info); color: var(--primary); }
+  .tag.paused-tag { background: var(--tag-warn); color: var(--warn); }
 
   .actions { display: flex; gap: 2px; flex: none; opacity: 0; transition: opacity .15s; }
   .item:hover .actions, .item:focus-within .actions { opacity: 1; }
@@ -270,15 +354,6 @@
   .icon:hover { background: var(--bg); color: var(--text); }
   .icon.del:hover { color: var(--danger); }
 
-  /* ---------- 记录页 ---------- */
-  .search-row { margin-bottom: 12px; }
-  .list-count {
-    margin: 0 4px 10px;
-    font-size: 12.5px;
-    color: var(--muted);
-  }
-
-  /* ---------- 统计页 ---------- */
   .seg {
     display: flex; gap: 4px;
     background: var(--tag-bg);
@@ -288,7 +363,7 @@
   }
   .seg-btn {
     flex: 1;
-    font: inherit; font-size: 14px; font-weight: 500;
+    font: inherit; font-size: 13.5px; font-weight: 500;
     color: var(--muted);
     background: transparent;
     border: none; border-radius: 8px;
@@ -307,13 +382,12 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 2px;
   }
 
   .summary-card { padding: 18px 16px; margin-top: 14px; }
   .summary-label { font-size: 13px; color: var(--muted); }
   .summary-total {
-    font-size: 32px; font-weight: 650;
+    font-size: 30px; font-weight: 650;
     letter-spacing: -.6px;
     margin: 4px 0 10px;
     font-variant-numeric: tabular-nums;
@@ -322,6 +396,7 @@
   .summary-sub {
     display: flex; align-items: center; gap: 7px;
     font-size: 13px; color: var(--muted);
+    flex-wrap: wrap;
   }
   .summary-sub b { color: var(--text); font-weight: 600; }
   .summary-sub .dot { opacity: .5; }
@@ -347,7 +422,81 @@
     font-size: 12.5px; color: var(--muted);
   }
 
-  /* ---------- 弹窗 ---------- */
+  .picker-row { margin-bottom: 12px; }
+
+  .chart-card { padding: 14px 10px 10px; margin-top: 10px; }
+  .chart-canvas-wrap { width: 100%; }
+  #trend-canvas, #timer-trend-canvas { display: block; width: 100%; height: 200px; }
+  .chart-legend {
+    display: flex; justify-content: center; align-items: center;
+    gap: 6px;
+    padding: 8px 6px 4px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+
+  .data-card { padding: 18px 16px; margin-bottom: 12px; }
+  .data-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+  .data-card p {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .data-card .row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .setting-item {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px;
+    padding: 15px 16px;
+    margin-bottom: 10px;
+  }
+  .setting-title { font-size: 15px; font-weight: 500; }
+  .setting-desc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+  .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .slider {
+    position: absolute; inset: 0;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .28);
+    transition: transform .2s;
+  }
+  .switch input:checked + .slider { background: var(--primary); border-color: var(--primary); }
+  .switch input:checked + .slider::before { transform: translateX(20px); }
+
+  .danger-btn {
+    font: inherit; font-size: 14px; font-weight: 500;
+    color: var(--danger);
+    background: var(--tag-danger);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: filter .15s;
+  }
+  .danger-btn:hover { filter: brightness(.95); }
+
   .modal-backdrop {
     position: fixed; inset: 0;
     background: rgba(15, 18, 28, .5);
@@ -371,23 +520,28 @@
   }
   .modal-backdrop.show .modal { transform: scale(1); }
 
-  .modal h3 {
-    margin: 0 0 6px;
-    font-size: 17px;
-    font-weight: 600;
-  }
+  .modal h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; }
   .modal-sub {
     margin: 0 0 16px;
     font-size: 13px;
     color: var(--muted);
     word-break: break-word;
+    line-height: 1.55;
   }
   .modal p {
     margin: 0 0 20px;
     font-size: 15px; line-height: 1.6;
     white-space: pre-line;
   }
-  .modal input.field { margin-bottom: 18px; }
+  .modal .field { margin-bottom: 18px; }
+
+  .makeup-row {
+    display: flex; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .makeup-row .field { flex: 1; margin-bottom: 0; }
+  #makeup-date { flex: 1.25; }
+  #makeup-time { flex: 1; }
 
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
   .modal-actions button {
@@ -405,7 +559,34 @@
     border-color: var(--primary);
     color: #fff;
   }
+  .modal-actions button.primary.ok { background: var(--ok); border-color: var(--ok); }
   .modal-actions button:hover { filter: brightness(.96); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translate(-50%, 14px);
+    background: rgba(20, 24, 36, .94);
+    color: #fff;
+    font-size: 13.5px;
+    padding: 11px 20px;
+    border-radius: 11px;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s, transform .22s;
+    max-width: 82vw;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 380px) {
+    .rec-dur { font-size: 12.5px; }
+    .checkin-actions { gap: 8px; }
+    .timer-actions { gap: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -413,29 +594,43 @@
 <div class="app">
   <header class="header">
     <h1>时间记录</h1>
-    <p class="sub">开始计时 · 结束记录 · 周期统计</p>
+    <p class="sub">打卡 · 计时 · 趋势统计</p>
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="timer" type="button">计时</button>
+    <button class="tab active" data-tab="home" type="button">首页</button>
     <button class="tab" data-tab="records" type="button">记录</button>
     <button class="tab" data-tab="stats" type="button">统计</button>
+    <button class="tab" data-tab="settings" type="button">设置</button>
   </nav>
 
   <main>
-    <!-- ==================== 计时 ==================== -->
-    <section id="view-timer">
+    <!-- ==================== 首页 ==================== -->
+    <section id="view-home">
+      <div class="card clock-card">
+        <div class="clock-date" id="live-date"></div>
+        <div class="live-clock" id="live-clock">00:00:00</div>
+        <div class="checkin-actions">
+          <button class="btn big ghost" id="btn-makeup" type="button">补 卡</button>
+          <button class="btn big checkin" id="btn-checkin" type="button">打 卡</button>
+        </div>
+      </div>
+
       <div class="card timer-card">
         <div class="timer-state" id="timer-state">未开始</div>
         <div class="timer-clock" id="timer-clock">00:00:00</div>
         <div class="timer-hint" id="timer-hint">点击下方按钮开始计时</div>
 
         <button class="btn big" id="btn-start" type="button">开始计时</button>
-        <button class="btn big stop" id="btn-stop" type="button" hidden>结束计时</button>
-      </div>
 
-      <div class="discard-row" id="discard-row" hidden>
-        <button class="link-btn" id="btn-discard" type="button">放弃本次计时</button>
+        <div class="timer-actions" id="timer-actions" hidden>
+          <button class="btn pause" id="btn-pause" type="button">暂停计时</button>
+          <button class="btn stop" id="btn-stop" type="button">停止计时</button>
+        </div>
+
+        <div class="discard-row" id="discard-row" hidden>
+          <button class="link-btn" id="btn-discard" type="button">放弃本次计时</button>
+        </div>
       </div>
 
       <h3 class="section-title">最近记录</h3>
@@ -444,20 +639,39 @@
 
     <!-- ==================== 记录 ==================== -->
     <section id="view-records" hidden>
-      <div class="search-row">
-        <input class="field" id="record-search" type="search"
-               placeholder="搜索事项名称…" autocomplete="off">
+      <div class="seg" data-group="rtype">
+        <button class="seg-btn active" data-value="timer" type="button">计时记录</button>
+        <button class="seg-btn" data-value="checkin" type="button">打卡记录</button>
       </div>
-      <p class="list-count" id="record-count"></p>
+
+      <input class="field" id="record-search" type="search"
+             placeholder="搜索事项名称…" autocomplete="off" style="margin-bottom:12px;">
+
+      <p class="section-title" id="record-count" style="margin-top:0;"></p>
       <ul class="list" id="record-list"></ul>
     </section>
 
     <!-- ==================== 统计 ==================== -->
     <section id="view-stats" hidden>
-      <div class="seg">
-        <button class="seg-btn active" data-mode="week" type="button">按周</button>
-        <button class="seg-btn" data-mode="month" type="button">按月</button>
-        <button class="seg-btn" data-mode="year" type="button">按年</button>
+      <div class="seg" data-group="stype">
+        <button class="seg-btn active" data-value="timer" type="button">计时统计</button>
+        <button class="seg-btn" data-value="checkin" type="button">打卡统计</button>
+      </div>
+
+      <div class="picker-row" id="timer-picker">
+        <select class="field" id="timer-name-select">
+          <option value="">全部事项（各事项耗时）</option>
+        </select>
+      </div>
+
+      <div class="picker-row" id="checkin-picker" hidden>
+        <select class="field" id="checkin-name-select"></select>
+      </div>
+
+      <div class="seg" data-group="mode">
+        <button class="seg-btn active" data-value="week" type="button">按周</button>
+        <button class="seg-btn" data-value="month" type="button">按月</button>
+        <button class="seg-btn" data-value="year" type="button">按年</button>
       </div>
 
       <div class="period-bar">
@@ -466,36 +680,149 @@
         <button class="icon-btn" id="stat-next" type="button" aria-label="下一周期">›</button>
       </div>
 
-      <div class="card summary-card">
-        <div class="summary-label">总时长</div>
-        <div class="summary-total" id="stat-total">0秒</div>
-        <div class="summary-sub">
-          <span>共 <b id="stat-count">0</b> 次记录</span>
-          <span class="dot">·</span>
-          <span><b id="stat-names">0</b> 个事项</span>
+      <div id="stats-timer">
+        <div class="card summary-card" id="stat-total-card">
+          <div class="summary-label">总时长</div>
+          <div class="summary-total" id="stat-total">0秒</div>
+          <div class="summary-sub">
+            <span>共 <b id="stat-count">0</b> 次记录</span>
+            <span class="dot">·</span>
+            <span><b id="stat-names">0</b> 个事项</span>
+            <span class="dot" id="stat-paused-dot" hidden>·</span>
+            <span id="stat-paused" hidden></span>
+          </div>
+        </div>
+
+        <div id="stats-timer-groups">
+          <h3 class="section-title">各事项耗时</h3>
+          <div id="stat-groups"></div>
+        </div>
+
+        <div id="stats-timer-trend" hidden>
+          <h3 class="section-title" id="timer-trend-title">耗时趋势</h3>
+          <div class="card chart-card">
+            <div class="chart-canvas-wrap">
+              <canvas id="timer-trend-canvas"></canvas>
+            </div>
+            <div class="chart-legend" id="timer-trend-legend"></div>
+          </div>
         </div>
       </div>
 
-      <h3 class="section-title">各事项耗时</h3>
-      <div id="stat-groups"></div>
+      <div id="stats-checkin" hidden>
+        <div class="card summary-card">
+          <div class="summary-label">打卡次数</div>
+          <div class="summary-total" id="chk-count">0 次</div>
+          <div class="summary-sub" id="chk-summary"></div>
+        </div>
+
+        <h3 class="section-title">打卡时间趋势</h3>
+        <div class="card chart-card">
+          <div class="chart-canvas-wrap">
+            <canvas id="trend-canvas"></canvas>
+          </div>
+          <div class="chart-legend" id="chart-legend"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 设置 ==================== -->
+    <section id="view-settings" hidden>
+      <h3 class="section-title" style="margin-top:0;">显示</h3>
+
+      <div class="card setting-item">
+        <div>
+          <div class="setting-title">显示总时长卡片</div>
+          <div class="setting-desc">在「计时统计」顶部显示总时长汇总</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="set-show-total">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <h3 class="section-title">数据备份</h3>
+
+      <div class="card data-card">
+        <h3>导出备份</h3>
+        <p>将全部计时记录、打卡记录与设置导出为 JSON 文件。建议定期导出并保存到云盘，避免浏览器数据被清理后丢失。</p>
+        <div class="row">
+          <button class="btn" id="btn-export" type="button">导出 JSON</button>
+        </div>
+      </div>
+
+      <div class="card data-card">
+        <h3>导入恢复</h3>
+        <p>选择之前导出的 JSON 文件，与现有数据合并。相同 ID 的记录不会重复导入。</p>
+        <div class="row">
+          <button class="btn" id="btn-import" type="button">选择文件导入</button>
+          <input type="file" id="file-input" accept=".json,application/json" hidden>
+        </div>
+      </div>
+
+      <div class="card data-card">
+        <h3>清空全部数据</h3>
+        <p>删除所有计时记录、打卡记录，并重置计时器。操作不可恢复，请先导出备份。</p>
+        <div class="row">
+          <button class="danger-btn" id="btn-reset" type="button">清空全部数据</button>
+        </div>
+      </div>
+
+      <div class="card data-card">
+        <h3>当前数据量</h3>
+        <p id="data-summary" style="margin-bottom:0;">—</p>
+      </div>
     </section>
   </main>
 </div>
 
-<!-- ==================== 输入事项名称 ==================== -->
+<!-- ==================== 打卡 ==================== -->
+<div class="modal-backdrop" id="checkin-modal" hidden>
+  <div class="modal">
+    <h3>打卡</h3>
+    <p class="modal-sub" id="checkin-time-show"></p>
+    <input class="field" id="checkin-input" type="text" maxlength="40"
+           list="name-suggestions" placeholder="事项名称，例如：早起、吃药" autocomplete="off">
+    <div class="modal-actions">
+      <button type="button" id="checkin-cancel">取消</button>
+      <button type="button" class="primary ok" id="checkin-ok">保存打卡</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 补卡 ==================== -->
+<div class="modal-backdrop" id="makeup-modal" hidden>
+  <div class="modal">
+    <h3>补卡</h3>
+    <p class="modal-sub">选择忘记打卡的日期与时间</p>
+    <div class="makeup-row">
+      <input class="field" id="makeup-date" type="date">
+      <input class="field" id="makeup-time" type="time" step="1">
+    </div>
+    <input class="field" id="makeup-input" type="text" maxlength="40"
+           list="name-suggestions" placeholder="事项名称，例如：早起、吃药" autocomplete="off">
+    <div class="modal-actions">
+      <button type="button" id="makeup-cancel">取消</button>
+      <button type="button" class="primary ok" id="makeup-ok">保存补卡</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 结束计时输入 ==================== -->
 <div class="modal-backdrop" id="name-modal" hidden>
   <div class="modal">
     <h3>结束计时</h3>
     <p class="modal-sub" id="name-modal-dur"></p>
     <input class="field" id="name-input" type="text" maxlength="40"
            list="name-suggestions" placeholder="这件事叫什么？" autocomplete="off">
-    <datalist id="name-suggestions"></datalist>
     <div class="modal-actions">
       <button type="button" id="name-cancel">取消</button>
       <button type="button" class="primary" id="name-ok">保存记录</button>
     </div>
   </div>
 </div>
+
+<datalist id="name-suggestions"></datalist>
 
 <!-- ==================== 确认弹窗 ==================== -->
 <div class="modal-backdrop" id="confirm-modal" hidden>
@@ -508,23 +835,34 @@
   </div>
 </div>
 
+<!-- ==================== Toast ==================== -->
+<div class="toast" id="toast"></div>
+
 <script>
 (function () {
   'use strict';
 
-  var KEY = 'time-tracker-v1';
+  var KEY = 'time-tracker-v3';
+  var KEY_OLD = 'time-tracker-v2';
+  var KEY_OLDER = 'time-tracker-v1';
 
-  /* ==================== 状态 ==================== */
   var state = {
-    running: null,     // { start: 时间戳 }
-    records: []        // { id, name, start, end, duration, createdAt }
+    running: null,
+    records: [],
+    checkins: [],
+    settings: { showTotalCard: true }
   };
 
-  var activeTab = 'timer';
-  var searchQuery = '';
+  var activeTab = 'home';
+  var recType = 'timer';
+  var statType = 'timer';
   var statMode = 'week';
   var statBase = new Date();
-  var pending = null;          // 待保存的记录
+  var checkinName = null;
+  var timerFilterName = '';
+  var searchQuery = '';
+  var pendingCheckin = null;
+  var pendingTimer = null;
   var confirmResolve = null;
 
   /* ==================== 工具 ==================== */
@@ -548,10 +886,24 @@
     return pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
 
+  function fmtTimeSec(ts) {
+    var d = new Date(ts);
+    return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  }
+
   function fmtDateTime(ts) {
     var d = new Date(ts);
     return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
            pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function WEEK_CN(d) {
+    return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()];
+  }
+
+  function fmtDateFull(ts) {
+    var d = new Date(ts);
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d);
   }
 
   function fmtClock(ms) {
@@ -561,7 +913,6 @@
     return pad(h) + ':' + pad(m) + ':' + pad(s % 60);
   }
 
-  /* 紧凑格式：统计用 */
   function fmtDur(ms) {
     var s = Math.round(ms / 1000);
     var h = Math.floor(s / 3600);
@@ -571,7 +922,6 @@
     return s + '秒';
   }
 
-  /* 精确格式：记录列表用 */
   function fmtDurExact(ms) {
     var s = Math.round(ms / 1000);
     var h = Math.floor(s / 3600);
@@ -582,23 +932,122 @@
     return sec + '秒';
   }
 
+  /* 趋势图 Y 轴紧凑格式：秒 / m:ss / h m */
+  function fmtDurShort(ms) {
+    var s = Math.round(ms / 1000);
+    if (s < 60) return s + 's';
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s % 3600) / 60);
+    var sec = s % 60;
+    if (h > 0) return h + 'h' + (m > 0 ? m + 'm' : '');
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+
+  function secOfDay(ts) {
+    var d = new Date(ts);
+    return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
+  }
+
+  function secToHM(sec) {
+    sec = Math.max(0, Math.min(86399, Math.round(sec)));
+    return pad(Math.floor(sec / 3600)) + ':' + pad(Math.floor((sec % 3600) / 60));
+  }
+
+  function secToHMS(sec) {
+    sec = Math.max(0, Math.min(86399, Math.round(sec)));
+    return pad(Math.floor(sec / 3600)) + ':' +
+           pad(Math.floor((sec % 3600) / 60)) + ':' +
+           pad(sec % 60);
+  }
+
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  /* ==================== Toast ==================== */
+  var toastTimer = null;
+  function toast(msg) {
+    var el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400);
+  }
+
+  /* ==================== 计时核心 ==================== */
+  function normalizeRunning(r) {
+    if (!r || typeof r.start !== 'number') return null;
+    if (!Array.isArray(r.pauses)) r.pauses = [];
+    if (typeof r.pausedAt !== 'number') r.pausedAt = null;
+    return r;
+  }
+
+  function pausedMsOf(r) {
+    if (!r) return 0;
+    var total = 0;
+    (r.pauses || []).forEach(function (p) {
+      if (typeof p.start === 'number' && typeof p.end === 'number') {
+        total += Math.max(0, p.end - p.start);
+      }
+    });
+    if (r.pausedAt) total += Math.max(0, Date.now() - r.pausedAt);
+    return total;
+  }
+
+  function elapsedMs() {
+    if (!state.running) return 0;
+    var r = state.running;
+    var raw = Date.now() - r.start;
+    return Math.max(0, raw - pausedMsOf(r));
+  }
+
+  function isPaused() {
+    return !!(state.running && state.running.pausedAt);
+  }
+
   /* ==================== 存储 ==================== */
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
-    if (!raw) return;
+
+    if (!raw) {
+      var legacy = null;
+      try { legacy = localStorage.getItem(KEY_OLD) || localStorage.getItem(KEY_OLDER); }
+      catch (e) { legacy = null; }
+
+      if (legacy) {
+        try {
+          var od = JSON.parse(legacy);
+          state.records = Array.isArray(od.records) ? od.records : [];
+          state.checkins = Array.isArray(od.checkins) ? od.checkins : [];
+          state.running = normalizeRunning(od.running);
+        } catch (e2) { /* 忽略 */ }
+      }
+      return;
+    }
 
     try {
       var d = JSON.parse(raw);
       state.records = Array.isArray(d.records) ? d.records : [];
-      state.running = (d.running && typeof d.running.start === 'number') ? d.running : null;
+      state.checkins = Array.isArray(d.checkins) ? d.checkins : [];
+      state.running = normalizeRunning(d.running);
+      state.settings = Object.assign({ showTotalCard: true }, d.settings || {});
     } catch (e) {
       state.records = [];
+      state.checkins = [];
       state.running = null;
     }
 
     state.records = state.records.filter(function (r) {
       return r && typeof r.start === 'number' && typeof r.end === 'number' && r.name;
+    });
+    state.checkins = state.checkins.filter(function (c) {
+      return c && typeof c.time === 'number' && c.name;
+    });
+
+    state.records.forEach(function (r) {
+      if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
     });
 
     if (state.running && state.running.start > Date.now()) state.running = null;
@@ -639,10 +1088,145 @@
     }
   }
 
-  /* ==================== 计时逻辑 ==================== */
+  /* ==================== 名称建议 ==================== */
+  function updateSuggestions() {
+    var seen = {}, names = [];
+
+    state.checkins.slice().sort(function (a, b) { return b.time - a.time; })
+      .forEach(function (c) {
+        if (!seen[c.name]) { seen[c.name] = 1; names.push(c.name); }
+      });
+
+    state.records.slice().sort(function (a, b) { return b.start - a.start; })
+      .forEach(function (r) {
+        if (!seen[r.name]) { seen[r.name] = 1; names.push(r.name); }
+      });
+
+    $('#name-suggestions').innerHTML = names.slice(0, 40).map(function (n) {
+      return '<option value="' + esc(n) + '"></option>';
+    }).join('');
+  }
+
+  /* ==================== 实时时钟 ==================== */
+  function tickClock() {
+    var d = new Date();
+    $('#live-clock').textContent = fmtTimeSec(d.getTime());
+    $('#live-date').textContent =
+      d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d);
+  }
+
+  /* ==================== 打卡 ==================== */
+  function openCheckinModal() {
+    pendingCheckin = Date.now();
+    $('#checkin-time-show').textContent =
+      '打卡时间：' + fmtDateFull(pendingCheckin) + ' ' + fmtTimeSec(pendingCheckin);
+    $('#checkin-input').value = '';
+    showModal('#checkin-modal');
+    setTimeout(function () { $('#checkin-input').focus(); }, 60);
+  }
+
+  function saveCheckin() {
+    if (!pendingCheckin) return;
+
+    var name = $('#checkin-input').value.trim();
+    if (!name) { $('#checkin-input').focus(); return; }
+
+    var rec = {
+      id: uid(),
+      name: name,
+      time: pendingCheckin,
+      createdAt: Date.now()
+    };
+    state.checkins.push(rec);
+
+    pendingCheckin = null;
+    save();
+
+    hideModal('#checkin-modal');
+    toast('已打卡：' + name + ' ' + fmtTimeSec(rec.time));
+    updateSuggestions();
+    renderAll();
+  }
+
+  /* ==================== 补卡 ==================== */
+  function openMakeupModal() {
+    var now = new Date();
+
+    var dateEl = $('#makeup-date');
+    var timeEl = $('#makeup-time');
+
+    dateEl.value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+    dateEl.max = todayStr();
+
+    timeEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+    $('#makeup-input').value = '';
+    showModal('#makeup-modal');
+    setTimeout(function () { $('#makeup-input').focus(); }, 60);
+  }
+
+  function saveMakeup() {
+    var dStr = $('#makeup-date').value;
+    var tStr = $('#makeup-time').value;
+    var name = $('#makeup-input').value.trim();
+
+    if (!dStr || !tStr) { toast('请先选择补卡的日期和时间'); return; }
+    if (!name) { $('#makeup-input').focus(); return; }
+
+    var dp = dStr.split('-').map(Number);
+    var tp = tStr.split(':').map(Number);
+
+    var ts = new Date(
+      dp[0], dp[1] - 1, dp[2],
+      tp[0] || 0, tp[1] || 0, tp[2] || 0
+    ).getTime();
+
+    if (isNaN(ts)) { toast('日期或时间无效'); return; }
+    if (ts > Date.now()) { toast('补卡时间不能晚于当前时间'); return; }
+
+    var rec = {
+      id: uid(),
+      name: name,
+      time: ts,
+      createdAt: Date.now(),
+      makeup: true
+    };
+    state.checkins.push(rec);
+
+    save();
+    hideModal('#makeup-modal');
+    toast('已补卡：' + name + ' ' + fmtDateTime(ts));
+    updateSuggestions();
+    renderAll();
+  }
+
+  /* ==================== 计时 ==================== */
   function startTimer() {
     if (state.running) return;
-    state.running = { start: Date.now() };
+    state.running = {
+      start: Date.now(),
+      pauses: [],
+      pausedAt: null
+    };
+    save();
+    renderTimer();
+  }
+
+  function pauseTimer() {
+    if (!state.running) return;
+    if (state.running.pausedAt) return;
+    state.running.pausedAt = Date.now();
+    save();
+    renderTimer();
+  }
+
+  function resumeTimer() {
+    if (!state.running) return;
+    if (!state.running.pausedAt) return;
+    var start = state.running.pausedAt;
+    var end = Date.now();
+    state.running.pauses.push({ start: start, end: end });
+    state.running.pausedAt = null;
     save();
     renderTimer();
   }
@@ -650,34 +1234,36 @@
   function openStopModal() {
     if (!state.running) return;
 
-    var start = state.running.start;
+    var r = state.running;
     var end = Date.now();
-    if (end - start < 1000) end = start + 1000;   // 至少 1 秒
+    var paused = pausedMsOf(r);
+    var duration = end - r.start - paused;
 
-    pending = { start: start, end: end, duration: end - start };
+    if (duration < 1000) {
+      duration = 1000;
+      end = r.start + paused + duration;
+    }
+
+    pendingTimer = {
+      start: r.start,
+      end: end,
+      duration: duration,
+      pausedMs: paused
+    };
+
+    var durText = fmtDurExact(duration);
+    if (paused >= 1000) durText += '（暂停 ' + fmtDurExact(paused) + '）';
 
     $('#name-modal-dur').textContent =
-      fmtDateTime(start) + ' → ' + fmtTime(end) + ' · ' + fmtDurExact(end - start);
-
-    // 最近用过的名称 → 输入建议
-    var seen = {}, names = [];
-    state.records.slice()
-      .sort(function (a, b) { return b.start - a.start; })
-      .forEach(function (r) {
-        if (!seen[r.name]) { seen[r.name] = 1; names.push(r.name); }
-      });
-
-    $('#name-suggestions').innerHTML = names.slice(0, 30).map(function (n) {
-      return '<option value="' + esc(n) + '"></option>';
-    }).join('');
+      fmtDateTime(r.start) + ' → ' + fmtTime(end) + ' · ' + durText;
 
     $('#name-input').value = '';
     showModal('#name-modal');
     setTimeout(function () { $('#name-input').focus(); }, 60);
   }
 
-  function confirmName() {
-    if (!pending) return;
+  function saveTimerRecord() {
+    if (!pendingTimer) return;
 
     var name = $('#name-input').value.trim();
     if (!name) { $('#name-input').focus(); return; }
@@ -685,59 +1271,89 @@
     state.records.push({
       id: uid(),
       name: name,
-      start: pending.start,
-      end: pending.end,
-      duration: pending.duration,
+      start: pendingTimer.start,
+      end: pendingTimer.end,
+      duration: pendingTimer.duration,
+      pausedMs: pendingTimer.pausedMs || 0,
       createdAt: Date.now()
     });
 
     state.running = null;
-    pending = null;
+    pendingTimer = null;
     save();
 
     hideModal('#name-modal');
+    updateSuggestions();
     renderAll();
   }
 
-  function tick() {
+  function tickTimer() {
     if (!state.running) return;
-    var el = Date.now() - state.running.start;
+
+    var el = elapsedMs();
     $('#timer-clock').textContent = fmtClock(el);
-    $('#timer-state').textContent = el >= 86400000 ? '已超过 24 小时' : '计时中';
+
+    if (isPaused()) {
+      $('#timer-state').textContent = '已暂停';
+      $('#timer-state').classList.remove('active');
+      $('#timer-state').classList.add('paused');
+    } else {
+      $('#timer-state').textContent = el >= 86400000 ? '已超过 24 小时' : '计时中';
+      $('#timer-state').classList.add('active');
+      $('#timer-state').classList.remove('paused');
+    }
   }
 
-  /* ==================== 渲染：计时 ==================== */
   function renderTimer() {
     var running = !!state.running;
+    var paused = isPaused();
 
     $('#btn-start').hidden = running;
-    $('#btn-stop').hidden = !running;
+    $('#timer-actions').hidden = !running;
     $('#discard-row').hidden = !running;
 
     var st = $('#timer-state');
+    var pauseBtn = $('#btn-pause');
 
     if (running) {
-      st.classList.add('active');
-      $('#timer-hint').textContent = '开始于 ' + fmtDateTime(state.running.start);
-      tick();
+      if (paused) {
+        pauseBtn.textContent = '继续计时';
+        pauseBtn.className = 'btn resume';
+        $('#timer-hint').textContent = '已暂停 · 开始于 ' + fmtDateTime(state.running.start);
+        st.classList.remove('active');
+        st.classList.add('paused');
+        st.textContent = '已暂停';
+      } else {
+        pauseBtn.textContent = '暂停计时';
+        pauseBtn.className = 'btn pause';
+        $('#timer-hint').textContent = '开始于 ' + fmtDateTime(state.running.start);
+        st.classList.add('active');
+        st.classList.remove('paused');
+      }
+      tickTimer();
     } else {
-      st.classList.remove('active');
+      st.classList.remove('active', 'paused');
       st.textContent = '未开始';
       $('#timer-clock').textContent = '00:00:00';
       $('#timer-hint').textContent = '点击下方按钮开始计时';
     }
   }
 
-  function recordItemHTML(r) {
-    return '<li class="item" data-id="' + r.id + '">' +
+  /* ==================== 列表项 HTML ==================== */
+  function timerItemHTML(r) {
+    var pausedMs = r.pausedMs || 0;
+    var tags = '<span class="tag">' + fmtDateTime(r.start) + ' → ' + fmtTime(r.end) + '</span>';
+    if (pausedMs >= 1000) {
+      tags += '<span class="tag paused-tag">暂停 ' + fmtDurExact(pausedMs) + '</span>';
+    }
+
+    return '<li class="item" data-kind="timer" data-id="' + r.id + '">' +
       '<div class="content">' +
         '<div class="rec-top">' +
           '<span class="text">' + esc(r.name) + '</span>' +
           '<span class="rec-dur">' + fmtDurExact(r.duration) + '</span>' +
         '</div>' +
-        '<div class="meta">' +
-          '<span class="tag">' + fmtDateTime(r.start) + ' → ' + fmtTime(r.end) + '</span>' +
-        '</div>' +
+        '<div class="meta">' + tags + '</div>' +
       '</div>' +
       '<div class="actions">' +
         '<button class="icon del" type="button" title="删除">✕</button>' +
@@ -745,44 +1361,101 @@
     '</li>';
   }
 
-  function renderRecent() {
-    var recs = state.records.slice()
-      .sort(function (a, b) { return b.start - a.start; })
-      .slice(0, 5);
+  function checkinItemHTML(c) {
+    var tags = '<span class="tag ok">' + fmtDateFull(c.time) + '</span>';
+
+    if (c.makeup) {
+      tags += '<span class="tag makeup">补卡</span>';
+      if (c.createdAt && Math.abs(c.createdAt - c.time) > 60000) {
+        tags += '<span class="tag op-time">补卡于 ' + fmtDateTime(c.createdAt) + '</span>';
+      }
+    }
+
+    return '<li class="item" data-kind="checkin" data-id="' + c.id + '">' +
+      '<div class="content">' +
+        '<div class="rec-top">' +
+          '<span class="text">' + esc(c.name) + '</span>' +
+          '<span class="rec-dur checkin-time">' + fmtTimeSec(c.time) + '</span>' +
+        '</div>' +
+        '<div class="meta">' + tags + '</div>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="icon del" type="button" title="删除">✕</button>' +
+      '</div>' +
+    '</li>';
+  }
+
+  /* ==================== 渲染：首页 ==================== */
+  function renderHome() {
+    renderTimer();
+
+    var items = [];
+
+    state.checkins.forEach(function (c) {
+      var sortTs = c.makeup ? (c.createdAt || c.time) : c.time;
+      items.push({ ts: sortTs, kind: 'checkin', data: c });
+    });
+
+    state.records.forEach(function (r) {
+      items.push({ ts: r.end, kind: 'timer', data: r });
+    });
+
+    items.sort(function (a, b) { return b.ts - a.ts; });
+    items = items.slice(0, 8);
 
     var el = $('#recent-list');
-
-    if (!recs.length) {
-      el.innerHTML = '<li class="empty"><span class="emoji">🕐</span>还没有记录</li>';
+    if (!items.length) {
+      el.innerHTML = '<li class="empty"><span class="emoji">🕐</span>' +
+        '还没有记录，去打卡或开始计时吧</li>';
       return;
     }
-    el.innerHTML = recs.map(recordItemHTML).join('');
+
+    el.innerHTML = items.map(function (it) {
+      return it.kind === 'checkin' ? checkinItemHTML(it.data) : timerItemHTML(it.data);
+    }).join('');
   }
 
   /* ==================== 渲染：记录 ==================== */
   function renderRecords() {
     var q = searchQuery.trim().toLowerCase();
-
-    var recs = state.records.filter(function (r) {
-      return !q || r.name.toLowerCase().indexOf(q) >= 0;
-    }).sort(function (a, b) { return b.start - a.start; });
-
-    $('#record-count').textContent = recs.length + ' 条记录';
-
     var el = $('#record-list');
-    if (!recs.length) {
-      el.innerHTML = '<li class="empty"><span class="emoji">📭</span>' +
-        (q ? '没有匹配的记录' : '还没有记录，去「计时」开始第一条吧') + '</li>';
-      return;
+    var countEl = $('#record-count');
+
+    if (recType === 'timer') {
+      var recs = state.records.filter(function (r) {
+        return !q || r.name.toLowerCase().indexOf(q) >= 0;
+      }).sort(function (a, b) { return b.start - a.start; });
+
+      countEl.textContent = recs.length + ' 条计时记录';
+
+      if (!recs.length) {
+        el.innerHTML = '<li class="empty"><span class="emoji">⏱️</span>' +
+          (q ? '没有匹配的记录' : '还没有计时记录') + '</li>';
+        return;
+      }
+      el.innerHTML = recs.map(timerItemHTML).join('');
+
+    } else {
+      var chk = state.checkins.filter(function (c) {
+        return !q || c.name.toLowerCase().indexOf(q) >= 0;
+      }).sort(function (a, b) { return b.time - a.time; });
+
+      countEl.textContent = chk.length + ' 条打卡记录';
+
+      if (!chk.length) {
+        el.innerHTML = '<li class="empty"><span class="emoji">📍</span>' +
+          (q ? '没有匹配的记录' : '还没有打卡记录') + '</li>';
+        return;
+      }
+      el.innerHTML = chk.map(checkinItemHTML).join('');
     }
-    el.innerHTML = recs.map(recordItemHTML).join('');
   }
 
   /* ==================== 周期计算 ==================== */
   function startOfWeek(d) {
     var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    var day = x.getDay();                 // 0 = 周日
-    x.setDate(x.getDate() - ((day + 6) % 7));   // 周一为一周开始
+    var day = x.getDay();
+    x.setDate(x.getDate() - ((day + 6) % 7));
     return x;
   }
 
@@ -805,7 +1478,6 @@
     if (mode === 'week') {
       var s = p.start;
       var e = new Date(p.end.getFullYear(), p.end.getMonth(), p.end.getDate() - 1);
-
       if (s.getFullYear() !== e.getFullYear()) {
         return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' +
                e.getFullYear() + '年' + (e.getMonth() + 1) + '月' + e.getDate() + '日';
@@ -830,32 +1502,81 @@
     $('#stat-title').textContent = periodLabel(statMode, p);
     $('#stat-next').disabled = p.end.getTime() > Date.now();
 
-    var s = p.start.getTime();
-    var e = p.end.getTime();
+    $('#stats-timer').hidden = statType !== 'timer';
+    $('#stats-checkin').hidden = statType !== 'checkin';
+    $('#timer-picker').hidden = statType !== 'timer';
+    $('#checkin-picker').hidden = statType !== 'checkin';
+
+    if (statType === 'timer') renderTimerStats(p);
+    else renderCheckinStats(p);
+  }
+
+  function renderTimerStats(p) {
+    var s = p.start.getTime(), e = p.end.getTime();
 
     var recs = state.records.filter(function (r) {
       return r.start >= s && r.start < e;
     });
 
-    var totalMs = recs.reduce(function (sum, r) { return sum + r.duration; }, 0);
+    var nameSet = {};
+    recs.forEach(function (r) { nameSet[r.name] = 1; });
+    state.records.forEach(function (r) { nameSet[r.name] = 1; });
+    var names = Object.keys(nameSet).sort();
 
-    /* 按事项名称归组 */
+    var sel = $('#timer-name-select');
+    if (timerFilterName && names.indexOf(timerFilterName) < 0) timerFilterName = '';
+
+    sel.innerHTML = '<option value="">全部事项（各事项耗时）</option>' +
+      names.map(function (n) {
+        return '<option value="' + esc(n) + '"' +
+               (n === timerFilterName ? ' selected' : '') + '>' + esc(n) + '</option>';
+      }).join('');
+
+    var totalMs = recs.reduce(function (sum, r) { return sum + r.duration; }, 0);
+    var totalPaused = recs.reduce(function (sum, r) { return sum + (r.pausedMs || 0); }, 0);
+
+    var totalCard = $('#stat-total-card');
+    totalCard.hidden = !state.settings.showTotalCard;
+
+    $('#stat-total').textContent = fmtDur(totalMs);
+    $('#stat-count').textContent = recs.length;
+    $('#stat-names').textContent = Object.keys(
+      recs.reduce(function (m, r) { m[r.name] = 1; return m; }, {})
+    ).length;
+
+    if (totalPaused >= 1000) {
+      $('#stat-paused-dot').hidden = false;
+      $('#stat-paused').hidden = false;
+      $('#stat-paused').innerHTML = '暂停 <b>' + fmtDur(totalPaused) + '</b>';
+    } else {
+      $('#stat-paused-dot').hidden = true;
+      $('#stat-paused').hidden = true;
+    }
+
+    if (timerFilterName) {
+      $('#stats-timer-groups').hidden = true;
+      $('#stats-timer-trend').hidden = false;
+      renderTimerTrend(timerFilterName, p);
+    } else {
+      $('#stats-timer-groups').hidden = false;
+      $('#stats-timer-trend').hidden = true;
+      renderTimerGroups(recs, totalMs);
+    }
+  }
+
+  function renderTimerGroups(recs, totalMs) {
     var map = {};
     recs.forEach(function (r) {
-      if (!map[r.name]) map[r.name] = { name: r.name, count: 0, total: 0 };
+      if (!map[r.name]) map[r.name] = { name: r.name, count: 0, total: 0, paused: 0 };
       map[r.name].count++;
       map[r.name].total += r.duration;
+      map[r.name].paused += (r.pausedMs || 0);
     });
 
     var groups = Object.keys(map).map(function (k) { return map[k]; })
       .sort(function (a, b) { return b.total - a.total; });
 
-    $('#stat-total').textContent = fmtDur(totalMs);
-    $('#stat-count').textContent = recs.length;
-    $('#stat-names').textContent = groups.length;
-
     var gEl = $('#stat-groups');
-
     if (!groups.length) {
       gEl.innerHTML = '<div class="empty"><span class="emoji">📊</span>该周期暂无记录</div>';
       return;
@@ -878,21 +1599,391 @@
           '<span>' + g.count + ' 次</span>' +
           '<span>平均 ' + fmtDur(avg) + '</span>' +
           '<span>占比 ' + pct + '%</span>' +
+          (g.paused >= 1000 ? '<span>暂停 ' + fmtDur(g.paused) + '</span>' : '') +
         '</div>' +
       '</div>';
     }).join('');
   }
 
+  function aggregateTimer(name, mode, p) {
+    var s = p.start.getTime(), e = p.end.getTime();
+
+    var recs = state.records.filter(function (r) {
+      return r.name === name && r.start >= s && r.start < e;
+    });
+
+    var buckets = [];
+
+    if (mode === 'week') {
+      var weekNames = ['一', '二', '三', '四', '五', '六', '日'];
+      for (var i = 0; i < 7; i++) buckets.push({ label: weekNames[i], total: 0, count: 0 });
+      recs.forEach(function (r) {
+        var d = new Date(r.start);
+        var idx = Math.floor(
+          (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+           new Date(p.start.getFullYear(), p.start.getMonth(), p.start.getDate()).getTime()) / 86400000
+        );
+        if (idx >= 0 && idx < 7) {
+          buckets[idx].total += r.duration;
+          buckets[idx].count++;
+        }
+      });
+
+    } else if (mode === 'month') {
+      var days = new Date(p.start.getFullYear(), p.start.getMonth() + 1, 0).getDate();
+      for (var j = 1; j <= days; j++) buckets.push({ label: String(j), total: 0, count: 0 });
+      recs.forEach(function (r) {
+        var d = new Date(r.start);
+        var idx = d.getDate() - 1;
+        if (idx >= 0 && idx < days) {
+          buckets[idx].total += r.duration;
+          buckets[idx].count++;
+        }
+      });
+
+    } else {
+      for (var k = 0; k < 12; k++) buckets.push({ label: (k + 1) + '月', total: 0, count: 0 });
+      recs.forEach(function (r) {
+        var d = new Date(r.start);
+        buckets[d.getMonth()].total += r.duration;
+        buckets[d.getMonth()].count++;
+      });
+    }
+
+    var points = buckets.map(function (b) {
+      return { label: b.label, value: b.total, count: b.count };
+    });
+
+    var totalMs = recs.reduce(function (sum, r) { return sum + r.duration; }, 0);
+    var totalPaused = recs.reduce(function (sum, r) { return sum + (r.pausedMs || 0); }, 0);
+
+    return {
+      points: points,
+      count: recs.length,
+      total: totalMs,
+      paused: totalPaused,
+      avg: recs.length ? totalMs / recs.length : 0
+    };
+  }
+
+  function renderTimerTrend(name, p) {
+    var data = aggregateTimer(name, statMode, p);
+
+    var titleText = name + ' · 耗时趋势';
+    if (data.count) {
+      titleText += '（合计 ' + fmtDur(data.total) +
+        ' · 平均 ' + fmtDur(data.avg) + '）';
+    }
+    $('#timer-trend-title').textContent = titleText;
+
+    $('#timer-trend-legend').innerHTML =
+      '<span class="legend-dot"></span>' + esc(name) + ' · 每个时段的耗时合计';
+
+    requestAnimationFrame(function () {
+      drawTrend($('#timer-trend-canvas'), data.points, {
+        yFmt: fmtDurShort,
+        emptyText: '该周期暂无此事项的记录',
+        zeroBased: true
+      });
+    });
+  }
+
+  function getCheckinNames() {
+    var seen = {}, out = [];
+    state.checkins.slice()
+      .sort(function (a, b) { return b.time - a.time; })
+      .forEach(function (c) {
+        if (!seen[c.name]) { seen[c.name] = 1; out.push(c.name); }
+      });
+    return out;
+  }
+
+  function aggregateCheckin(name, mode, p) {
+    var s = p.start.getTime(), e = p.end.getTime();
+
+    var recs = state.checkins.filter(function (c) {
+      return c.name === name && c.time >= s && c.time < e;
+    });
+
+    var buckets = [];
+
+    if (mode === 'week') {
+      var weekNames = ['一', '二', '三', '四', '五', '六', '日'];
+      for (var i = 0; i < 7; i++) buckets.push({ label: weekNames[i], values: [] });
+      recs.forEach(function (c) {
+        var d = new Date(c.time);
+        var idx = Math.floor(
+          (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
+           new Date(p.start.getFullYear(), p.start.getMonth(), p.start.getDate()).getTime()) / 86400000
+        );
+        if (idx >= 0 && idx < 7) buckets[idx].values.push(secOfDay(c.time));
+      });
+
+    } else if (mode === 'month') {
+      var days = new Date(p.start.getFullYear(), p.start.getMonth() + 1, 0).getDate();
+      for (var j = 1; j <= days; j++) buckets.push({ label: String(j), values: [] });
+      recs.forEach(function (c) {
+        var d = new Date(c.time);
+        var idx = d.getDate() - 1;
+        if (idx >= 0 && idx < days) buckets[idx].values.push(secOfDay(c.time));
+      });
+
+    } else {
+      for (var k = 0; k < 12; k++) buckets.push({ label: (k + 1) + '月', values: [] });
+      recs.forEach(function (c) {
+        var d = new Date(c.time);
+        buckets[d.getMonth()].values.push(secOfDay(c.time));
+      });
+    }
+
+    var points = buckets.map(function (b) {
+      var v = b.values.length
+        ? b.values.reduce(function (a, x) { return a + x; }, 0) / b.values.length
+        : null;
+      return { label: b.label, value: v, count: b.values.length };
+    });
+
+    var allVals = recs.map(function (c) { return secOfDay(c.time); });
+
+    var avg = allVals.length
+      ? allVals.reduce(function (a, x) { return a + x; }, 0) / allVals.length
+      : 0;
+
+    return {
+      points: points,
+      count: recs.length,
+      avg: avg,
+      min: allVals.length ? Math.min.apply(null, allVals) : 0,
+      max: allVals.length ? Math.max.apply(null, allVals) : 0
+    };
+  }
+
+  function renderCheckinStats(p) {
+    var names = getCheckinNames();
+    var sel = $('#checkin-name-select');
+
+    if (!names.length) {
+      sel.innerHTML = '<option>暂无打卡事项</option>';
+      sel.disabled = true;
+
+      $('#chk-count').textContent = '0 次';
+      $('#chk-summary').innerHTML = '<span>还没有打卡记录</span>';
+      $('#chart-legend').innerHTML = '';
+
+      requestAnimationFrame(function () {
+        drawTrend($('#trend-canvas'), [], { yFmt: secToHM, emptyText: '该周期暂无打卡数据' });
+      });
+      return;
+    }
+
+    sel.disabled = false;
+    if (!checkinName || names.indexOf(checkinName) < 0) checkinName = names[0];
+
+    sel.innerHTML = names.map(function (n) {
+      return '<option value="' + esc(n) + '"' +
+             (n === checkinName ? ' selected' : '') + '>' + esc(n) + '</option>';
+    }).join('');
+
+    var data = aggregateCheckin(checkinName, statMode, p);
+
+    $('#chk-count').textContent = data.count + ' 次';
+
+    if (data.count === 0) {
+      $('#chk-summary').innerHTML = '<span>该周期暂无记录</span>';
+    } else {
+      $('#chk-summary').innerHTML =
+        '<span>平均 <b>' + secToHMS(data.avg) + '</b></span>' +
+        '<span class="dot">·</span>' +
+        '<span>最早 <b>' + secToHMS(data.min) + '</b></span>' +
+        '<span class="dot">·</span>' +
+        '<span>最晚 <b>' + secToHMS(data.max) + '</b></span>';
+    }
+
+    $('#chart-legend').innerHTML =
+      '<span class="legend-dot"></span>' + esc(checkinName) + ' · 平均打卡时间趋势';
+
+    requestAnimationFrame(function () {
+      drawTrend($('#trend-canvas'), data.points, {
+        yFmt: secToHM,
+        emptyText: '该周期暂无打卡数据'
+      });
+    });
+  }
+
+  /* ==================== 通用趋势图绘制 ==================== */
+  function drawTrend(canvas, points, opts) {
+    if (!canvas) return;
+
+    opts = opts || {};
+    var yFmt = opts.yFmt || function (v) { return String(v); };
+    var emptyText = opts.emptyText || '该周期暂无数据';
+
+    var dpr = window.devicePixelRatio || 1;
+    var W = canvas.clientWidth || 320;
+    var H = 200;
+
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    var cs = getComputedStyle(document.documentElement);
+    function v(name, fb) {
+      var x = cs.getPropertyValue(name).trim();
+      return x || fb;
+    }
+    var cMuted = v('--muted', '#8a91a6');
+    var cBorder = v('--border', '#e6e8f0');
+    var cPrimary = v('--primary', '#4f6ef7');
+    var cCard = v('--card', '#ffffff');
+
+    var padL = 50, padR = 12, padT = 16, padB = 26;
+    var plotW = W - padL - padR;
+    var plotH = H - padT - padB;
+
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif';
+
+    var hasAny = points.some(function (p) { return p.value != null; });
+    if (!hasAny) {
+      ctx.fillStyle = cMuted;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emptyText, W / 2, H / 2);
+      return;
+    }
+
+    var vals = points
+      .filter(function (p) { return p.value != null; })
+      .map(function (p) { return p.value; });
+
+    var min, max;
+
+    if (opts.zeroBased) {
+      min = 0;
+      var maxVal = Math.max.apply(null, vals.concat([0]));
+      if (maxVal <= 0) maxVal = 1000;
+
+      var steps = [
+        1000, 2000, 5000, 10000, 15000, 30000,
+        60000, 120000, 300000, 600000, 900000, 1800000,
+        3600000, 7200000, 14400000, 21600000, 43200000, 86400000
+      ];
+      var rawStep = maxVal / 4;
+      var step = steps[steps.length - 1];
+      for (var si = 0; si < steps.length; si++) {
+        if (rawStep <= steps[si]) { step = steps[si]; break; }
+      }
+
+      max = Math.ceil(maxVal / step) * step;
+      if (max === 0) max = step;
+    } else {
+      min = Math.min.apply(null, vals);
+      max = Math.max.apply(null, vals);
+      var minSpan = typeof opts.minSpan === 'number' ? opts.minSpan : 1800;
+
+      if (max - min < minSpan) {
+        var mid = (min + max) / 2;
+        min = mid - minSpan / 2;
+        max = mid + minSpan / 2;
+      } else {
+        var pad = (max - min) * 0.18;
+        min -= pad;
+        max += pad;
+      }
+      min = Math.max(0, min);
+      max = Math.min(86400, max);
+      if (max - min < 60) max = min + 60;
+    }
+
+    function yOf(val) {
+      return padT + plotH - ((val - min) / (max - min)) * plotH;
+    }
+    function xOf(i) {
+      if (points.length === 1) return padL + plotW / 2;
+      return padL + (i / (points.length - 1)) * plotW;
+    }
+
+    var ticks = 4;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    for (var i = 0; i <= ticks; i++) {
+      var val = min + (max - min) * (i / ticks);
+      var y = yOf(val);
+
+      ctx.strokeStyle = cBorder;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, Math.round(y) + 0.5);
+      ctx.lineTo(W - padR, Math.round(y) + 0.5);
+      ctx.stroke();
+
+      ctx.fillStyle = cMuted;
+      ctx.fillText(yFmt(val), padL - 8, y);
+    }
+
+    ctx.strokeStyle = cPrimary;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+
+    var started = false;
+    points.forEach(function (pt, idx) {
+      if (pt.value == null) { started = false; return; }
+      var x = xOf(idx), y = yOf(pt.value);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    points.forEach(function (pt, idx) {
+      if (pt.value == null) return;
+      var x = xOf(idx), y = yOf(pt.value);
+
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = cPrimary;
+      ctx.fill();
+      ctx.strokeStyle = cCard;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    ctx.fillStyle = cMuted;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    var maxLabels = Math.max(2, Math.floor(plotW / 34));
+    var stepX = Math.ceil(points.length / maxLabels);
+
+    points.forEach(function (pt, idx) {
+      if (idx % stepX !== 0 && idx !== points.length - 1) return;
+      ctx.fillText(pt.label, xOf(idx), padT + plotH + 8);
+    });
+  }
+
+  /* ==================== 渲染：设置页 ==================== */
+  function renderSettings() {
+    $('#set-show-total').checked = !!state.settings.showTotalCard;
+
+    var totalMs = state.records.reduce(function (s, r) { return s + r.duration; }, 0);
+    var makeupCount = state.checkins.filter(function (c) { return c.makeup; }).length;
+
+    $('#data-summary').textContent =
+      state.records.length + ' 条计时记录（合计 ' + fmtDur(totalMs) + '） · ' +
+      state.checkins.length + ' 条打卡记录' +
+      (makeupCount ? '（含 ' + makeupCount + ' 条补卡）' : '');
+  }
+
   /* ==================== 统一渲染 ==================== */
   function renderAll() {
-    if (activeTab === 'timer') {
-      renderTimer();
-      renderRecent();
-    } else if (activeTab === 'records') {
-      renderRecords();
-    } else {
-      renderStats();
-    }
+    if (activeTab === 'home') renderHome();
+    else if (activeTab === 'records') renderRecords();
+    else if (activeTab === 'stats') renderStats();
+    else renderSettings();
   }
 
   function switchTab(tab) {
@@ -900,21 +1991,180 @@
     $$('.tab').forEach(function (b) {
       b.classList.toggle('active', b.dataset.tab === tab);
     });
-    $('#view-timer').hidden = tab !== 'timer';
+    $('#view-home').hidden = tab !== 'home';
     $('#view-records').hidden = tab !== 'records';
     $('#view-stats').hidden = tab !== 'stats';
+    $('#view-settings').hidden = tab !== 'settings';
+
     renderAll();
   }
 
-  /* ==================== 事件 ==================== */
+  /* ==================== 导出 / 导入 ==================== */
+  function exportData() {
+    var payload = {
+      app: 'time-tracker',
+      version: 3,
+      exportedAt: new Date().toISOString(),
+      running: state.running,
+      records: state.records,
+      checkins: state.checkins,
+      settings: state.settings
+    };
+
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'time-tracker-' + todayStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    toast('已导出备份文件');
+  }
+
+  function importData(json) {
+    if (!json || typeof json !== 'object') throw new Error('bad');
+
+    var inRecords = Array.isArray(json.records) ? json.records : [];
+    var inCheckins = Array.isArray(json.checkins) ? json.checkins : [];
+    var inSettings = json.settings;
+
+    var existRec = {}, existChk = {};
+    state.records.forEach(function (r) { existRec[r.id] = 1; });
+    state.checkins.forEach(function (c) { existChk[c.id] = 1; });
+
+    var addRec = 0, addChk = 0;
+
+    inRecords.forEach(function (r) {
+      if (r && r.id && !existRec[r.id] &&
+          typeof r.start === 'number' && typeof r.end === 'number' && r.name) {
+        if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
+        state.records.push(r);
+        existRec[r.id] = 1;
+        addRec++;
+      }
+    });
+
+    inCheckins.forEach(function (c) {
+      if (c && c.id && !existChk[c.id] &&
+          typeof c.time === 'number' && c.name) {
+        state.checkins.push(c);
+        existChk[c.id] = 1;
+        addChk++;
+      }
+    });
+
+    if (inSettings && typeof inSettings === 'object') {
+      state.settings = Object.assign({}, state.settings, inSettings);
+    }
+
+    save();
+    return { records: addRec, checkins: addChk };
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+
+    var reader = new FileReader();
+
+    reader.onload = async function (ev) {
+      var json;
+      try {
+        json = JSON.parse(ev.target.result);
+      } catch (err) {
+        toast('文件解析失败，请确认是导出的 JSON 文件');
+        return;
+      }
+
+      var ok = await confirmDialog(
+        '将文件中的数据与现有记录合并。\n相同 ID 的记录会自动跳过，不会重复。\n\n确定导入？',
+        '导入');
+      if (!ok) return;
+
+      var res;
+      try {
+        res = importData(json);
+      } catch (err) {
+        toast('数据格式不正确，导入失败');
+        return;
+      }
+
+      updateSuggestions();
+      renderAll();
+      toast('导入完成：新增 ' + res.records + ' 条计时、' + res.checkins + ' 条打卡');
+    };
+
+    reader.onerror = function () { toast('文件读取失败'); };
+    reader.readAsText(file);
+  }
+
+  /* ==================== 事件绑定 ==================== */
   function bindEvents() {
-    /* 标签切换 */
+
     $$('.tab').forEach(function (btn) {
       btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
     });
 
-    /* 计时按钮 */
+    $$('.seg').forEach(function (seg) {
+      seg.addEventListener('click', function (e) {
+        var btn = e.target.closest('.seg-btn');
+        if (!btn) return;
+
+        seg.querySelectorAll('.seg-btn').forEach(function (b) {
+          b.classList.toggle('active', b === btn);
+        });
+
+        var g = seg.dataset.group;
+        var val = btn.dataset.value;
+
+        if (g === 'rtype') { recType = val; renderRecords(); }
+        else if (g === 'stype') { statType = val; renderStats(); }
+        else if (g === 'mode') { statMode = val; renderStats(); }
+      });
+    });
+
+    $('#btn-checkin').addEventListener('click', openCheckinModal);
+    $('#checkin-ok').addEventListener('click', saveCheckin);
+    $('#checkin-cancel').addEventListener('click', function () {
+      pendingCheckin = null;
+      hideModal('#checkin-modal');
+    });
+    $('#checkin-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'checkin-modal') {
+        pendingCheckin = null;
+        hideModal('#checkin-modal');
+      }
+    });
+    $('#checkin-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveCheckin(); }
+    });
+
+    $('#btn-makeup').addEventListener('click', openMakeupModal);
+    $('#makeup-ok').addEventListener('click', saveMakeup);
+    $('#makeup-cancel').addEventListener('click', function () {
+      hideModal('#makeup-modal');
+    });
+    $('#makeup-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'makeup-modal') hideModal('#makeup-modal');
+    });
+    $('#makeup-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveMakeup(); }
+    });
+    $('#makeup-time').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveMakeup(); }
+    });
+
     $('#btn-start').addEventListener('click', startTimer);
+
+    $('#btn-pause').addEventListener('click', function () {
+      if (!state.running) return;
+      if (isPaused()) resumeTimer();
+      else pauseTimer();
+    });
+
     $('#btn-stop').addEventListener('click', openStopModal);
 
     $('#btn-discard').addEventListener('click', async function () {
@@ -925,23 +2175,21 @@
       renderTimer();
     });
 
-    /* 名称弹窗 */
-    $('#name-ok').addEventListener('click', confirmName);
+    $('#name-ok').addEventListener('click', saveTimerRecord);
     $('#name-cancel').addEventListener('click', function () {
-      pending = null;
+      pendingTimer = null;
       hideModal('#name-modal');
     });
     $('#name-modal').addEventListener('click', function (e) {
       if (e.target.id === 'name-modal') {
-        pending = null;
+        pendingTimer = null;
         hideModal('#name-modal');
       }
     });
     $('#name-input').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); confirmName(); }
+      if (e.key === 'Enter') { e.preventDefault(); saveTimerRecord(); }
     });
 
-    /* 确认弹窗 */
     $('#confirm-ok').addEventListener('click', function () { resolveConfirm(true); });
     $('#confirm-cancel').addEventListener('click', function () { resolveConfirm(false); });
     $('#confirm-modal').addEventListener('click', function (e) {
@@ -950,12 +2198,20 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
-      if (!$('#confirm-modal').hidden) resolveConfirm(false);
-      if (!$('#name-modal').hidden) { pending = null; hideModal('#name-modal'); }
+      if (!$('#confirm-modal').hidden) { resolveConfirm(false); return; }
+      if (!$('#checkin-modal').hidden) {
+        pendingCheckin = null;
+        hideModal('#checkin-modal');
+        return;
+      }
+      if (!$('#makeup-modal').hidden) { hideModal('#makeup-modal'); return; }
+      if (!$('#name-modal').hidden) {
+        pendingTimer = null;
+        hideModal('#name-modal');
+      }
     });
 
-    /* 删除记录 */
-    async function onRecordClick(e) {
+    async function onDelete(e) {
       var del = e.target.closest('.del');
       if (!del) return;
 
@@ -963,40 +2219,51 @@
       if (!li) return;
 
       var id = li.dataset.id;
-      var r = state.records.filter(function (x) { return x.id === id; })[0];
-      if (!r) return;
+      var kind = li.dataset.kind;
 
-      var ok = await confirmDialog(
-        '删除记录「' + r.name + '」？\n耗时 ' + fmtDurExact(r.duration) + '，删除后无法恢复。',
-        '删除');
-      if (!ok) return;
+      if (kind === 'timer') {
+        var r = state.records.filter(function (x) { return x.id === id; })[0];
+        if (!r) return;
+        var ok1 = await confirmDialog(
+          '删除计时记录「' + r.name + '」？\n耗时 ' + fmtDurExact(r.duration) + '，删除后无法恢复。',
+          '删除');
+        if (!ok1) return;
+        state.records = state.records.filter(function (x) { return x.id !== id; });
 
-      state.records = state.records.filter(function (x) { return x.id !== id; });
+      } else {
+        var c = state.checkins.filter(function (x) { return x.id === id; })[0];
+        if (!c) return;
+        var ok2 = await confirmDialog(
+          '删除' + (c.makeup ? '补卡' : '打卡') + '记录「' + c.name + '」？\n时间 ' +
+          fmtDateFull(c.time) + ' ' + fmtTimeSec(c.time) + '，删除后无法恢复。',
+          '删除');
+        if (!ok2) return;
+        state.checkins = state.checkins.filter(function (x) { return x.id !== id; });
+      }
+
       save();
+      updateSuggestions();
       renderAll();
     }
 
-    $('#recent-list').addEventListener('click', onRecordClick);
-    $('#record-list').addEventListener('click', onRecordClick);
+    $('#recent-list').addEventListener('click', onDelete);
+    $('#record-list').addEventListener('click', onDelete);
 
-    /* 搜索 */
     $('#record-search').addEventListener('input', function (e) {
       searchQuery = e.target.value;
       renderRecords();
     });
 
-    /* 统计：模式 */
-    $$('.seg-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        statMode = btn.dataset.mode;
-        $$('.seg-btn').forEach(function (b) {
-          b.classList.toggle('active', b === btn);
-        });
-        renderStats();
-      });
+    $('#timer-name-select').addEventListener('change', function (e) {
+      timerFilterName = e.target.value;
+      renderTimerStats(getPeriod(statMode, statBase));
     });
 
-    /* 统计：周期导航 */
+    $('#checkin-name-select').addEventListener('change', function (e) {
+      checkinName = e.target.value;
+      renderCheckinStats(getPeriod(statMode, statBase));
+    });
+
     $('#stat-prev').addEventListener('click', function () {
       var p = getPeriod(statMode, statBase);
       statBase = new Date(p.start.getTime() - 1);
@@ -1009,22 +2276,78 @@
       statBase = new Date(p.end.getTime());
       renderStats();
     });
+
+    $('#set-show-total').addEventListener('change', function (e) {
+      state.settings.showTotalCard = e.target.checked;
+      save();
+      toast(e.target.checked ? '已显示总时长卡片' : '已隐藏总时长卡片');
+    });
+
+    $('#btn-export').addEventListener('click', exportData);
+
+    $('#btn-import').addEventListener('click', function () {
+      $('#file-input').click();
+    });
+
+    $('#file-input').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      if (f) handleFile(f);
+      e.target.value = '';
+    });
+
+    $('#btn-reset').addEventListener('click', async function () {
+      var ok = await confirmDialog(
+        '确定清空全部数据？\n所有计时记录、打卡记录都会被删除，且无法恢复。\n\n建议先导出备份。',
+        '清空');
+      if (!ok) return;
+
+      state = {
+        running: null,
+        records: [],
+        checkins: [],
+        settings: { showTotalCard: true }
+      };
+      try { localStorage.removeItem(KEY); } catch (e2) { /* 忽略 */ }
+      save();
+
+      updateSuggestions();
+      renderAll();
+      toast('已清空全部数据');
+    });
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        if (activeTab === 'stats') {
+          if (statType === 'checkin') {
+            renderCheckinStats(getPeriod(statMode, statBase));
+          } else if (timerFilterName) {
+            renderTimerTrend(timerFilterName, getPeriod(statMode, statBase));
+          }
+        }
+      }, 180);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        tickClock();
+        if (state.running && activeTab === 'home') tickTimer();
+      }
+    });
   }
 
   /* ==================== 启动 ==================== */
   load();
   bindEvents();
-  switchTab('timer');
+  updateSuggestions();
+  tickClock();
+  switchTab('home');
 
-  // 计时刷新（250ms 一次，足够流畅且开销极小）
+  setInterval(tickClock, 250);
   setInterval(function () {
-    if (state.running && activeTab === 'timer') tick();
+    if (state.running && !isPaused() && activeTab === 'home') tickTimer();
   }, 250);
-
-  // 页面重新可见时立即刷新显示
-  document.addEventListener('visibilitychange', function () {
-    if (!document.hidden && state.running && activeTab === 'timer') tick();
-  });
 
 })();
 </script>
