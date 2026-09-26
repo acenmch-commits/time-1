@@ -20,11 +20,14 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Clean
+        run: rm -rf node_modules android
+
       - name: Prepare Web Dir
         run: |
           mkdir -p www
           if [ ! -f www/index.html ]; then
-            echo "<h1>Time Tracker</h1><p>Please upload index.html to www folder</p>" > www/index.html
+            echo "<h1>Time Tracker</h1>" > www/index.html
           fi
 
       - name: Install deps
@@ -37,13 +40,61 @@ jobs:
         run: |
           sed -i "/defaultConfig {/a\\        ndk { abiFilters 'arm64-v8a' }" android/app/build.gradle
 
+      - name: Set version code from run number
+        run: |
+          sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+
+      - name: Decode keystore
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+          ls -la android/app/release.keystore
+
+      - name: Inject signing config
+        run: |
+          python3 - <<'PY'
+          path = 'android/app/build.gradle'
+          with open(path, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          signing_block = """
+              signingConfigs {
+                  release {
+                      storeFile file('release.keystore')
+                      storePassword '123456'
+                      keyAlias 'timetracker'
+                      keyPassword '123456'
+                  }
+              }
+          """
+
+          idx = content.find('android {')
+          if idx < 0:
+              raise SystemExit('android block not found')
+          insert_at = content.find('\n', idx) + 1
+          content = content[:insert_at] + signing_block + content[insert_at:]
+
+          content = content.replace(
+              'release {\n            minifyEnabled',
+              "release {\n            signingConfig signingConfigs.release\n            minifyEnabled"
+          )
+
+          with open(path, 'w', encoding='utf-8') as f:
+              f.write(content)
+          print('signing config injected')
+          PY
+
       - name: Sync
         run: npx cap sync android
 
-      - name: Build debug APK
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - name: Build release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       - uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: app-release
+          path: android/app/build/outputs/apk/release/app-release.apk
