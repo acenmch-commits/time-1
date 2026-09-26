@@ -745,7 +745,7 @@
 
       <div class="card data-card">
         <h3>导出备份</h3>
-        <p>将全部计时记录、打卡记录与设置导出为 JSON 文件。建议定期导出并保存到云盘，避免浏览器数据被清理后丢失。</p>
+        <p>将全部计时记录、打卡记录与设置导出为 JSON 文件。在 App 中会弹出系统分享面板，可选择保存位置。</p>
         <div class="row">
           <button class="btn" id="btn-export" type="button">导出 JSON</button>
         </div>
@@ -932,7 +932,6 @@
     return sec + '秒';
   }
 
-  /* 趋势图 Y 轴紧凑格式：秒 / m:ss / h m */
   function fmtDurShort(ms) {
     var s = Math.round(ms / 1000);
     if (s < 60) return s + 's';
@@ -1999,8 +1998,8 @@
     renderAll();
   }
 
-  /* ==================== 导出 / 导入 ==================== */
-  function exportData() {
+  /* ==================== 导出（原生） ==================== */
+  async function exportData() {
     var payload = {
       app: 'time-tracker',
       version: 3,
@@ -2011,18 +2010,102 @@
       settings: state.settings
     };
 
-    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    var url = URL.createObjectURL(blob);
+    var json = JSON.stringify(payload, null, 2);
+    var fileName = 'time-tracker-' + todayStr() + '.json';
 
+    var isNative = window.Capacitor && Capacitor.isNativePlatform();
+
+    if (isNative) {
+      try {
+        var Filesystem = Capacitor.Plugins.Filesystem;
+        var Share = Capacitor.Plugins.Share;
+
+        var res = await Filesystem.writeFile({
+          path: fileName,
+          data: json,
+          directory: 'CACHE',
+          encoding: 'utf8'
+        });
+
+        await Share.share({
+          title: '时间记录备份',
+          text: '选择保存位置或分享到云盘',
+          url: res.uri,
+          dialogTitle: '导出备份'
+        });
+
+        toast('请选择保存位置');
+      } catch (e) {
+        toast('导出失败：' + (e.message || e));
+      }
+      return;
+    }
+
+    // 浏览器降级方案
+    var blob = new Blob([json], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'time-tracker-' + todayStr() + '.json';
+    a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
     toast('已导出备份文件');
+  }
+
+  /* ==================== 导入（原生） ==================== */
+  async function pickAndImport() {
+    var isNative = window.Capacitor && Capacitor.isNativePlatform();
+
+    if (!isNative) {
+      $('#file-input').click();
+      return;
+    }
+
+    try {
+      var FilePicker = Capacitor.Plugins.FilePicker;
+
+      var picked = await FilePicker.pickFiles({
+        types: ['application/json'],
+        readData: true
+      });
+
+      if (!picked || !picked.files || !picked.files.length) return;
+
+      var file = picked.files[0];
+      var content = '';
+
+      if (file.data) {
+        var bin = atob(file.data);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        content = new TextDecoder('utf-8').decode(bytes);
+      } else {
+        toast('无法读取文件内容');
+        return;
+      }
+
+      var json;
+      try {
+        json = JSON.parse(content);
+      } catch (err) {
+        toast('文件解析失败，请确认是导出的 JSON 文件');
+        return;
+      }
+
+      var ok = await confirmDialog(
+        '将文件中的数据与现有记录合并。\n相同 ID 的记录会自动跳过，不会重复。\n\n确定导入？',
+        '导入');
+      if (!ok) return;
+
+      var res = importData(json);
+      updateSuggestions();
+      renderAll();
+      toast('导入完成：新增 ' + res.records + ' 条计时、' + res.checkins + ' 条打卡');
+    } catch (e) {
+      toast('导入失败：' + (e.message || e));
+    }
   }
 
   function importData(json) {
@@ -2285,9 +2368,7 @@
 
     $('#btn-export').addEventListener('click', exportData);
 
-    $('#btn-import').addEventListener('click', function () {
-      $('#file-input').click();
-    });
+    $('#btn-import').addEventListener('click', pickAndImport);
 
     $('#file-input').addEventListener('change', function (e) {
       var f = e.target.files && e.target.files[0];
