@@ -3,82 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#4f6ef7">
-<title>时间记录 · 打卡 · 计时</title>
+<meta name="theme-color" content="#007AFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>时间记录</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; }
 
   :root {
     color-scheme: light dark;
 
-    /* 玻璃质感变量（浅色） */
-    --glass-bg: rgba(255, 255, 255, 0.62);
-    --glass-bg-strong: rgba(255, 255, 255, 0.78);
-    --glass-border: rgba(255, 255, 255, 0.85);
-    --glass-shadow:
-      0 8px 32px rgba(24, 32, 64, 0.08),
-      0 1px 2px rgba(24, 32, 64, 0.04),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    /* ==== Apple System Colors ==== */
+    --blue: #007AFF;
+    --blue-dark: #0A84FF;
+    --green: #34C759;
+    --green-dark: #30D158;
+    --red: #FF3B30;
+    --red-dark: #FF453A;
+    --orange: #FF9500;
+    --orange-dark: #FF9F0A;
+    --yellow: #FFCC00;
+    --yellow-dark: #FFD60A;
+    --indigo: #5856D6;
+    --indigo-dark: #5E5CE6;
+    --pink: #FF2D55;
+    --teal: #5AC8FA;
+    --gray: #8E8E93;
 
-    --text: #1a1d2b;
-    --muted: #6a7185;
-    --border: rgba(255, 255, 255, 0.6);
-    --primary: #4f6ef7;
-    --primary-soft: rgba(79, 110, 247, 0.14);
-    --danger: #ef4757;
-    --ok: #22b07d;
-    --pause: #f59e0b;
-    --warn: #c07d0a;
+    /* ==== System Grays ==== */
+    --system-bg: #F2F2F7;
+    --system-bg-elev: #FFFFFF;
+    --system-bg-elev-2: #F9F9FB;
+    --system-gray-5: #E5E5EA;
+    --system-gray-4: #D1D1D6;
+    --system-gray-3: #C7C7CC;
 
-    --tag-bg: rgba(255, 255, 255, 0.55);
-    --tag-danger: rgba(239, 71, 87, 0.14);
-    --tag-info: rgba(79, 110, 247, 0.14);
-    --tag-ok: rgba(34, 176, 125, 0.16);
-    --tag-warn: rgba(245, 158, 11, 0.16);
+    --label: #000000;
+    --label-2: rgba(60, 60, 67, 0.6);
+    --label-3: rgba(60, 60, 67, 0.3);
+    --label-4: rgba(60, 60, 67, 0.18);
+    --separator: rgba(60, 60, 67, 0.12);
+    --fill-primary: rgba(120, 120, 128, 0.12);
+    --fill-secondary: rgba(120, 120, 128, 0.08);
+    --fill-tertiary: rgba(120, 120, 128, 0.06);
 
-    --field-bg: rgba(255, 255, 255, 0.55);
-    --field-border: rgba(255, 255, 255, 0.8);
+    /* ==== Glass Layers ==== */
+    --glass-1: rgba(255, 255, 255, 0.72);
+    --glass-2: rgba(255, 255, 255, 0.86);
+    --glass-stroke: rgba(255, 255, 255, 0.7);
+    --glass-stroke-outer: rgba(0, 0, 0, 0.04);
 
-    --radius: 20px;
-    --radius-sm: 14px;
-    --blur: 22px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.06), 0 20px 60px rgba(0, 0, 0, 0.12);
 
-    /* 顺滑缓动曲线：在 120Hz 屏上更细腻 */
-    --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-    --dur-fast: 220ms;
-    --dur-base: 340ms;
-    --dur-slow: 460ms;
+    /* ==== Radii ==== */
+    --radius-sm: 12px;
+    --radius: 18px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    /* ==== Motion ==== */
+    --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    --dur-1: 180ms;
+    --dur-2: 280ms;
+    --dur-3: 420ms;
+    --dur-4: 600ms;
+
+    --blur: 30px;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --glass-bg: rgba(28, 32, 44, 0.58);
-      --glass-bg-strong: rgba(30, 34, 46, 0.78);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --glass-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.4),
-        0 1px 2px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      --blue: #0A84FF;
+      --green: #30D158;
+      --red: #FF453A;
+      --orange: #FF9F0A;
+      --yellow: #FFD60A;
+      --indigo: #5E5CE6;
+      --gray: #98989D;
 
-      --text: #e9ebf2;
-      --muted: #8b93a8;
-      --border: rgba(255, 255, 255, 0.06);
-      --primary: #7c93ff;
-      --primary-soft: rgba(124, 147, 255, 0.18);
-      --danger: #ff6b7a;
-      --ok: #3ecf9a;
-      --pause: #fbbf24;
-      --warn: #e8b04b;
+      --system-bg: #000000;
+      --system-bg-elev: #1C1C1E;
+      --system-bg-elev-2: #2C2C2E;
+      --system-gray-5: #2C2C2E;
+      --system-gray-4: #3A3A3C;
+      --system-gray-3: #48484A;
 
-      --tag-bg: rgba(255, 255, 255, 0.06);
-      --tag-danger: rgba(255, 107, 122, 0.16);
-      --tag-info: rgba(124, 147, 255, 0.16);
-      --tag-ok: rgba(62, 207, 154, 0.16);
-      --tag-warn: rgba(251, 191, 36, 0.16);
+      --label: #FFFFFF;
+      --label-2: rgba(235, 235, 245, 0.6);
+      --label-3: rgba(235, 235, 245, 0.3);
+      --label-4: rgba(235, 235, 245, 0.18);
+      --separator: rgba(84, 84, 88, 0.6);
+      --fill-primary: rgba(120, 120, 128, 0.24);
+      --fill-secondary: rgba(120, 120, 128, 0.18);
+      --fill-tertiary: rgba(120, 120, 128, 0.12);
 
-      --field-bg: rgba(255, 255, 255, 0.05);
-      --field-border: rgba(255, 255, 255, 0.08);
+      --glass-1: rgba(28, 28, 30, 0.72);
+      --glass-2: rgba(28, 28, 30, 0.88);
+      --glass-stroke: rgba(255, 255, 255, 0.08);
+      --glass-stroke-outer: rgba(255, 255, 255, 0.04);
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.4), 0 20px 60px rgba(0, 0, 0, 0.5);
     }
   }
 
@@ -88,271 +119,343 @@
 
   body {
     margin: 0;
-    padding: 28px 16px 72px;
+    padding: max(28px, env(safe-area-inset-top)) 16px calc(72px + env(safe-area-inset-bottom));
     min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+                 "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    font-size: 17px;
+    line-height: 1.47;
+    letter-spacing: -0.022em;
+    color: var(--label);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "cv01", "tnum";
 
-    /* 苹果风格的多层渐变背景，衬托玻璃质感 */
-    background:
-      radial-gradient(circle at 12% 8%, rgba(120, 145, 255, 0.32), transparent 42%),
-      radial-gradient(circle at 88% 12%, rgba(130, 210, 255, 0.28), transparent 46%),
-      radial-gradient(circle at 20% 88%, rgba(180, 160, 255, 0.26), transparent 46%),
-      radial-gradient(circle at 92% 92%, rgba(120, 200, 220, 0.22), transparent 42%),
-      linear-gradient(180deg, #eef1f8 0%, #e8ecf4 100%);
+    background-color: var(--system-bg);
+    background-image:
+      radial-gradient(60% 40% at 12% 2%, rgba(0, 122, 255, 0.20), transparent 60%),
+      radial-gradient(50% 40% at 92% 8%, rgba(90, 200, 250, 0.20), transparent 55%),
+      radial-gradient(60% 50% at 15% 90%, rgba(88, 86, 214, 0.16), transparent 60%),
+      radial-gradient(55% 45% at 90% 92%, rgba(255, 45, 85, 0.10), transparent 60%);
     background-attachment: fixed;
+    background-repeat: no-repeat;
   }
 
   @media (prefers-color-scheme: dark) {
     body {
-      background:
-        radial-gradient(circle at 12% 8%, rgba(90, 110, 220, 0.24), transparent 42%),
-        radial-gradient(circle at 88% 12%, rgba(100, 160, 200, 0.2), transparent 46%),
-        radial-gradient(circle at 20% 88%, rgba(130, 110, 200, 0.2), transparent 46%),
-        radial-gradient(circle at 92% 92%, rgba(80, 140, 160, 0.18), transparent 42%),
-        linear-gradient(180deg, #0b0d14 0%, #12151e 100%);
-      background-attachment: fixed;
+      background-image:
+        radial-gradient(60% 40% at 12% 2%, rgba(10, 132, 255, 0.22), transparent 60%),
+        radial-gradient(50% 40% at 92% 8%, rgba(90, 200, 250, 0.16), transparent 55%),
+        radial-gradient(60% 50% at 15% 90%, rgba(94, 92, 230, 0.18), transparent 60%),
+        radial-gradient(55% 45% at 90% 92%, rgba(255, 69, 58, 0.10), transparent 60%);
     }
   }
 
-  .app { max-width: 640px; margin: 0 auto; }
+  .app { max-width: 660px; margin: 0 auto; }
 
-  /* ---------- 头部 & 标签 ---------- */
-  .header { padding: 0 2px; margin-bottom: 16px; }
+  /* ============ 头部 ============ */
+  .header {
+    padding: 4px 4px 0;
+    margin-bottom: 20px;
+  }
   .header h1 {
     margin: 0;
-    font-size: 26px;
+    font-size: 34px;
     font-weight: 700;
-    letter-spacing: -.5px;
-    background: linear-gradient(135deg, var(--text) 0%, var(--muted) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.028em;
+    line-height: 1.15;
+    color: var(--label);
   }
-  .header .sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .header .sub {
+    margin: 4px 0 0;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--label-2);
+    letter-spacing: -0.01em;
+  }
 
+  /* ============ iOS Segmented Control ============ */
   .tabs {
-    display: flex; gap: 4px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-    border: 1px solid var(--glass-border);
-    border-radius: 18px;
-    padding: 5px;
-    margin-bottom: 18px;
-    box-shadow: var(--glass-shadow);
+    display: flex;
+    gap: 0;
+    background: var(--fill-primary);
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 22px;
+    position: relative;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
   .tab {
     flex: 1;
-    font: inherit; font-size: 13.5px; font-weight: 500;
-    color: var(--muted);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    color: var(--label-2);
     background: transparent;
-    border: none; border-radius: 13px;
-    padding: 10px 0;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 4px;
     cursor: pointer;
-    transition: color var(--dur-fast) var(--ease-smooth),
-                background-color var(--dur-fast) var(--ease-smooth),
-                transform var(--dur-fast) var(--ease-spring);
-    will-change: transform;
+    position: relative;
+    z-index: 1;
+    transition: color var(--dur-2) var(--ease-out);
+    will-change: color;
   }
   .tab.active {
-    background: var(--primary);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+    color: var(--label);
+    background: var(--system-bg-elev);
+    box-shadow:
+      0 3px 8px rgba(0, 0, 0, 0.08),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 0 0 0.5px rgba(0, 0, 0, 0.02);
   }
-  .tab:not(.active):hover { color: var(--text); background: var(--tag-bg); }
-  .tab:active { transform: scale(0.97); }
+  @media (prefers-color-scheme: dark) {
+    .tab.active {
+      background: var(--system-gray-4);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+  .tab:active:not(.active) { transform: scale(0.97); }
 
-  /* ---------- 通用：玻璃卡片 ---------- */
+  /* ============ Glass Card ============ */
   .card {
-    background: var(--glass-bg);
+    background: var(--glass-1);
     backdrop-filter: blur(var(--blur)) saturate(180%);
     -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--glass-stroke);
     border-radius: var(--radius);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--shadow-md), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.6);
+  }
+  @media (prefers-color-scheme: dark) {
+    .card {
+      box-shadow: var(--shadow-md), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.08);
+    }
   }
 
+  /* ============ Section Title（iOS 分组标题） ============ */
   .section-title {
-    font-size: 12.5px; font-weight: 600;
-    color: var(--muted); letter-spacing: .5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--label-2);
+    letter-spacing: 0.006em;
     text-transform: uppercase;
-    margin: 22px 4px 10px;
+    margin: 26px 4px 8px;
   }
 
-  .bar { height: 8px; background: var(--tag-bg); border-radius: 999px; overflow: hidden; }
+  /* ============ Progress Bar ============ */
+  .bar {
+    height: 8px;
+    background: var(--fill-primary);
+    border-radius: 999px;
+    overflow: hidden;
+  }
   .bar.sm { height: 6px; }
   .bar-fill {
-    height: 100%; width: 0;
-    background: linear-gradient(90deg, var(--primary), #7b93ff);
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--blue), var(--teal));
     border-radius: 999px;
-    transition: width var(--dur-slow) var(--ease-spring);
+    transition: width var(--dur-4) var(--ease-out);
+    will-change: width;
   }
 
+  /* ============ Inputs ============ */
   .field {
-    font: inherit; color: inherit;
-    background: var(--field-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--field-border);
-    border-radius: 14px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--label);
+    background: var(--fill-secondary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
     padding: 12px 14px;
-    min-height: 46px; min-width: 0;
+    min-height: 46px;
+    min-width: 0;
     outline: none;
-    transition: border-color var(--dur-fast) var(--ease-smooth),
-                box-shadow var(--dur-fast) var(--ease-smooth),
-                background-color var(--dur-fast) var(--ease-smooth);
     width: 100%;
+    transition: background-color var(--dur-1) var(--ease-out),
+                border-color var(--dur-1) var(--ease-out),
+                box-shadow var(--dur-2) var(--ease-out);
   }
   .field:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px var(--primary-soft);
-    background: var(--glass-bg-strong);
+    background: var(--system-bg-elev);
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
   }
-  .field::placeholder { color: var(--muted); }
+  .field::placeholder { color: var(--label-3); }
 
+  select.field {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238E8E93' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  /* ============ Buttons ============ */
   .btn {
-    font: inherit; font-weight: 600;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
     color: #fff;
-    background: var(--primary);
+    background: var(--blue);
     border: none;
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
     padding: 12px 22px;
     min-height: 46px;
     cursor: pointer;
     white-space: nowrap;
-    transition: transform var(--dur-fast) var(--ease-spring),
-                filter var(--dur-fast) var(--ease-smooth),
-                box-shadow var(--dur-base) var(--ease-smooth);
+    transition: transform var(--dur-1) var(--ease-spring),
+                filter var(--dur-1) var(--ease-out),
+                box-shadow var(--dur-2) var(--ease-out);
     will-change: transform;
-    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.3);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    -webkit-user-select: none;
+    user-select: none;
   }
   .btn:hover { filter: brightness(1.06); }
-  .btn:active { transform: scale(0.97); }
-  .btn.big { width: 100%; min-height: 54px; font-size: 16px; border-radius: 16px; }
-  .btn.stop {
-    background: var(--danger);
-    box-shadow: 0 4px 14px rgba(239, 71, 87, 0.32);
+  .btn:active { transform: scale(0.96); filter: brightness(0.94); }
+
+  .btn.big {
+    width: 100%;
+    min-height: 54px;
+    font-size: 17px;
+    border-radius: 16px;
   }
-  .btn.pause {
-    background: var(--pause);
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
-  }
-  .btn.resume {
-    background: var(--primary);
-    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.3);
-  }
-  .btn.checkin {
-    background: var(--ok);
-    box-shadow: 0 4px 14px rgba(34, 176, 125, 0.32);
-  }
+  .btn.stop { background: var(--red); }
+  .btn.pause { background: var(--orange); }
+  .btn.resume { background: var(--blue); }
+  .btn.checkin { background: var(--green); }
+
   .btn.ghost {
-    background: var(--tag-bg);
-    color: var(--text);
-    border: 1px solid var(--field-border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--fill-primary);
+    color: var(--blue);
     box-shadow: none;
   }
-  .btn.ghost:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-    filter: none;
-  }
+  .btn.ghost:hover { background: var(--fill-primary); filter: brightness(0.96); }
+
   .btn.new-timer {
     background: transparent;
-    color: var(--primary);
-    border: 1.5px dashed var(--primary);
+    color: var(--blue);
+    border: 1.5px dashed rgba(0, 122, 255, 0.4);
     box-shadow: none;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
-  .btn.new-timer:hover { background: var(--primary-soft); filter: none; }
+  .btn.new-timer:hover {
+    background: rgba(0, 122, 255, 0.08);
+    border-color: var(--blue);
+    filter: none;
+  }
 
+  /* ============ Icon Button ============ */
   .icon-btn {
-    font: inherit; font-size: 20px; line-height: 1;
-    width: 42px; height: 42px; flex: none;
-    display: grid; place-items: center;
-    color: var(--text);
-    background: var(--glass-bg);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid var(--glass-border);
-    border-radius: 14px;
+    font: inherit;
+    font-size: 22px;
+    line-height: 1;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    color: var(--blue);
+    background: var(--glass-1);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: transform var(--dur-fast) var(--ease-spring),
-                border-color var(--dur-fast) var(--ease-smooth),
-                color var(--dur-fast) var(--ease-smooth);
-    box-shadow: var(--glass-shadow);
+    transition: transform var(--dur-1) var(--ease-spring),
+                background-color var(--dur-1) var(--ease-out),
+                opacity var(--dur-1) var(--ease-out);
+    box-shadow: var(--shadow-sm);
     will-change: transform;
+    -webkit-user-select: none;
+    user-select: none;
   }
-  .icon-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
-  .icon-btn:active:not(:disabled) { transform: scale(0.94); }
-  .icon-btn:disabled { opacity: .32; cursor: not-allowed; }
+  .icon-btn:hover:not(:disabled) { background: var(--system-bg-elev); }
+  .icon-btn:active:not(:disabled) { transform: scale(0.92); }
+  .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+  /* ============ Text Button ============ */
   .link-btn {
-    font: inherit; font-size: 13px;
-    background: none; border: none;
-    color: var(--muted);
-    cursor: pointer; padding: 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color var(--dur-fast) var(--ease-smooth);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    background: none;
+    border: none;
+    color: var(--blue);
+    cursor: pointer;
+    padding: 0;
+    transition: opacity var(--dur-1) var(--ease-out);
   }
-  .link-btn:hover { color: var(--danger); }
+  .link-btn:hover { opacity: 0.7; }
 
+  /* ============ Empty State ============ */
   .empty {
     text-align: center;
-    padding: 34px 16px;
-    color: var(--muted);
-    font-size: 14px;
+    padding: 40px 20px;
+    color: var(--label-2);
+    font-size: 15px;
     list-style: none;
   }
-  .empty .emoji { display: block; font-size: 26px; margin-bottom: 8px; }
+  .empty .emoji {
+    display: block;
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.85;
+  }
 
-  /* ---------- 实时时钟 ---------- */
+  /* ============ Live Clock Card ============ */
   .clock-card {
-    padding: 26px 20px 22px;
+    padding: 28px 22px 24px;
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-lg);
   }
   .clock-card::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.35), transparent 55%);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.5) 0%, transparent 45%);
     pointer-events: none;
   }
+  @media (prefers-color-scheme: dark) {
+    .clock-card::before {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.06) 0%, transparent 45%);
+    }
+  }
   .clock-date {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 2px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--label-2);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
     position: relative;
   }
   .live-clock {
-    font-size: clamp(44px, 14vw, 60px);
-    font-weight: 600;
-    letter-spacing: 1px;
-    line-height: 1.1;
-    margin-bottom: 20px;
+    font-size: clamp(46px, 15vw, 64px);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 22px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+    color: var(--label);
     position: relative;
-    background: linear-gradient(180deg, var(--text) 0%, var(--text) 70%, var(--muted) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
   }
 
-  .checkin-actions { display: flex; gap: 10px; position: relative; }
+  .checkin-actions {
+    display: flex;
+    gap: 10px;
+    position: relative;
+  }
   .checkin-actions .btn {
     flex-grow: 0.618;
     flex-shrink: 1;
@@ -364,63 +467,81 @@
   }
   .checkin-actions .btn.checkin { flex-grow: 1; }
 
-  /* ---------- 计时器卡片 ---------- */
+  /* ============ Timer Cards ============ */
   .timer-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
     margin-bottom: 12px;
   }
-
   .timer-card {
     padding: 22px 20px 20px;
     text-align: center;
     position: relative;
-    animation: cardPop var(--dur-base) var(--ease-spring);
+    border-radius: var(--radius-lg);
+    animation: cardIn var(--dur-3) var(--ease-spring);
   }
-  @keyframes cardPop {
-    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.97); }
     to   { opacity: 1; transform: none; }
   }
   .timer-name {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--label);
     margin-bottom: 8px;
     word-break: break-word;
     padding: 0 8px;
-    letter-spacing: -.2px;
   }
   .timer-state {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 12.5px;
-    padding: 4px 13px;
-    border-radius: 999px;
-    background: var(--tag-bg);
-    color: var(--muted);
-    letter-spacing: .3px;
-    transition: background-color var(--dur-base) var(--ease-smooth),
-                color var(--dur-base) var(--ease-smooth);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-  .timer-state.active { background: var(--tag-ok); color: var(--ok); }
-  .timer-state.paused { background: var(--tag-warn); color: var(--warn); }
-  .timer-clock {
-    font-size: clamp(36px, 12vw, 48px);
     font-weight: 600;
-    line-height: 1.15;
-    letter-spacing: 1px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--fill-primary);
+    color: var(--label-2);
+    letter-spacing: -0.005em;
+    transition: background-color var(--dur-2) var(--ease-out),
+                color var(--dur-2) var(--ease-out);
+  }
+  .timer-state.active { background: rgba(52, 199, 89, 0.16); color: var(--green); }
+  .timer-state.paused { background: rgba(255, 149, 0, 0.16); color: var(--orange); }
+  .timer-state.active::before,
+  .timer-state.paused::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulseDot 2s var(--ease-in-out) infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+  .timer-state.paused::before { animation: none; }
+
+  .timer-clock {
+    font-size: clamp(38px, 12vw, 52px);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
     margin: 12px 0 6px;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
+    color: var(--label);
   }
   .timer-hint {
-    font-size: 12.5px;
-    color: var(--muted);
+    font-size: 13px;
+    color: var(--label-2);
     min-height: 20px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     word-break: break-word;
+    letter-spacing: -0.01em;
   }
 
   .timer-actions { display: flex; gap: 10px; }
@@ -434,283 +555,411 @@
     padding-right: 10px;
     border-radius: 16px;
     min-height: 52px;
-    font-size: 15px;
+    font-size: 16px;
   }
-  .timer-actions .btn.stop { flex-grow: 1; font-size: 16px; }
-  .timer-card-actions { text-align: center; margin-top: 12px; }
+  .timer-actions .btn.stop { flex-grow: 1; font-size: 17px; }
+  .timer-card-actions { text-align: center; margin-top: 14px; }
 
-  /* ---------- 列表项 ---------- */
-  .list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-
+  /* ============ List Items ============ */
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
   .item {
-    display: flex; align-items: flex-start; gap: 10px;
-    background: var(--glass-bg);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--glass-1);
     backdrop-filter: blur(var(--blur)) saturate(180%);
     -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
     padding: 14px 16px;
-    box-shadow: var(--glass-shadow);
-    transition: border-color var(--dur-fast) var(--ease-smooth),
-                transform var(--dur-fast) var(--ease-spring);
-    animation: itemIn var(--dur-base) var(--ease-spring);
+    box-shadow: var(--shadow-sm), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5);
+    transition: transform var(--dur-1) var(--ease-spring),
+                border-color var(--dur-1) var(--ease-out);
+    animation: itemIn var(--dur-3) var(--ease-spring);
     will-change: transform;
   }
   @keyframes itemIn {
     from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: none; }
   }
-  .item:hover { border-color: var(--primary); }
+  @media (prefers-color-scheme: dark) {
+    .item { box-shadow: var(--shadow-sm), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.06); }
+  }
+  .item:hover { border-color: rgba(0, 122, 255, 0.35); }
 
   .content { flex: 1; min-width: 0; }
-  .content .text { font-size: 15px; line-height: 1.45; word-break: break-word; font-weight: 500; }
-
+  .content .text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    word-break: break-word;
+    color: var(--label);
+  }
   .rec-top {
-    display: flex; justify-content: space-between;
-    align-items: baseline; gap: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
   }
   .rec-dur {
-    font-size: 13.5px; font-weight: 700;
-    color: var(--primary);
-    white-space: nowrap; flex: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+    white-space: nowrap;
+    flex: none;
     font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
   }
-  .rec-dur.checkin-time { color: var(--ok); }
+  .rec-dur.checkin-time { color: var(--green); }
 
   .meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .tag {
-    font-size: 11.5px;
-    padding: 3px 9px;
-    border-radius: 8px;
-    background: var(--tag-bg);
-    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--fill-primary);
+    color: var(--label-2);
     white-space: nowrap;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    letter-spacing: -0.005em;
   }
-  .tag.ok { background: var(--tag-ok); color: var(--ok); }
-  .tag.makeup { background: var(--tag-warn); color: var(--warn); }
-  .tag.op-time { background: var(--tag-info); color: var(--primary); }
-  .tag.paused-tag { background: var(--tag-warn); color: var(--warn); }
+  .tag.ok { background: rgba(52, 199, 89, 0.16); color: var(--green); }
+  .tag.makeup { background: rgba(255, 149, 0, 0.16); color: var(--orange); }
+  .tag.op-time { background: rgba(0, 122, 255, 0.14); color: var(--blue); }
+  .tag.paused-tag { background: rgba(255, 149, 0, 0.16); color: var(--orange); }
 
-  .actions { display: flex; gap: 2px; flex: none; opacity: 0; transition: opacity var(--dur-fast) var(--ease-smooth); }
-  .item:hover .actions, .item:focus-within .actions { opacity: 1; }
+  .actions {
+    display: flex;
+    gap: 2px;
+    flex: none;
+    opacity: 0;
+    transition: opacity var(--dur-2) var(--ease-out);
+  }
+  .item:hover .actions,
+  .item:focus-within .actions { opacity: 1; }
   @media (hover: none) { .actions { opacity: 1; } }
 
   .icon {
-    font: inherit; line-height: 1;
-    padding: 7px;
-    border: none; border-radius: 10px;
+    font: inherit;
+    line-height: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 10px;
     background: transparent;
-    color: var(--muted);
+    color: var(--label-2);
     cursor: pointer;
-    transition: background-color var(--dur-fast) var(--ease-smooth),
-                color var(--dur-fast) var(--ease-smooth),
-                transform var(--dur-fast) var(--ease-spring);
+    transition: background-color var(--dur-1) var(--ease-out),
+                color var(--dur-1) var(--ease-out),
+                transform var(--dur-1) var(--ease-spring);
   }
-  .icon:hover { background: var(--tag-bg); color: var(--text); }
-  .icon:active { transform: scale(0.9); }
-  .icon.del:hover { color: var(--danger); }
+  .icon:hover { background: var(--fill-primary); color: var(--label); }
+  .icon:active { transform: scale(0.88); }
+  .icon.del:hover { color: var(--red); background: rgba(255, 59, 48, 0.12); }
 
-  /* ---------- 分段控件 ---------- */
+  /* ============ Segmented Control (小) ============ */
   .seg {
-    display: flex; gap: 4px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 4px;
-    margin-bottom: 14px;
-    box-shadow: var(--glass-shadow);
+    display: flex;
+    gap: 0;
+    background: var(--fill-primary);
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
   .seg-btn {
     flex: 1;
-    font: inherit; font-size: 13.5px; font-weight: 600;
-    color: var(--muted);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+    color: var(--label-2);
     background: transparent;
-    border: none; border-radius: 12px;
-    padding: 9px 0;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 4px;
     cursor: pointer;
-    transition: color var(--dur-fast) var(--ease-smooth),
-                background-color var(--dur-fast) var(--ease-smooth),
-                transform var(--dur-fast) var(--ease-spring);
-    will-change: transform;
+    transition: color var(--dur-2) var(--ease-out),
+                background-color var(--dur-2) var(--ease-out);
+    will-change: color;
   }
   .seg-btn.active {
-    background: var(--glass-bg-strong);
-    color: var(--text);
-    box-shadow: 0 2px 8px rgba(24, 32, 64, 0.08);
+    background: var(--system-bg-elev);
+    color: var(--label);
+    box-shadow:
+      0 3px 8px rgba(0, 0, 0, 0.08),
+      0 1px 2px rgba(0, 0, 0, 0.04);
   }
-  .seg-btn:active { transform: scale(0.97); }
+  @media (prefers-color-scheme: dark) {
+    .seg-btn.active {
+      background: var(--system-gray-4);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
 
-  .period-bar { display: flex; align-items: center; gap: 8px; }
+  /* ============ Period Bar ============ */
+  .period-bar { display: flex; align-items: center; gap: 10px; }
   .period-title {
-    flex: 1; min-width: 0;
+    flex: 1;
+    min-width: 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
+    letter-spacing: -0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--label);
   }
 
-  /* ---------- 统计 ---------- */
-  .summary-card { padding: 20px 18px; margin-top: 14px; }
-  .summary-label { font-size: 13px; color: var(--muted); }
+  /* ============ Summary Card ============ */
+  .summary-card { padding: 20px 20px 22px; margin-top: 16px; }
+  .summary-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--label-2);
+    letter-spacing: -0.005em;
+  }
   .summary-total {
-    font-size: 32px; font-weight: 700;
-    letter-spacing: -.8px;
-    margin: 4px 0 12px;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.028em;
+    margin: 6px 0 12px;
     font-variant-numeric: tabular-nums;
     word-break: break-all;
+    color: var(--label);
   }
   .summary-sub {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 13px; color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    color: var(--label-2);
     flex-wrap: wrap;
+    letter-spacing: -0.005em;
   }
-  .summary-sub b { color: var(--text); font-weight: 600; }
-  .summary-sub .dot { opacity: .5; }
+  .summary-sub b { color: var(--label); font-weight: 600; }
+  .summary-sub .dot { opacity: 0.5; }
 
+  /* ============ Group Card ============ */
   .group-card {
-    background: var(--glass-bg);
+    background: var(--glass-1);
     backdrop-filter: blur(var(--blur)) saturate(180%);
     -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius);
     padding: 14px 16px;
     margin-bottom: 10px;
-    box-shadow: var(--glass-shadow);
-    transition: transform var(--dur-fast) var(--ease-spring);
+    box-shadow: var(--shadow-sm), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5);
+  }
+  @media (prefers-color-scheme: dark) {
+    .group-card { box-shadow: var(--shadow-sm), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.06); }
   }
   .group-head {
-    display: flex; justify-content: space-between;
-    align-items: baseline; gap: 10px;
-    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
   }
-  .group-name { font-size: 14.5px; font-weight: 600; word-break: break-word; }
-  .group-total { font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+  .group-name {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    word-break: break-word;
+    color: var(--label);
+  }
+  .group-total {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
+  }
   .group-meta {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    margin-top: 8px;
-    font-size: 12.5px; color: var(--muted);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: var(--label-2);
+    letter-spacing: -0.005em;
   }
 
-  .picker-row { margin-bottom: 12px; }
+  .picker-row { margin-bottom: 14px; }
 
+  /* ============ Chart ============ */
   .chart-card { padding: 16px 10px 10px; margin-top: 10px; }
   .chart-canvas-wrap { width: 100%; }
   #trend-canvas, #timer-trend-canvas { display: block; width: 100%; height: 200px; }
   .chart-legend {
-    display: flex; justify-content: center; align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 6px;
     padding: 10px 6px 4px;
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 12.5px;
+    color: var(--label-2);
+    letter-spacing: -0.005em;
   }
   .legend-dot {
     display: inline-block;
-    width: 8px; height: 8px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: var(--primary);
+    background: var(--blue);
     margin-right: 5px;
     vertical-align: middle;
   }
 
-  /* ---------- 设置页 ---------- */
-  .data-card { padding: 20px 18px; margin-bottom: 12px; }
-  .data-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; }
+  /* ============ Settings Cards ============ */
+  .data-card {
+    padding: 18px 18px 20px;
+    margin-bottom: 12px;
+    border-radius: var(--radius);
+  }
+  .data-card h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--label);
+  }
   .data-card p {
     margin: 0 0 16px;
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.55;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--label-2);
+    letter-spacing: -0.005em;
   }
   .data-card .row { display: flex; gap: 10px; flex-wrap: wrap; }
 
   .setting-item {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 14px;
     padding: 16px 18px;
     margin-bottom: 10px;
   }
-  .setting-title { font-size: 15px; font-weight: 600; }
-  .setting-desc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+  .setting-title {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--label);
+  }
+  .setting-desc {
+    font-size: 13px;
+    color: var(--label-2);
+    margin-top: 2px;
+    letter-spacing: -0.005em;
+  }
 
-  .switch { position: relative; display: inline-block; width: 50px; height: 30px; flex: none; }
+  /* ============ iOS Switch ============ */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 51px;
+    height: 31px;
+    flex: none;
+  }
   .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
   .slider {
-    position: absolute; inset: 0;
-    background: var(--tag-bg);
-    border: 1px solid var(--field-border);
+    position: absolute;
+    inset: 0;
+    background: var(--fill-primary);
     border-radius: 999px;
     cursor: pointer;
-    transition: background-color var(--dur-base) var(--ease-spring),
-                border-color var(--dur-base) var(--ease-spring);
+    transition: background-color var(--dur-2) var(--ease-out);
+    will-change: background-color;
   }
   .slider::before {
     content: '';
     position: absolute;
-    width: 22px; height: 22px;
-    left: 3px; top: 3px;
+    width: 27px;
+    height: 27px;
+    left: 2px;
+    top: 2px;
     background: #fff;
     border-radius: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: transform var(--dur-base) var(--ease-spring);
+    box-shadow:
+      0 3px 8px rgba(0, 0, 0, 0.15),
+      0 1px 1px rgba(0, 0, 0, 0.16),
+      0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    transition: transform var(--dur-2) var(--ease-spring);
     will-change: transform;
   }
-  .switch input:checked + .slider { background: var(--primary); border-color: var(--primary); }
+  .switch input:checked + .slider { background: var(--green); }
   .switch input:checked + .slider::before { transform: translateX(20px); }
 
+  /* ============ Danger Button ============ */
   .danger-btn {
-    font: inherit; font-size: 14px; font-weight: 600;
-    color: var(--danger);
-    background: var(--tag-danger);
-    border: 1px solid transparent;
-    border-radius: 14px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: var(--red);
+    background: rgba(255, 59, 48, 0.12);
+    border: none;
+    border-radius: var(--radius-sm);
     padding: 12px 20px;
     cursor: pointer;
-    transition: transform var(--dur-fast) var(--ease-spring),
-                filter var(--dur-fast) var(--ease-smooth);
+    transition: transform var(--dur-1) var(--ease-spring),
+                background-color var(--dur-1) var(--ease-out);
     will-change: transform;
   }
-  .danger-btn:hover { filter: brightness(0.96); }
-  .danger-btn:active { transform: scale(0.97); }
+  .danger-btn:hover { background: rgba(255, 59, 48, 0.18); }
+  .danger-btn:active { transform: scale(0.96); }
 
-  /* ---------- 弹窗（强毛玻璃） ---------- */
+  /* ============ Modal（强玻璃 + iOS Sheet 感） ============ */
   .modal-backdrop {
-    position: fixed; inset: 0;
-    background: rgba(15, 18, 28, 0.35);
-    display: grid; place-items: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.28);
+    display: grid;
+    place-items: center;
     padding: 20px;
     z-index: 100;
     opacity: 0;
-    transition: opacity var(--dur-base) var(--ease-smooth);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    transition: opacity var(--dur-3) var(--ease-out);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
   }
   .modal-backdrop.show { opacity: 1; }
 
   .modal {
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(32px) saturate(200%);
-    -webkit-backdrop-filter: blur(32px) saturate(200%);
-    border: 1px solid var(--glass-border);
-    border-radius: 26px;
-    padding: 26px 22px 22px;
-    width: 100%; max-width: 380px;
+    background: var(--glass-2);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid var(--glass-stroke);
+    border-radius: var(--radius-xl);
+    padding: 28px 24px 24px;
+    width: 100%;
+    max-width: 400px;
     box-shadow:
-      0 24px 60px rgba(0, 0, 0, 0.2),
-      0 4px 12px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-    transform: scale(0.92) translateY(10px);
+      var(--shadow-lg),
+      inset 0 0.5px 0 0 rgba(255, 255, 255, 0.6);
+    transform: scale(0.9) translateY(16px);
     opacity: 0;
-    transition: transform var(--dur-slow) var(--ease-spring),
-                opacity var(--dur-base) var(--ease-smooth);
+    transition: transform var(--dur-4) var(--ease-spring),
+                opacity var(--dur-3) var(--ease-out);
     will-change: transform, opacity;
     max-height: 90vh;
     overflow-y: auto;
+  }
+  @media (prefers-color-scheme: dark) {
+    .modal {
+      box-shadow: var(--shadow-lg), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.1);
+    }
   }
   .modal-backdrop.show .modal {
     transform: scale(1) translateY(0);
@@ -719,21 +968,26 @@
 
   .modal h3 {
     margin: 0 0 6px;
-    font-size: 19px;
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: -.3px;
+    letter-spacing: -0.028em;
+    color: var(--label);
   }
   .modal-sub {
-    margin: 0 0 16px;
-    font-size: 13px;
-    color: var(--muted);
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--label-2);
     word-break: break-word;
-    line-height: 1.55;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
   .modal p {
     margin: 0 0 20px;
-    font-size: 15px; line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.55;
     white-space: pre-line;
+    color: var(--label);
+    letter-spacing: -0.015em;
   }
   .modal .field { margin-bottom: 18px; }
 
@@ -742,23 +996,21 @@
   #makeup-date { flex: 1.25; }
   #makeup-time { flex: 1; }
 
-  /* ---------- 常用事项 chips ---------- */
-  .common-section {
-    margin-bottom: 16px;
-  }
+  /* ============ Common Chips ============ */
+  .common-section { margin-bottom: 20px; }
   .common-label {
     font-size: 12px;
     font-weight: 600;
-    color: var(--muted);
-    letter-spacing: .4px;
+    color: var(--label-2);
+    letter-spacing: 0.006em;
     text-transform: uppercase;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   .common-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    max-height: 128px;
+    max-height: 132px;
     overflow-y: auto;
     padding: 2px;
     scrollbar-width: none;
@@ -767,99 +1019,109 @@
 
   .chip-item {
     font: inherit;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 500;
-    color: var(--primary);
-    background: var(--primary-soft);
-    border: 1px solid rgba(79, 110, 247, 0.2);
+    letter-spacing: -0.01em;
+    color: var(--blue);
+    background: rgba(0, 122, 255, 0.10);
+    border: none;
     border-radius: 999px;
     padding: 8px 15px;
     cursor: pointer;
     white-space: nowrap;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: transform var(--dur-fast) var(--ease-spring),
-                background-color var(--dur-fast) var(--ease-smooth),
-                border-color var(--dur-fast) var(--ease-smooth);
+    transition: transform var(--dur-1) var(--ease-spring),
+                background-color var(--dur-1) var(--ease-out);
     will-change: transform;
+    -webkit-user-select: none;
+    user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
-  .chip-item:hover {
-    background: rgba(79, 110, 247, 0.2);
-    border-color: rgba(79, 110, 247, 0.35);
-  }
-  .chip-item:active { transform: scale(0.94); }
+  .chip-item:hover { background: rgba(0, 122, 255, 0.18); }
+  .chip-item:active { transform: scale(0.92); }
   .chip-item.used {
-    background: var(--tag-ok);
-    color: var(--ok);
-    border-color: rgba(34, 176, 125, 0.3);
+    background: rgba(52, 199, 89, 0.18);
+    color: var(--green);
   }
 
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+  /* ============ Modal Actions ============ */
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
   .modal-actions button {
-    font: inherit; font-size: 14.5px; font-weight: 600;
-    border-radius: 14px;
-    padding: 11px 20px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    border-radius: var(--radius-sm);
+    padding: 11px 22px;
     cursor: pointer;
-    border: 1px solid var(--field-border);
-    background: var(--tag-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    color: var(--text);
-    transition: transform var(--dur-fast) var(--ease-spring),
-                filter var(--dur-fast) var(--ease-smooth),
-                background-color var(--dur-fast) var(--ease-smooth);
+    border: none;
+    background: var(--fill-primary);
+    color: var(--blue);
+    transition: transform var(--dur-1) var(--ease-spring),
+                background-color var(--dur-1) var(--ease-out);
     will-change: transform;
+    -webkit-user-select: none;
+    user-select: none;
   }
-  .modal-actions button:hover { filter: brightness(0.96); }
-  .modal-actions button:active { transform: scale(0.96); }
+  .modal-actions button:hover { background: var(--fill-secondary); }
+  .modal-actions button:active { transform: scale(0.95); }
   .modal-actions button.primary {
-    background: var(--primary);
-    border-color: var(--primary);
+    background: var(--blue);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(79, 110, 247, 0.32);
+    font-weight: 600;
   }
+  .modal-actions button.primary:hover { filter: brightness(1.06); }
   .modal-actions button.primary.ok {
-    background: var(--ok);
-    border-color: var(--ok);
-    box-shadow: 0 4px 14px rgba(34, 176, 125, 0.32);
+    background: var(--green);
   }
 
-  /* ---------- Toast ---------- */
+  /* ============ Toast ============ */
   .toast {
     position: fixed;
     left: 50%;
-    bottom: 34px;
-    transform: translate(-50%, 14px);
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid var(--glass-border);
-    color: var(--text);
-    font-size: 13.5px;
+    bottom: calc(34px + env(safe-area-inset-bottom));
+    transform: translate(-50%, 20px) scale(0.94);
+    background: var(--glass-2);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid var(--glass-stroke);
+    color: var(--label);
+    font-size: 14.5px;
     font-weight: 500;
+    letter-spacing: -0.01em;
     padding: 12px 22px;
-    border-radius: 16px;
+    border-radius: 999px;
     z-index: 200;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--dur-base) var(--ease-smooth),
-                transform var(--dur-base) var(--ease-spring);
+    transition: opacity var(--dur-3) var(--ease-out),
+                transform var(--dur-4) var(--ease-spring);
     max-width: 82vw;
     text-align: center;
-    line-height: 1.5;
-    box-shadow: var(--glass-shadow);
+    line-height: 1.4;
+    box-shadow: var(--shadow-lg), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.5);
     will-change: transform, opacity;
   }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (prefers-color-scheme: dark) {
+    .toast { box-shadow: var(--shadow-lg), inset 0 0.5px 0 0 rgba(255, 255, 255, 0.1); }
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 
+  /* ============ Responsive ============ */
   @media (max-width: 380px) {
-    .rec-dur { font-size: 12.5px; }
+    .header h1 { font-size: 30px; }
+    .rec-dur { font-size: 14px; }
     .checkin-actions { gap: 8px; }
     .timer-actions { gap: 8px; }
   }
 
-  /* 减少动画偏好 */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -911,7 +1173,7 @@
       </div>
 
       <input class="field" id="record-search" type="search"
-             placeholder="搜索事项名称…" autocomplete="off" style="margin-bottom:12px;">
+             placeholder="搜索事项名称…" autocomplete="off" style="margin-bottom:14px;">
 
       <p class="section-title" id="record-count" style="margin-top:0;"></p>
       <ul class="list" id="record-list"></ul>
@@ -994,7 +1256,7 @@
 
     <!-- ==================== 设置 ==================== -->
     <section id="view-settings" hidden>
-      <h3 class="section-title" style="margin-top:0;">显示</h3>
+      <h3 class="section-title" style="margin-top:8px;">显示</h3>
 
       <div class="card setting-item">
         <div>
@@ -1157,7 +1419,6 @@
   var pendingStopTimerId = null;
   var confirmResolve = null;
 
-  /* ==================== 工具 ==================== */
   function pad(n) { return String(n).padStart(2, '0'); }
   function $(s) { return document.querySelector(s); }
   function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
@@ -1177,34 +1438,28 @@
     var d = new Date(ts);
     return pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
-
   function fmtTimeSec(ts) {
     var d = new Date(ts);
     return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
   }
-
   function fmtDateTime(ts) {
     var d = new Date(ts);
     return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' +
            pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
-
   function WEEK_CN(d) {
     return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()];
   }
-
   function fmtDateFull(ts) {
     var d = new Date(ts);
     return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d);
   }
-
   function fmtClock(ms) {
     var s = Math.max(0, Math.floor(ms / 1000));
     var h = Math.floor(s / 3600);
     var m = Math.floor((s % 3600) / 60);
     return pad(h) + ':' + pad(m) + ':' + pad(s % 60);
   }
-
   function fmtDur(ms) {
     var s = Math.round(ms / 1000);
     var h = Math.floor(s / 3600);
@@ -1213,7 +1468,6 @@
     if (m > 0) return m + '分';
     return s + '秒';
   }
-
   function fmtDurExact(ms) {
     var s = Math.round(ms / 1000);
     var h = Math.floor(s / 3600);
@@ -1223,7 +1477,6 @@
     if (m > 0) return m + '分' + sec + '秒';
     return sec + '秒';
   }
-
   function fmtDurShort(ms) {
     var s = Math.round(ms / 1000);
     if (s < 60) return s + 's';
@@ -1233,41 +1486,31 @@
     if (h > 0) return h + 'h' + (m > 0 ? m + 'm' : '');
     return m + ':' + String(sec).padStart(2, '0');
   }
-
   function secOfDay(ts) {
     var d = new Date(ts);
     return d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds();
   }
-
   function secToHM(sec) {
     sec = Math.max(0, Math.min(86399, Math.round(sec)));
     return pad(Math.floor(sec / 3600)) + ':' + pad(Math.floor((sec % 3600) / 60));
   }
-
   function secToHMS(sec) {
     sec = Math.max(0, Math.min(86399, Math.round(sec)));
     return pad(Math.floor(sec / 3600)) + ':' +
            pad(Math.floor((sec % 3600) / 60)) + ':' +
            pad(sec % 60);
   }
-
   function todayStr() {
     var d = new Date();
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   }
-
-  /* 按字母（拼音）排序 */
   function sortNames(arr) {
     return arr.slice().sort(function (a, b) {
-      try {
-        return a.localeCompare(b, 'zh-Hans-CN', { sensitivity: 'base' });
-      } catch (e) {
-        return a.localeCompare(b);
-      }
+      try { return a.localeCompare(b, 'zh-Hans-CN', { sensitivity: 'base' }); }
+      catch (e) { return a.localeCompare(b); }
     });
   }
 
-  /* ==================== Toast ==================== */
   var toastTimer = null;
   function toast(msg) {
     var el = $('#toast');
@@ -1277,7 +1520,6 @@
     toastTimer = setTimeout(function () { el.classList.remove('show'); }, 2400);
   }
 
-  /* ==================== 计时器操作 ==================== */
   function normalizeTimer(t) {
     if (!t || typeof t.start !== 'number') return null;
     if (!t.id) t.id = uid();
@@ -1286,7 +1528,6 @@
     if (typeof t.pausedAt !== 'number') t.pausedAt = null;
     return t;
   }
-
   function pausedMsOfTimer(t) {
     if (!t) return 0;
     var total = 0;
@@ -1298,17 +1539,12 @@
     if (t.pausedAt) total += Math.max(0, Date.now() - t.pausedAt);
     return total;
   }
-
   function elapsedMsOfTimer(t) {
     if (!t) return 0;
     var raw = Date.now() - t.start;
     return Math.max(0, raw - pausedMsOfTimer(t));
   }
-
-  function isTimerPaused(t) {
-    return !!(t && t.pausedAt);
-  }
-
+  function isTimerPaused(t) { return !!(t && t.pausedAt); }
   function findTimer(id) {
     for (var i = 0; i < state.timers.length; i++) {
       if (state.timers[i].id === id) return state.timers[i];
@@ -1316,7 +1552,6 @@
     return null;
   }
 
-  /* ==================== 存储 ==================== */
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
@@ -1353,8 +1588,7 @@
             state.timers = od.timers.map(normalizeTimer).filter(Boolean);
           } else if (od.running && typeof od.running.start === 'number') {
             var single = normalizeTimer({
-              id: uid(),
-              name: '未命名',
+              id: uid(), name: '未命名',
               start: od.running.start,
               pauses: od.running.pauses || [],
               pausedAt: od.running.pausedAt || null
@@ -1374,7 +1608,6 @@
     state.records.forEach(function (r) {
       if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
     });
-
     state.timers = state.timers.filter(function (t) {
       return t && t.start <= Date.now() + 60000;
     });
@@ -1384,7 +1617,6 @@
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* 忽略 */ }
   }
 
-  /* ==================== 弹窗 ==================== */
   function showModal(sel) {
     var m = $(sel);
     m.hidden = false;
@@ -1392,11 +1624,10 @@
       requestAnimationFrame(function () { m.classList.add('show'); });
     });
   }
-
   function hideModal(sel) {
     var m = $(sel);
     m.classList.remove('show');
-    setTimeout(function () { m.hidden = true; }, 420);
+    setTimeout(function () { m.hidden = true; }, 480);
   }
 
   function confirmDialog(text, okLabel) {
@@ -1407,7 +1638,6 @@
       showModal('#confirm-modal');
     });
   }
-
   function resolveConfirm(v) {
     hideModal('#confirm-modal');
     if (confirmResolve) {
@@ -1417,38 +1647,31 @@
     }
   }
 
-  /* ==================== 常用事项（chips） ==================== */
   function getAllKnownNames() {
     var seen = {}, names = [];
-
     state.timers.forEach(function (t) {
       if (t.name && !seen[t.name]) { seen[t.name] = 1; names.push(t.name); }
     });
-
     state.checkins.forEach(function (c) {
       if (c.name && !seen[c.name]) { seen[c.name] = 1; names.push(c.name); }
     });
-
     state.records.forEach(function (r) {
       if (r.name && !seen[r.name]) { seen[r.name] = 1; names.push(r.name); }
     });
-
     return sortNames(names);
   }
 
-  /* 渲染 chips 到指定容器 */
   function renderChips(containerId, inputId, excludeName) {
     var container = $('#' + containerId);
     if (!container) return;
 
     var names = getAllKnownNames();
-
     if (excludeName) {
       names = names.filter(function (n) { return n !== excludeName; });
     }
 
     if (!names.length) {
-      container.innerHTML = '<span style="font-size:12.5px;color:var(--muted);">还没有历史事项，输入后会出现在这里</span>';
+      container.innerHTML = '<span style="font-size:13px;color:var(--label-3);">还没有历史事项，输入后会出现在这里</span>';
       return;
     }
 
@@ -1457,31 +1680,24 @@
         esc(n) + '</button>';
     }).join('');
 
-    // 点击 chip 填入输入框
     container.onclick = function (e) {
       var chip = e.target.closest('.chip-item');
       if (!chip) return;
       var input = $('#' + inputId);
       if (!input) return;
       input.value = chip.dataset.name;
-
-      // 视觉反馈：短暂高亮
       chip.classList.add('used');
-      setTimeout(function () { chip.classList.remove('used'); }, 400);
-
-      // 让输入框获得焦点（用户可直接点确定）
+      setTimeout(function () { chip.classList.remove('used'); }, 420);
       input.focus();
     };
   }
 
-  /* 刷新所有弹窗里的 chips */
   function refreshAllChips() {
     renderChips('checkin-chips', 'checkin-input');
     renderChips('makeup-chips', 'makeup-input');
     renderChips('start-chips', 'start-input');
   }
 
-  /* ==================== 名称建议（datalist） ==================== */
   function updateSuggestions() {
     var names = getAllKnownNames();
     $('#name-suggestions').innerHTML = names.slice(0, 40).map(function (n) {
@@ -1489,7 +1705,6 @@
     }).join('');
   }
 
-  /* ==================== 实时时钟 ==================== */
   function tickClock() {
     var d = new Date();
     $('#live-clock').textContent = fmtTimeSec(d.getTime());
@@ -1497,7 +1712,6 @@
       d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d);
   }
 
-  /* ==================== 打卡 ==================== */
   function openCheckinModal() {
     pendingCheckin = Date.now();
     $('#checkin-time-show').textContent =
@@ -1505,23 +1719,16 @@
     $('#checkin-input').value = '';
     refreshAllChips();
     showModal('#checkin-modal');
-    setTimeout(function () { $('#checkin-input').focus(); }, 200);
+    setTimeout(function () { $('#checkin-input').focus(); }, 240);
   }
 
   function saveCheckin() {
     if (!pendingCheckin) return;
-
     var name = $('#checkin-input').value.trim();
     if (!name) { $('#checkin-input').focus(); return; }
 
-    var rec = {
-      id: uid(),
-      name: name,
-      time: pendingCheckin,
-      createdAt: Date.now()
-    };
+    var rec = { id: uid(), name: name, time: pendingCheckin, createdAt: Date.now() };
     state.checkins.push(rec);
-
     pendingCheckin = null;
     save();
 
@@ -1531,22 +1738,17 @@
     renderAll();
   }
 
-  /* ==================== 补卡 ==================== */
   function openMakeupModal() {
     var now = new Date();
-
     var dateEl = $('#makeup-date');
     var timeEl = $('#makeup-time');
-
     dateEl.value = now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
     dateEl.max = todayStr();
-
     timeEl.value = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
-
     $('#makeup-input').value = '';
     refreshAllChips();
     showModal('#makeup-modal');
-    setTimeout(function () { $('#makeup-input').focus(); }, 200);
+    setTimeout(function () { $('#makeup-input').focus(); }, 240);
   }
 
   function saveMakeup() {
@@ -1559,24 +1761,14 @@
 
     var dp = dStr.split('-').map(Number);
     var tp = tStr.split(':').map(Number);
-
-    var ts = new Date(
-      dp[0], dp[1] - 1, dp[2],
-      tp[0] || 0, tp[1] || 0, tp[2] || 0
-    ).getTime();
+    var ts = new Date(dp[0], dp[1] - 1, dp[2],
+      tp[0] || 0, tp[1] || 0, tp[2] || 0).getTime();
 
     if (isNaN(ts)) { toast('日期或时间无效'); return; }
     if (ts > Date.now()) { toast('补卡时间不能晚于当前时间'); return; }
 
-    var rec = {
-      id: uid(),
-      name: name,
-      time: ts,
-      createdAt: Date.now(),
-      makeup: true
-    };
+    var rec = { id: uid(), name: name, time: ts, createdAt: Date.now(), makeup: true };
     state.checkins.push(rec);
-
     save();
     hideModal('#makeup-modal');
     toast('已补卡：' + name + ' ' + fmtDateTime(ts));
@@ -1584,12 +1776,11 @@
     renderAll();
   }
 
-  /* ==================== 计时：开始 / 暂停 / 停止 ==================== */
   function openStartModal() {
     $('#start-input').value = '';
     refreshAllChips();
     showModal('#start-modal');
-    setTimeout(function () { $('#start-input').focus(); }, 200);
+    setTimeout(function () { $('#start-input').focus(); }, 240);
   }
 
   function confirmStartTimer() {
@@ -1597,15 +1788,10 @@
     if (!name) { $('#start-input').focus(); return; }
 
     var t = normalizeTimer({
-      id: uid(),
-      name: name,
-      start: Date.now(),
-      pauses: [],
-      pausedAt: null
+      id: uid(), name: name, start: Date.now(), pauses: [], pausedAt: null
     });
     state.timers.push(t);
     save();
-
     hideModal('#start-modal');
     updateSuggestions();
     renderAll();
@@ -1619,7 +1805,6 @@
     save();
     renderTimers();
   }
-
   function resumeTimer(id) {
     var t = findTimer(id);
     if (!t || !t.pausedAt) return;
@@ -1636,14 +1821,9 @@
     var end = Date.now();
     var paused = pausedMsOfTimer(t);
     var duration = end - t.start - paused;
-
-    if (duration < 1000) {
-      duration = 1000;
-      end = t.start + paused + duration;
-    }
+    if (duration < 1000) { duration = 1000; end = t.start + paused + duration; }
 
     pendingStopTimerId = id;
-
     var durText = fmtDurExact(duration);
     if (paused >= 1000) durText += '（暂停 ' + fmtDurExact(paused) + '）';
 
@@ -1658,11 +1838,7 @@
   function confirmStopTimer() {
     if (!pendingStopTimerId) return;
     var t = findTimer(pendingStopTimerId);
-    if (!t) {
-      pendingStopTimerId = null;
-      hideModal('#stop-modal');
-      return;
-    }
+    if (!t) { pendingStopTimerId = null; hideModal('#stop-modal'); return; }
 
     var end = Date.now();
     var paused = pausedMsOfTimer(t);
@@ -1670,17 +1846,11 @@
     if (duration < 1000) duration = 1000;
 
     state.records.push({
-      id: uid(),
-      name: t.name,
-      start: t.start,
-      end: end,
-      duration: duration,
-      pausedMs: paused,
-      createdAt: Date.now()
+      id: uid(), name: t.name, start: t.start, end: end,
+      duration: duration, pausedMs: paused, createdAt: Date.now()
     });
 
     state.timers = state.timers.filter(function (x) { return x.id !== t.id; });
-
     pendingStopTimerId = null;
     save();
 
@@ -1696,22 +1866,16 @@
     renderTimers();
   }
 
-  /* ==================== 渲染：计时器列表 ==================== */
   function timerCardHTML(t) {
     var paused = isTimerPaused(t);
     var el = elapsedMsOfTimer(t);
-
     var stateText = paused ? '已暂停' : (el >= 86400000 ? '已超过 24 小时' : '计时中');
     var stateCls = paused ? 'timer-state paused' : 'timer-state active';
-
     var pauseBtnLabel = paused ? '继续计时' : '暂停计时';
     var pauseBtnCls = paused ? 'btn resume' : 'btn pause';
-
     var pausedTotal = pausedMsOfTimer(t);
     var hintText = '开始于 ' + fmtDateTime(t.start);
-    if (pausedTotal >= 1000) {
-      hintText += ' · 已暂停 ' + fmtDurExact(pausedTotal);
-    }
+    if (pausedTotal >= 1000) hintText += ' · 已暂停 ' + fmtDurExact(pausedTotal);
 
     return '<div class="card timer-card" data-id="' + t.id + '">' +
       '<div class="timer-name">' + esc(t.name) + '</div>' +
@@ -1719,8 +1883,7 @@
       '<div class="timer-clock">' + fmtClock(el) + '</div>' +
       '<div class="timer-hint">' + esc(hintText) + '</div>' +
       '<div class="timer-actions">' +
-        '<button class="' + pauseBtnCls + '" type="button" data-act="pause">' +
-          pauseBtnLabel + '</button>' +
+        '<button class="' + pauseBtnCls + '" type="button" data-act="pause">' + pauseBtnLabel + '</button>' +
         '<button class="btn stop" type="button" data-act="stop">停止计时</button>' +
       '</div>' +
       '<div class="timer-card-actions">' +
@@ -1740,10 +1903,7 @@
       return;
     }
 
-    var sorted = state.timers.slice().sort(function (a, b) {
-      return a.start - b.start;
-    });
-
+    var sorted = state.timers.slice().sort(function (a, b) { return a.start - b.start; });
     list.innerHTML = sorted.map(timerCardHTML).join('');
     startBtn.textContent = '＋ 开始新计时';
     startBtn.classList.add('new-timer');
@@ -1751,11 +1911,9 @@
 
   function tickTimers() {
     if (activeTab !== 'home') return;
-
     state.timers.forEach(function (t) {
       var card = document.querySelector('.timer-card[data-id="' + t.id + '"]');
       if (!card) return;
-
       var clockEl = card.querySelector('.timer-clock');
       var stateEl = card.querySelector('.timer-state');
       var hintEl = card.querySelector('.timer-hint');
@@ -1769,25 +1927,19 @@
           : (el >= 86400000 ? '已超过 24 小时' : '计时中');
         stateEl.className = paused ? 'timer-state paused' : 'timer-state active';
       }
-
       if (hintEl) {
         var pausedTotal = pausedMsOfTimer(t);
         var hintText = '开始于 ' + fmtDateTime(t.start);
-        if (pausedTotal >= 1000) {
-          hintText += ' · 已暂停 ' + fmtDurExact(pausedTotal);
-        }
+        if (pausedTotal >= 1000) hintText += ' · 已暂停 ' + fmtDurExact(pausedTotal);
         hintEl.textContent = hintText;
       }
     });
   }
 
-  /* ==================== 列表项 HTML ==================== */
   function timerItemHTML(r) {
     var pausedMs = r.pausedMs || 0;
     var tags = '<span class="tag">' + fmtDateTime(r.start) + ' → ' + fmtTime(r.end) + '</span>';
-    if (pausedMs >= 1000) {
-      tags += '<span class="tag paused-tag">暂停 ' + fmtDurExact(pausedMs) + '</span>';
-    }
+    if (pausedMs >= 1000) tags += '<span class="tag paused-tag">暂停 ' + fmtDurExact(pausedMs) + '</span>';
 
     return '<li class="item" data-kind="timer" data-id="' + r.id + '">' +
       '<div class="content">' +
@@ -1805,14 +1957,12 @@
 
   function checkinItemHTML(c) {
     var tags = '<span class="tag ok">' + fmtDateFull(c.time) + '</span>';
-
     if (c.makeup) {
       tags += '<span class="tag makeup">补卡</span>';
       if (c.createdAt && Math.abs(c.createdAt - c.time) > 60000) {
         tags += '<span class="tag op-time">补卡于 ' + fmtDateTime(c.createdAt) + '</span>';
       }
     }
-
     return '<li class="item" data-kind="checkin" data-id="' + c.id + '">' +
       '<div class="content">' +
         '<div class="rec-top">' +
@@ -1827,37 +1977,29 @@
     '</li>';
   }
 
-  /* ==================== 渲染：首页 ==================== */
   function renderHome() {
     renderTimers();
-
     var items = [];
-
     state.checkins.forEach(function (c) {
       var sortTs = c.makeup ? (c.createdAt || c.time) : c.time;
       items.push({ ts: sortTs, kind: 'checkin', data: c });
     });
-
     state.records.forEach(function (r) {
       items.push({ ts: r.end, kind: 'timer', data: r });
     });
-
     items.sort(function (a, b) { return b.ts - a.ts; });
     items = items.slice(0, 8);
 
     var el = $('#recent-list');
     if (!items.length) {
-      el.innerHTML = '<li class="empty"><span class="emoji">🕐</span>' +
-        '还没有记录，去打卡或开始计时吧</li>';
+      el.innerHTML = '<li class="empty"><span class="emoji">🕐</span>还没有记录，去打卡或开始计时吧</li>';
       return;
     }
-
     el.innerHTML = items.map(function (it) {
       return it.kind === 'checkin' ? checkinItemHTML(it.data) : timerItemHTML(it.data);
     }).join('');
   }
 
-  /* ==================== 渲染：记录 ==================== */
   function renderRecords() {
     var q = searchQuery.trim().toLowerCase();
     var el = $('#record-list');
@@ -1867,23 +2009,18 @@
       var recs = state.records.filter(function (r) {
         return !q || r.name.toLowerCase().indexOf(q) >= 0;
       }).sort(function (a, b) { return b.start - a.start; });
-
       countEl.textContent = recs.length + ' 条计时记录';
-
       if (!recs.length) {
         el.innerHTML = '<li class="empty"><span class="emoji">⏱️</span>' +
           (q ? '没有匹配的记录' : '还没有计时记录') + '</li>';
         return;
       }
       el.innerHTML = recs.map(timerItemHTML).join('');
-
     } else {
       var chk = state.checkins.filter(function (c) {
         return !q || c.name.toLowerCase().indexOf(q) >= 0;
       }).sort(function (a, b) { return b.time - a.time; });
-
       countEl.textContent = chk.length + ' 条打卡记录';
-
       if (!chk.length) {
         el.innerHTML = '<li class="empty"><span class="emoji">📍</span>' +
           (q ? '没有匹配的记录' : '还没有打卡记录') + '</li>';
@@ -1893,14 +2030,12 @@
     }
   }
 
-  /* ==================== 周期计算 ==================== */
   function startOfWeek(d) {
     var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     var day = x.getDay();
     x.setDate(x.getDate() - ((day + 6) % 7));
     return x;
   }
-
   function getPeriod(mode, base) {
     var start, end;
     if (mode === 'week') {
@@ -1915,7 +2050,6 @@
     }
     return { start: start, end: end };
   }
-
   function periodLabel(mode, p) {
     if (mode === 'week') {
       var s = p.start;
@@ -1931,16 +2065,12 @@
       return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' +
              e.getDate() + '日';
     }
-    if (mode === 'month') {
-      return p.start.getFullYear() + '年' + (p.start.getMonth() + 1) + '月';
-    }
+    if (mode === 'month') return p.start.getFullYear() + '年' + (p.start.getMonth() + 1) + '月';
     return p.start.getFullYear() + '年';
   }
 
-  /* ==================== 渲染：统计 ==================== */
   function renderStats() {
     var p = getPeriod(statMode, statBase);
-
     $('#stat-title').textContent = periodLabel(statMode, p);
     $('#stat-next').disabled = p.end.getTime() > Date.now();
 
@@ -1955,10 +2085,7 @@
 
   function renderTimerStats(p) {
     var s = p.start.getTime(), e = p.end.getTime();
-
-    var recs = state.records.filter(function (r) {
-      return r.start >= s && r.start < e;
-    });
+    var recs = state.records.filter(function (r) { return r.start >= s && r.start < e; });
 
     var nameSet = {};
     recs.forEach(function (r) { nameSet[r.name] = 1; });
@@ -2014,7 +2141,6 @@
       map[r.name].total += r.duration;
       map[r.name].paused += (r.pausedMs || 0);
     });
-
     var groups = Object.keys(map).map(function (k) { return map[k]; })
       .sort(function (a, b) { return b.total - a.total; });
 
@@ -2023,7 +2149,6 @@
       gEl.innerHTML = '<div class="empty"><span class="emoji">📊</span>该周期暂无记录</div>';
       return;
     }
-
     var maxTotal = groups[0].total || 1;
 
     gEl.innerHTML = groups.map(function (g) {
@@ -2049,11 +2174,9 @@
 
   function aggregateTimer(name, mode, p) {
     var s = p.start.getTime(), e = p.end.getTime();
-
     var recs = state.records.filter(function (r) {
       return r.name === name && r.start >= s && r.start < e;
     });
-
     var buckets = [];
 
     if (mode === 'week') {
@@ -2065,24 +2188,16 @@
           (new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() -
            new Date(p.start.getFullYear(), p.start.getMonth(), p.start.getDate()).getTime()) / 86400000
         );
-        if (idx >= 0 && idx < 7) {
-          buckets[idx].total += r.duration;
-          buckets[idx].count++;
-        }
+        if (idx >= 0 && idx < 7) { buckets[idx].total += r.duration; buckets[idx].count++; }
       });
-
     } else if (mode === 'month') {
       var days = new Date(p.start.getFullYear(), p.start.getMonth() + 1, 0).getDate();
       for (var j = 1; j <= days; j++) buckets.push({ label: String(j), total: 0, count: 0 });
       recs.forEach(function (r) {
         var d = new Date(r.start);
         var idx = d.getDate() - 1;
-        if (idx >= 0 && idx < days) {
-          buckets[idx].total += r.duration;
-          buckets[idx].count++;
-        }
+        if (idx >= 0 && idx < days) { buckets[idx].total += r.duration; buckets[idx].count++; }
       });
-
     } else {
       for (var k = 0; k < 12; k++) buckets.push({ label: (k + 1) + '月', total: 0, count: 0 });
       recs.forEach(function (r) {
@@ -2095,29 +2210,22 @@
     var points = buckets.map(function (b) {
       return { label: b.label, value: b.total, count: b.count };
     });
-
     var totalMs = recs.reduce(function (sum, r) { return sum + r.duration; }, 0);
     var totalPaused = recs.reduce(function (sum, r) { return sum + (r.pausedMs || 0); }, 0);
 
     return {
-      points: points,
-      count: recs.length,
-      total: totalMs,
-      paused: totalPaused,
-      avg: recs.length ? totalMs / recs.length : 0
+      points: points, count: recs.length, total: totalMs,
+      paused: totalPaused, avg: recs.length ? totalMs / recs.length : 0
     };
   }
 
   function renderTimerTrend(name, p) {
     var data = aggregateTimer(name, statMode, p);
-
     var titleText = name + ' · 耗时趋势';
     if (data.count) {
-      titleText += '（合计 ' + fmtDur(data.total) +
-        ' · 平均 ' + fmtDur(data.avg) + '）';
+      titleText += '（合计 ' + fmtDur(data.total) + ' · 平均 ' + fmtDur(data.avg) + '）';
     }
     $('#timer-trend-title').textContent = titleText;
-
     $('#timer-trend-legend').innerHTML =
       '<span class="legend-dot"></span>' + esc(name) + ' · 每个时段的耗时合计';
 
@@ -2132,21 +2240,16 @@
 
   function getCheckinNames() {
     var seen = {}, out = [];
-    state.checkins.slice()
-      .sort(function (a, b) { return b.time - a.time; })
-      .forEach(function (c) {
-        if (!seen[c.name]) { seen[c.name] = 1; out.push(c.name); }
-      });
+    state.checkins.slice().sort(function (a, b) { return b.time - a.time; })
+      .forEach(function (c) { if (!seen[c.name]) { seen[c.name] = 1; out.push(c.name); } });
     return sortNames(out);
   }
 
   function aggregateCheckin(name, mode, p) {
     var s = p.start.getTime(), e = p.end.getTime();
-
     var recs = state.checkins.filter(function (c) {
       return c.name === name && c.time >= s && c.time < e;
     });
-
     var buckets = [];
 
     if (mode === 'week') {
@@ -2160,7 +2263,6 @@
         );
         if (idx >= 0 && idx < 7) buckets[idx].values.push(secOfDay(c.time));
       });
-
     } else if (mode === 'month') {
       var days = new Date(p.start.getFullYear(), p.start.getMonth() + 1, 0).getDate();
       for (var j = 1; j <= days; j++) buckets.push({ label: String(j), values: [] });
@@ -2169,7 +2271,6 @@
         var idx = d.getDate() - 1;
         if (idx >= 0 && idx < days) buckets[idx].values.push(secOfDay(c.time));
       });
-
     } else {
       for (var k = 0; k < 12; k++) buckets.push({ label: (k + 1) + '月', values: [] });
       recs.forEach(function (c) {
@@ -2186,15 +2287,12 @@
     });
 
     var allVals = recs.map(function (c) { return secOfDay(c.time); });
-
     var avg = allVals.length
       ? allVals.reduce(function (a, x) { return a + x; }, 0) / allVals.length
       : 0;
 
     return {
-      points: points,
-      count: recs.length,
-      avg: avg,
+      points: points, count: recs.length, avg: avg,
       min: allVals.length ? Math.min.apply(null, allVals) : 0,
       max: allVals.length ? Math.max.apply(null, allVals) : 0
     };
@@ -2207,11 +2305,9 @@
     if (!names.length) {
       sel.innerHTML = '<option>暂无打卡事项</option>';
       sel.disabled = true;
-
       $('#chk-count').textContent = '0 次';
       $('#chk-summary').innerHTML = '<span>还没有打卡记录</span>';
       $('#chart-legend').innerHTML = '';
-
       requestAnimationFrame(function () {
         drawTrend($('#trend-canvas'), [], { yFmt: secToHM, emptyText: '该周期暂无打卡数据' });
       });
@@ -2227,7 +2323,6 @@
     }).join('');
 
     var data = aggregateCheckin(checkinName, statMode, p);
-
     $('#chk-count').textContent = data.count + ' 次';
 
     if (data.count === 0) {
@@ -2246,16 +2341,13 @@
 
     requestAnimationFrame(function () {
       drawTrend($('#trend-canvas'), data.points, {
-        yFmt: secToHM,
-        emptyText: '该周期暂无打卡数据'
+        yFmt: secToHM, emptyText: '该周期暂无打卡数据'
       });
     });
   }
 
-  /* ==================== 通用趋势图绘制 ==================== */
   function drawTrend(canvas, points, opts) {
     if (!canvas) return;
-
     opts = opts || {};
     var yFmt = opts.yFmt || function (v) { return String(v); };
     var emptyText = opts.emptyText || '该周期暂无数据';
@@ -2263,7 +2355,6 @@
     var dpr = window.devicePixelRatio || 1;
     var W = canvas.clientWidth || 320;
     var H = 200;
-
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
 
@@ -2276,16 +2367,15 @@
       var x = cs.getPropertyValue(name).trim();
       return x || fb;
     }
-    var cMuted = v('--muted', '#6a7185');
-    var cBorder = 'rgba(128, 128, 148, 0.18)';
-    var cPrimary = v('--primary', '#4f6ef7');
-    var cCard = v('--glass-bg-strong', '#ffffff');
+    var cMuted = v('--label-2', '#8E8E93');
+    var cGrid = 'rgba(128, 128, 148, 0.16)';
+    var cBlue = v('--blue', '#007AFF');
 
-    var padL = 50, padR = 12, padT = 16, padB = 26;
+    var padL = 50, padR = 14, padT = 16, padB = 26;
     var plotW = W - padL - padR;
     var plotH = H - padT - padB;
 
-    ctx.font = '11px -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif';
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif';
 
     var hasAny = points.some(function (p) { return p.value != null; });
     if (!hasAny) {
@@ -2296,10 +2386,8 @@
       return;
     }
 
-    var vals = points
-      .filter(function (p) { return p.value != null; })
+    var vals = points.filter(function (p) { return p.value != null; })
       .map(function (p) { return p.value; });
-
     var min, max;
 
     if (opts.zeroBased) {
@@ -2317,22 +2405,20 @@
       for (var si = 0; si < steps.length; si++) {
         if (rawStep <= steps[si]) { step = steps[si]; break; }
       }
-
       max = Math.ceil(maxVal / step) * step;
       if (max === 0) max = step;
     } else {
       min = Math.min.apply(null, vals);
       max = Math.max.apply(null, vals);
       var minSpan = typeof opts.minSpan === 'number' ? opts.minSpan : 1800;
-
       if (max - min < minSpan) {
         var mid = (min + max) / 2;
         min = mid - minSpan / 2;
         max = mid + minSpan / 2;
       } else {
-        var pad = (max - min) * 0.18;
-        min -= pad;
-        max += pad;
+        var pad0 = (max - min) * 0.18;
+        min -= pad0;
+        max += pad0;
       }
       min = Math.max(0, min);
       max = Math.min(86400, max);
@@ -2355,7 +2441,7 @@
       var val = min + (max - min) * (i / ticks);
       var y = yOf(val);
 
-      ctx.strokeStyle = cBorder;
+      ctx.strokeStyle = cGrid;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(padL, Math.round(y) + 0.5);
@@ -2363,10 +2449,10 @@
       ctx.stroke();
 
       ctx.fillStyle = cMuted;
-      ctx.fillText(yFmt(val), padL - 8, y);
+      ctx.fillText(yFmt(val), padL - 10, y);
     }
 
-    ctx.strokeStyle = cPrimary;
+    ctx.strokeStyle = cBlue;
     ctx.lineWidth = 2.5;
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
@@ -2384,10 +2470,9 @@
     points.forEach(function (pt, idx) {
       if (pt.value == null) return;
       var x = xOf(idx), y = yOf(pt.value);
-
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = cPrimary;
+      ctx.fillStyle = cBlue;
       ctx.fill();
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 2;
@@ -2400,30 +2485,24 @@
 
     var maxLabels = Math.max(2, Math.floor(plotW / 34));
     var stepX = Math.ceil(points.length / maxLabels);
-
     points.forEach(function (pt, idx) {
       if (idx % stepX !== 0 && idx !== points.length - 1) return;
       ctx.fillText(pt.label, xOf(idx), padT + plotH + 8);
     });
   }
 
-  /* ==================== 渲染：设置页 ==================== */
   function renderSettings() {
     $('#set-show-total').checked = !!state.settings.showTotalCard;
-
     var totalMs = state.records.reduce(function (s, r) { return s + r.duration; }, 0);
     var makeupCount = state.checkins.filter(function (c) { return c.makeup; }).length;
 
     var summary = state.records.length + ' 条计时记录（合计 ' + fmtDur(totalMs) + '） · ' +
       state.checkins.length + ' 条打卡记录' +
       (makeupCount ? '（含 ' + makeupCount + ' 条补卡）' : '');
-    if (state.timers.length) {
-      summary += ' · 正在计时 ' + state.timers.length + ' 个';
-    }
+    if (state.timers.length) summary += ' · 正在计时 ' + state.timers.length + ' 个';
     $('#data-summary').textContent = summary;
   }
 
-  /* ==================== 统一渲染 ==================== */
   function renderAll() {
     if (activeTab === 'home') renderHome();
     else if (activeTab === 'records') renderRecords();
@@ -2433,111 +2512,73 @@
 
   function switchTab(tab) {
     activeTab = tab;
-    $$('.tab').forEach(function (b) {
-      b.classList.toggle('active', b.dataset.tab === tab);
-    });
+    $$('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
     $('#view-home').hidden = tab !== 'home';
     $('#view-records').hidden = tab !== 'records';
     $('#view-stats').hidden = tab !== 'stats';
     $('#view-settings').hidden = tab !== 'settings';
-
     renderAll();
   }
 
-  /* ==================== 导出（原生） ==================== */
   async function exportData() {
     var payload = {
-      app: 'time-tracker',
-      version: 5,
+      app: 'time-tracker', version: 5,
       exportedAt: new Date().toISOString(),
-      timers: state.timers,
-      records: state.records,
-      checkins: state.checkins,
-      settings: state.settings
+      timers: state.timers, records: state.records,
+      checkins: state.checkins, settings: state.settings
     };
-
     var json = JSON.stringify(payload, null, 2);
     var fileName = 'time-tracker-' + todayStr() + '.json';
-
     var isNative = window.Capacitor && Capacitor.isNativePlatform();
 
     if (isNative) {
       try {
         var Filesystem = Capacitor.Plugins.Filesystem;
         var Share = Capacitor.Plugins.Share;
-
         var res = await Filesystem.writeFile({
-          path: fileName,
-          data: json,
-          directory: 'CACHE',
-          encoding: 'utf8'
+          path: fileName, data: json, directory: 'CACHE', encoding: 'utf8'
         });
-
         await Share.share({
-          title: '时间记录备份',
-          text: '选择保存位置或分享到云盘',
-          url: res.uri,
-          dialogTitle: '导出备份'
+          title: '时间记录备份', text: '选择保存位置或分享到云盘',
+          url: res.uri, dialogTitle: '导出备份'
         });
-
         toast('请选择保存位置');
-      } catch (e) {
-        toast('导出失败：' + (e.message || e));
-      }
+      } catch (e) { toast('导出失败：' + (e.message || e)); }
       return;
     }
 
     var blob = new Blob([json], { type: 'application/json' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
     toast('已导出备份文件');
   }
 
-  /* ==================== 导入（原生） ==================== */
   async function pickAndImport() {
     var isNative = window.Capacitor && Capacitor.isNativePlatform();
-
-    if (!isNative) {
-      $('#file-input').click();
-      return;
-    }
+    if (!isNative) { $('#file-input').click(); return; }
 
     try {
       var FilePicker = Capacitor.Plugins.FilePicker;
-
       var picked = await FilePicker.pickFiles({
-        types: ['application/json'],
-        readData: true
+        types: ['application/json'], readData: true
       });
-
       if (!picked || !picked.files || !picked.files.length) return;
 
       var file = picked.files[0];
       var content = '';
-
       if (file.data) {
         var bin = atob(file.data);
         var bytes = new Uint8Array(bin.length);
         for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
         content = new TextDecoder('utf-8').decode(bytes);
-      } else {
-        toast('无法读取文件内容');
-        return;
-      }
+      } else { toast('无法读取文件内容'); return; }
 
       var json;
-      try {
-        json = JSON.parse(content);
-      } catch (err) {
-        toast('文件解析失败，请确认是导出的 JSON 文件');
-        return;
-      }
+      try { json = JSON.parse(content); }
+      catch (err) { toast('文件解析失败，请确认是导出的 JSON 文件'); return; }
 
       var ok = await confirmDialog(
         '将文件中的数据与现有记录合并。\n相同 ID 的记录会自动跳过，不会重复。\n\n确定导入？',
@@ -2548,14 +2589,11 @@
       updateSuggestions();
       renderAll();
       toast('导入完成：新增 ' + res.records + ' 条计时、' + res.checkins + ' 条打卡');
-    } catch (e) {
-      toast('导入失败：' + (e.message || e));
-    }
+    } catch (e) { toast('导入失败：' + (e.message || e)); }
   }
 
   function importData(json) {
     if (!json || typeof json !== 'object') throw new Error('bad');
-
     var inRecords = Array.isArray(json.records) ? json.records : [];
     var inCheckins = Array.isArray(json.checkins) ? json.checkins : [];
     var inSettings = json.settings;
@@ -2570,42 +2608,28 @@
       if (r && r.id && !existRec[r.id] &&
           typeof r.start === 'number' && typeof r.end === 'number' && r.name) {
         if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
-        state.records.push(r);
-        existRec[r.id] = 1;
-        addRec++;
+        state.records.push(r); existRec[r.id] = 1; addRec++;
       }
     });
-
     inCheckins.forEach(function (c) {
-      if (c && c.id && !existChk[c.id] &&
-          typeof c.time === 'number' && c.name) {
-        state.checkins.push(c);
-        existChk[c.id] = 1;
-        addChk++;
+      if (c && c.id && !existChk[c.id] && typeof c.time === 'number' && c.name) {
+        state.checkins.push(c); existChk[c.id] = 1; addChk++;
       }
     });
-
     if (inSettings && typeof inSettings === 'object') {
       state.settings = Object.assign({}, state.settings, inSettings);
     }
-
     save();
     return { records: addRec, checkins: addChk };
   }
 
   function handleFile(file) {
     if (!file) return;
-
     var reader = new FileReader();
-
     reader.onload = async function (ev) {
       var json;
-      try {
-        json = JSON.parse(ev.target.result);
-      } catch (err) {
-        toast('文件解析失败，请确认是导出的 JSON 文件');
-        return;
-      }
+      try { json = JSON.parse(ev.target.result); }
+      catch (err) { toast('文件解析失败，请确认是导出的 JSON 文件'); return; }
 
       var ok = await confirmDialog(
         '将文件中的数据与现有记录合并。\n相同 ID 的记录会自动跳过，不会重复。\n\n确定导入？',
@@ -2613,41 +2637,30 @@
       if (!ok) return;
 
       var res;
-      try {
-        res = importData(json);
-      } catch (err) {
-        toast('数据格式不正确，导入失败');
-        return;
-      }
+      try { res = importData(json); }
+      catch (err) { toast('数据格式不正确，导入失败'); return; }
 
       updateSuggestions();
       renderAll();
       toast('导入完成：新增 ' + res.records + ' 条计时、' + res.checkins + ' 条打卡');
     };
-
     reader.onerror = function () { toast('文件读取失败'); };
     reader.readAsText(file);
   }
 
-  /* ==================== 事件绑定 ==================== */
   function bindEvents() {
-
     $$('.tab').forEach(function (btn) {
       btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
     });
-
     $$('.seg').forEach(function (seg) {
       seg.addEventListener('click', function (e) {
         var btn = e.target.closest('.seg-btn');
         if (!btn) return;
-
         seg.querySelectorAll('.seg-btn').forEach(function (b) {
           b.classList.toggle('active', b === btn);
         });
-
         var g = seg.dataset.group;
         var val = btn.dataset.value;
-
         if (g === 'rtype') { recType = val; renderRecords(); }
         else if (g === 'stype') { statType = val; renderStats(); }
         else if (g === 'mode') { statMode = val; renderStats(); }
@@ -2657,13 +2670,11 @@
     $('#btn-checkin').addEventListener('click', openCheckinModal);
     $('#checkin-ok').addEventListener('click', saveCheckin);
     $('#checkin-cancel').addEventListener('click', function () {
-      pendingCheckin = null;
-      hideModal('#checkin-modal');
+      pendingCheckin = null; hideModal('#checkin-modal');
     });
     $('#checkin-modal').addEventListener('click', function (e) {
       if (e.target.id === 'checkin-modal') {
-        pendingCheckin = null;
-        hideModal('#checkin-modal');
+        pendingCheckin = null; hideModal('#checkin-modal');
       }
     });
     $('#checkin-input').addEventListener('keydown', function (e) {
@@ -2672,9 +2683,7 @@
 
     $('#btn-makeup').addEventListener('click', openMakeupModal);
     $('#makeup-ok').addEventListener('click', saveMakeup);
-    $('#makeup-cancel').addEventListener('click', function () {
-      hideModal('#makeup-modal');
-    });
+    $('#makeup-cancel').addEventListener('click', function () { hideModal('#makeup-modal'); });
     $('#makeup-modal').addEventListener('click', function (e) {
       if (e.target.id === 'makeup-modal') hideModal('#makeup-modal');
     });
@@ -2685,13 +2694,9 @@
       if (e.key === 'Enter') { e.preventDefault(); saveMakeup(); }
     });
 
-    /* 开始新计时 */
     $('#btn-start').addEventListener('click', openStartModal);
-
     $('#start-ok').addEventListener('click', confirmStartTimer);
-    $('#start-cancel').addEventListener('click', function () {
-      hideModal('#start-modal');
-    });
+    $('#start-cancel').addEventListener('click', function () { hideModal('#start-modal'); });
     $('#start-modal').addEventListener('click', function (e) {
       if (e.target.id === 'start-modal') hideModal('#start-modal');
     });
@@ -2699,30 +2704,21 @@
       if (e.key === 'Enter') { e.preventDefault(); confirmStartTimer(); }
     });
 
-    /* 计时器卡片：暂停 / 停止 / 放弃 */
     $('#timer-list').addEventListener('click', async function (e) {
       var btn = e.target.closest('[data-act]');
       if (!btn) return;
-
       var card = e.target.closest('.timer-card');
       if (!card) return;
-
       var id = card.dataset.id;
       var act = btn.dataset.act;
 
       if (act === 'pause') {
         var t = findTimer(id);
         if (!t) return;
-        if (isTimerPaused(t)) resumeTimer(id);
-        else pauseTimer(id);
+        if (isTimerPaused(t)) resumeTimer(id); else pauseTimer(id);
         return;
       }
-
-      if (act === 'stop') {
-        openStopModal(id);
-        return;
-      }
-
+      if (act === 'stop') { openStopModal(id); return; }
       if (act === 'discard') {
         var t2 = findTimer(id);
         if (!t2) return;
@@ -2734,16 +2730,13 @@
       }
     });
 
-    /* 停止计时确认 */
     $('#stop-ok').addEventListener('click', confirmStopTimer);
     $('#stop-cancel').addEventListener('click', function () {
-      pendingStopTimerId = null;
-      hideModal('#stop-modal');
+      pendingStopTimerId = null; hideModal('#stop-modal');
     });
     $('#stop-modal').addEventListener('click', function (e) {
       if (e.target.id === 'stop-modal') {
-        pendingStopTimerId = null;
-        hideModal('#stop-modal');
+        pendingStopTimerId = null; hideModal('#stop-modal');
       }
     });
 
@@ -2756,27 +2749,17 @@
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       if (!$('#confirm-modal').hidden) { resolveConfirm(false); return; }
-      if (!$('#checkin-modal').hidden) {
-        pendingCheckin = null;
-        hideModal('#checkin-modal');
-        return;
-      }
+      if (!$('#checkin-modal').hidden) { pendingCheckin = null; hideModal('#checkin-modal'); return; }
       if (!$('#makeup-modal').hidden) { hideModal('#makeup-modal'); return; }
       if (!$('#start-modal').hidden) { hideModal('#start-modal'); return; }
-      if (!$('#stop-modal').hidden) {
-        pendingStopTimerId = null;
-        hideModal('#stop-modal');
-      }
+      if (!$('#stop-modal').hidden) { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
 
-    /* 记录删除 */
     async function onDelete(e) {
       var del = e.target.closest('.del');
       if (!del) return;
-
       var li = e.target.closest('.item');
       if (!li) return;
-
       var id = li.dataset.id;
       var kind = li.dataset.kind;
 
@@ -2788,7 +2771,6 @@
           '删除');
         if (!ok1) return;
         state.records = state.records.filter(function (x) { return x.id !== id; });
-
       } else {
         var c = state.checkins.filter(function (x) { return x.id === id; })[0];
         if (!c) return;
@@ -2799,7 +2781,6 @@
         if (!ok2) return;
         state.checkins = state.checkins.filter(function (x) { return x.id !== id; });
       }
-
       save();
       updateSuggestions();
       renderAll();
@@ -2809,64 +2790,47 @@
     $('#record-list').addEventListener('click', onDelete);
 
     $('#record-search').addEventListener('input', function (e) {
-      searchQuery = e.target.value;
-      renderRecords();
+      searchQuery = e.target.value; renderRecords();
     });
-
     $('#timer-name-select').addEventListener('change', function (e) {
       timerFilterName = e.target.value;
       renderTimerStats(getPeriod(statMode, statBase));
     });
-
     $('#checkin-name-select').addEventListener('change', function (e) {
       checkinName = e.target.value;
       renderCheckinStats(getPeriod(statMode, statBase));
     });
-
     $('#stat-prev').addEventListener('click', function () {
       var p = getPeriod(statMode, statBase);
       statBase = new Date(p.start.getTime() - 1);
       renderStats();
     });
-
     $('#stat-next').addEventListener('click', function () {
       var p = getPeriod(statMode, statBase);
       if (p.end.getTime() > Date.now()) return;
       statBase = new Date(p.end.getTime());
       renderStats();
     });
-
     $('#set-show-total').addEventListener('change', function (e) {
       state.settings.showTotalCard = e.target.checked;
       save();
       toast(e.target.checked ? '已显示总时长卡片' : '已隐藏总时长卡片');
     });
-
     $('#btn-export').addEventListener('click', exportData);
-
     $('#btn-import').addEventListener('click', pickAndImport);
-
     $('#file-input').addEventListener('change', function (e) {
       var f = e.target.files && e.target.files[0];
       if (f) handleFile(f);
       e.target.value = '';
     });
-
     $('#btn-reset').addEventListener('click', async function () {
       var ok = await confirmDialog(
         '确定清空全部数据？\n所有计时记录、打卡记录都会被删除，且无法恢复。\n\n建议先导出备份。',
         '清空');
       if (!ok) return;
-
-      state = {
-        timers: [],
-        records: [],
-        checkins: [],
-        settings: { showTotalCard: true }
-      };
+      state = { timers: [], records: [], checkins: [], settings: { showTotalCard: true } };
       try { localStorage.removeItem(KEY); } catch (e2) { /* 忽略 */ }
       save();
-
       updateSuggestions();
       renderAll();
       toast('已清空全部数据');
@@ -2894,7 +2858,6 @@
     });
   }
 
-  /* ==================== 启动 ==================== */
   load();
   bindEvents();
   updateSuggestions();
