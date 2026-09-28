@@ -1,6 +1,4 @@
 
-
-```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -161,6 +159,8 @@
     flex: 1;
     overflow-x: hidden;
     overflow-y: auto;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     padding-bottom: calc(72px + env(safe-area-inset-bottom));
     scrollbar-width: none;
@@ -431,6 +431,16 @@
 
   .actions { display: flex; gap: 2px; flex: none; opacity: 0; }
   .item:hover .actions, .item:focus-within .actions { opacity: 1; }
+  .record-item {
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: pan-y;
+  }
+  .record-item.long-pressing {
+    transform: scale(0.985);
+    background: var(--fill-primary);
+    transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
+  }
   @media (hover: none) { .actions { opacity: 1; } }
 
   .icon {
@@ -823,6 +833,26 @@
     box-shadow: var(--shadow-lg);
   }
   .toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  /* ===== 手机端增强 ===== */
+  @media (max-width: 660px) {
+    .app { padding-left: 12px; padding-right: 12px; }
+    .tabs { margin-bottom: 14px; }
+    .card { border-radius: 16px; }
+    .modal-backdrop { padding: 12px; align-items: end; }
+    .modal { max-width: none; border-radius: 24px 24px 18px 18px; padding-bottom: calc(18px + env(safe-area-inset-bottom)); max-height: min(88dvh, 720px); }
+    .modal-actions button { min-height: 44px; }
+    .btn, .danger-btn, .icon-btn, .chip-item, .check-circle { touch-action: manipulation; }
+    .chart-card { overflow: hidden; }
+    #trend-canvas, #timer-trend-canvas { height: 190px; }
+  }
+
+  @media (max-width: 420px) {
+    .field-row, .makeup-row { gap: 8px; }
+    .period-bar { grid-template-columns: 40px 1fr 40px; gap: 6px; }
+    .summary-total { font-size: 1.8em; }
+    .group-card { padding: 13px 14px; }
+  }
 
   @media (max-width: 380px) {
     .header { padding: 4px 4px 0; margin-bottom: 14px; flex: none; }
@@ -1223,6 +1253,26 @@
   </div>
 </div>
 
+<!-- 编辑记录 -->
+<div class="modal-backdrop" id="edit-record-modal" hidden>
+  <div class="modal">
+    <h3>编辑记录</h3>
+    <p class="modal-sub" id="edit-record-info"></p>
+    <div class="field-block">
+      <div class="field-label">事项</div>
+      <input class="field" id="edit-record-name" type="text" maxlength="40" placeholder="事项名称" autocomplete="off">
+    </div>
+    <div class="field-block">
+      <div class="field-label">备注（选填）</div>
+      <textarea class="field" id="edit-record-note" rows="3" maxlength="200" placeholder="补充说明"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="edit-record-cancel">取消</button>
+      <button type="button" class="primary ok" id="edit-record-ok">保存修改</button>
+    </div>
+  </div>
+</div>
+
 <!-- 打卡 -->
 <div class="modal-backdrop" id="checkin-modal" hidden>
   <div class="modal">
@@ -1333,7 +1383,8 @@
 (function () {
   'use strict';
 
-  var KEY = 'time-tracker-v9';
+  var KEY = 'time-tracker-v10';
+  var KEY_V9 = 'time-tracker-v9';
   var KEY_V8 = 'time-tracker-v8';
   var KEY_V7 = 'time-tracker-v7';
   var KEY_SCHEDULE = 'daily-tracker-v1';
@@ -1389,6 +1440,12 @@
   var pendingStopTimerId = null;
   var confirmResolve = null;
   var currentSubpage = null;
+  var subpageHistoryActive = false;
+  var skipSubpagePop = false;
+  var editingRecord = null;
+  var recordLongPressTimer = null;
+  var recordLongPressStartX = 0;
+  var recordLongPressStartY = 0;
 
   var TAB_ORDER = ['schedule', 'timer', 'stats', 'settings'];
   var MAIN_TABS = ['schedule', 'timer', 'stats', 'settings'];
@@ -1588,7 +1645,7 @@
     } else {
       h.target = 1;
     }
-    if (!h.createdAt) h.createdAt = '1970-01-01';
+    h.createdAt = normalizeDateOnly(h.createdAt);
     return h;
   }
 
@@ -1613,9 +1670,40 @@
     return t;
   }
 
+  function normalizeDateOnly(v) {
+    if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    if (typeof v === 'number' && isFinite(v)) {
+      var d = new Date(v);
+      if (!isNaN(d.getTime())) return dateStr(d);
+    }
+    return '1970-01-01';
+  }
+
+  function normalizeRecord(r) {
+    if (!r || typeof r.start !== 'number' || typeof r.end !== 'number' || !r.name) return null;
+    if (!r.id) r.id = uid();
+    if (typeof r.duration !== 'number' || !isFinite(r.duration) || r.duration < 0) {
+      r.duration = Math.max(0, r.end - r.start);
+    }
+    if (typeof r.pausedMs !== 'number' || !isFinite(r.pausedMs) || r.pausedMs < 0) r.pausedMs = 0;
+    if (typeof r.note !== 'string') r.note = '';
+    if (typeof r.createdAt !== 'number') r.createdAt = r.end;
+    return r;
+  }
+
+  function normalizeCheckin(c) {
+    if (!c || typeof c.time !== 'number' || !c.name) return null;
+    if (!c.id) c.id = uid();
+    if (typeof c.note !== 'string') c.note = '';
+    if (typeof c.createdAt !== 'number') c.createdAt = c.time;
+    c.makeup = !!c.makeup;
+    return c;
+  }
+
   function load() {
     var raw = null;
     try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (!raw) { try { raw = localStorage.getItem(KEY_V9); } catch (e) { raw = null; } }
     if (!raw) { try { raw = localStorage.getItem(KEY_V8); } catch (e) { raw = null; } }
     if (!raw) { try { raw = localStorage.getItem(KEY_V7); } catch (e) { raw = null; } }
 
@@ -1623,9 +1711,13 @@
       try {
         var d = JSON.parse(raw);
         state.timers = Array.isArray(d.timers) ? d.timers.map(normalizeTimer).filter(Boolean) : [];
-        state.records = Array.isArray(d.records) ? d.records : [];
-        state.checkins = Array.isArray(d.checkins) ? d.checkins : [];
-        state.habits = Array.isArray(d.habits) ? d.habits.map(normalizeHabit).filter(Boolean) : [];
+        state.records = Array.isArray(d.records) ? d.records.map(normalizeRecord).filter(Boolean) : [];
+        state.checkins = Array.isArray(d.checkins) ? d.checkins.map(normalizeCheckin).filter(Boolean) : [];
+        state.habits = Array.isArray(d.habits) ? d.habits.map(function (h) {
+          if (!h) return null;
+          h.createdAt = normalizeDateOnly(h.createdAt);
+          return normalizeHabit(h);
+        }).filter(Boolean) : [];
         state.daily = (d.daily && typeof d.daily === 'object') ? d.daily : {};
         state.settings = Object.assign({}, d.settings || {});
       } catch (e) {
@@ -1643,7 +1735,7 @@
                 id: h.id || uid(),
                 name: h.text || h.name || '未命名',
                 type: 'daily',
-                createdAt: h.createdAt || '1970-01-01'
+                createdAt: normalizeDateOnly(h.createdAt)
               }));
             });
           }
@@ -2086,7 +2178,7 @@
     var tags = '<span class="tag">' + fmtDateTime(r.start) + ' → ' + fmtTime(r.end) + '</span>';
     if (pausedMs >= 1000) tags += '<span class="tag paused-tag">暂停 ' + fmtDurExact(pausedMs) + '</span>';
     var noteHTML = r.note ? '<div class="rec-note">' + esc(r.note) + '</div>' : '';
-    return '<li class="item" data-kind="timer" data-id="' + r.id + '">' +
+    return '<li class="item record-item" data-kind="timer" data-id="' + r.id + '">' +
       '<div class="content">' +
         '<div class="rec-top">' +
           '<span class="text">' + esc(r.name) + '</span>' +
@@ -2108,7 +2200,7 @@
       }
     }
     var noteHTML = c.note ? '<div class="rec-note">' + esc(c.note) + '</div>' : '';
-    return '<li class="item" data-kind="checkin" data-id="' + c.id + '">' +
+    return '<li class="item record-item" data-kind="checkin" data-id="' + c.id + '">' +
       '<div class="content">' +
         '<div class="rec-top">' +
           '<span class="text">' + esc(c.name) + '</span>' +
@@ -3314,6 +3406,9 @@
     if (currentSubpage) closeSubpage(true);
 
     currentSubpage = name;
+    subpageHistoryActive = true;
+    try { history.pushState({ app: 'time-tracker', subpage: name }, '', location.href); } catch (e) {}
+
     document.querySelector('#view-' + activeTab).hidden = true;
 
     var section = document.querySelector('#view-' + name);
@@ -3343,7 +3438,7 @@
     }
   }
 
-  function closeSubpage(silent) {
+  function closeSubpage(silent, fromHistory) {
     if (!currentSubpage) return;
 
     if (currentSubpage === 'font') {
@@ -3355,17 +3450,117 @@
     if (section) section.hidden = true;
 
     currentSubpage = null;
+
+    var hadHistory = subpageHistoryActive;
+    subpageHistoryActive = false;
+
     var home = document.querySelector('#view-' + activeTab);
     if (home) home.hidden = false;
     if (!silent) {
       var wrap2 = $('#main-wrap');
       if (wrap2) wrap2.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // 点击页面内“返回”或 Android 原生返回时，主动退掉二级页留下的历史记录。
+    // 浏览器/Android WebView 的 popstate 已经返回时则不再调用 history.back()。
+    if (hadHistory && !fromHistory) {
+      skipSubpagePop = true;
+      try { history.back(); } catch (e) { skipSubpagePop = false; }
+    }
   }
+
+  /* ========== 编辑浏览记录 ========== */
+  function openEditRecord(id, kind) {
+    var list = kind === 'timer' ? state.records : state.checkins;
+    var item = list.filter(function (x) { return x.id === id; })[0];
+    if (!item) return;
+
+    editingRecord = { id: id, kind: kind };
+    $('#edit-record-name').value = item.name || '';
+    $('#edit-record-note').value = item.note || '';
+    if (kind === 'timer') {
+      $('#edit-record-info').textContent = '计时 ' + fmtDateTime(item.start) + ' · ' + fmtDurExact(item.duration);
+    } else {
+      $('#edit-record-info').textContent = (item.makeup ? '补卡 ' : '打卡 ') + fmtDateFull(item.time) + ' ' + fmtTimeSec(item.time);
+    }
+    showModal('#edit-record-modal');
+    setTimeout(function () { $('#edit-record-name').focus(); }, 180);
+  }
+
+  function saveEditedRecord() {
+    if (!editingRecord) return;
+    var name = $('#edit-record-name').value.trim();
+    if (!name) { $('#edit-record-name').focus(); return; }
+    var note = $('#edit-record-note').value.trim();
+    var list = editingRecord.kind === 'timer' ? state.records : state.checkins;
+    var item = list.filter(function (x) { return x.id === editingRecord.id; })[0];
+    if (!item) { editingRecord = null; hideModal('#edit-record-modal'); return; }
+
+    item.name = name;
+    item.note = note;
+    save();
+    updateSuggestions();
+    editingRecord = null;
+    hideModal('#edit-record-modal');
+    renderAll();
+    toast('记录已修改');
+  }
+
+  function cancelEditRecord() {
+    editingRecord = null;
+    hideModal('#edit-record-modal');
+  }
+
+  function clearRecordLongPress(li) {
+    if (recordLongPressTimer) {
+      clearTimeout(recordLongPressTimer);
+      recordLongPressTimer = null;
+    }
+    if (li) li.classList.remove('long-pressing');
+  }
+
+  function bindRecordLongPress() {
+    var list = $('#record-list');
+    if (!list) return;
+
+    list.addEventListener('pointerdown', function (e) {
+      var li = e.target.closest('.record-item');
+      if (!li || e.target.closest('button')) return;
+      recordLongPressStartX = e.clientX;
+      recordLongPressStartY = e.clientY;
+      clearRecordLongPress();
+      li.classList.add('long-pressing');
+      recordLongPressTimer = setTimeout(function () {
+        recordLongPressTimer = null;
+        li.classList.remove('long-pressing');
+        openEditRecord(li.dataset.id, li.dataset.kind);
+      }, 600);
+    });
+
+    list.addEventListener('pointermove', function (e) {
+      if (!recordLongPressTimer) return;
+      if (Math.abs(e.clientX - recordLongPressStartX) > 10 ||
+          Math.abs(e.clientY - recordLongPressStartY) > 10) {
+        clearRecordLongPress(e.target.closest('.record-item'));
+      }
+    });
+
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (type) {
+      list.addEventListener(type, function (e) {
+        var li = e.target.closest('.record-item');
+        clearRecordLongPress(li);
+      });
+    });
+
+    list.addEventListener('contextmenu', function (e) {
+      if (e.target.closest('.record-item')) e.preventDefault();
+    });
+  }
+
   /* ========== 导出/导入 ========== */
   async function exportData() {
     var payload = {
-      app: 'time-tracker', version: 9,
+      app: 'time-tracker', version: 10,
       exportedAt: new Date().toISOString(),
       timers: state.timers, records: state.records,
       checkins: state.checkins,
@@ -3450,15 +3645,14 @@
     inRecords.forEach(function (r) {
       if (r && r.id && !existRec[r.id] &&
           typeof r.start === 'number' && typeof r.end === 'number' && r.name) {
-        if (typeof r.pausedMs !== 'number') r.pausedMs = 0;
-        if (typeof r.note !== 'string') r.note = '';
-        state.records.push(r); existRec[r.id] = 1; addRec++;
+        var nr = normalizeRecord(r);
+        if (nr) { state.records.push(nr); existRec[nr.id] = 1; addRec++; }
       }
     });
     inCheckins.forEach(function (c) {
       if (c && c.id && !existChk[c.id] && typeof c.time === 'number' && c.name) {
-        if (typeof c.note !== 'string') c.note = '';
-        state.checkins.push(c); existChk[c.id] = 1; addChk++;
+        var nc = normalizeCheckin(c);
+        if (nc) { state.checkins.push(nc); existChk[nc.id] = 1; addChk++; }
       }
     });
     inHabits.forEach(function (h) {
@@ -3467,7 +3661,7 @@
           id: h.id, name: h.name,
           type: h.type || 'daily',
           target: h.target || 1,
-          createdAt: h.createdAt || '1970-01-01'
+          createdAt: normalizeDateOnly(h.createdAt)
         });
         if (nh) { state.habits.push(nh); existHab[nh.id] = 1; addHab++; }
       }
@@ -3544,6 +3738,8 @@
 
     wrap.addEventListener('touchend', function (e) {
       if (locked || currentSubpage) return;
+      var target = e.target;
+      if (target && target.closest && target.closest('input, textarea, select, button, a, [data-no-swipe]')) return;
       var t = e.changedTouches[0];
       var dx = t.clientX - startX;
       var dy = t.clientY - startY;
@@ -3565,22 +3761,32 @@
     try {
       if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
         Capacitor.Plugins.App.addListener('backButton', function () {
-          if (currentSubpage) { closeSubpage(); return; }
+          if (currentSubpage) { closeSubpage(false, false); return; }
           if (activeTab !== 'schedule') { switchTab('schedule', -1); return; }
           if (Capacitor.Plugins.App.exitApp) Capacitor.Plugins.App.exitApp();
         });
+      }
+    } catch (e) { /* 原生返回监听不可用时，继续使用 history 方案 */ }
+
+    // 为应用根页面保留一个历史锚点。二级页打开时再压入一层，
+    // 因此 Android/WebView 返回键首先只会退出二级页，不会直接退出应用。
+    try { history.replaceState({ app: 'time-tracker', root: 1 }, '', location.href); } catch (e2) {}
+    window.addEventListener('popstate', function () {
+      if (skipSubpagePop) {
+        skipSubpagePop = false;
         return;
       }
-    } catch (e) { /* 忽略 */ }
-
-    history.pushState({ root: 1 }, '', location.href);
-    window.addEventListener('popstate', function () {
       if (currentSubpage) {
-        closeSubpage();
-      } else if (activeTab !== 'schedule') {
-        switchTab('schedule', -1);
+        closeSubpage(true, true);
+        return;
       }
-      history.pushState({ root: 1 }, '', location.href);
+      if (activeTab !== 'schedule') {
+        switchTab('schedule', -1);
+        try { history.pushState({ app: 'time-tracker', root: 1 }, '', location.href); } catch (e3) {}
+        return;
+      }
+      // 根页面被返回时，重新压回根历史，避免普通 WebView 返回直接离开应用。
+      try { history.pushState({ app: 'time-tracker', root: 1 }, '', location.href); } catch (e4) {}
     });
   }
 
@@ -3811,6 +4017,7 @@
       if (!$('#makeup-modal').hidden) { hideModal('#makeup-modal'); return; }
       if (!$('#start-modal').hidden) { hideModal('#start-modal'); return; }
       if (!$('#stop-modal').hidden) { pendingStopTimerId = null; hideModal('#stop-modal'); return; }
+      if (!$('#edit-record-modal').hidden) { cancelEditRecord(); return; }
       if (currentSubpage) { closeSubpage(); return; }
     });
 
@@ -3845,6 +4052,12 @@
     }
     $('#recent-list').addEventListener('click', onDelete);
     $('#record-list').addEventListener('click', onDelete);
+    $('#edit-record-ok').addEventListener('click', saveEditedRecord);
+    $('#edit-record-cancel').addEventListener('click', cancelEditRecord);
+    $('#edit-record-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'edit-record-modal') cancelEditRecord();
+    });
+    bindRecordLongPress();
 
     $('#record-search').addEventListener('input', function (e) {
       searchQuery = e.target.value; renderRecords();
@@ -3979,8 +4192,8 @@
   $$('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === 'schedule'); });
   renderSchedule();
 
-  setInterval(tickClock, 250);
-  setInterval(tickTimers, 250);
+  setInterval(tickClock, 1000);
+  setInterval(tickTimers, 1000);
 
   setInterval(function () {
     if (activeTab === 'schedule' && !currentSubpage) {
