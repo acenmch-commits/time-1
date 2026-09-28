@@ -895,7 +895,7 @@
         </div>
         <p class="date-caption" id="sch-title"></p>
 
-        <div class="card progress-card">
+        <div class="card progress-card" id="schedule-progress-card">
           <div class="progress-head">
             <span>今日完成度</span>
             <strong id="sch-rate">0 / 0</strong>
@@ -903,16 +903,11 @@
           <div class="bar"><div class="bar-fill" id="sch-bar"></div></div>
         </div>
 
-        <h3 class="section-title">待办事项</h3>
+        <div class="section-head-row">
+          <h3 class="section-title">待办事项</h3>
+          <button class="btn small" id="open-task-page-schedule" type="button">＋ 添加</button>
+        </div>
         <ul class="list" id="task-list"></ul>
-        <form class="task-form" id="task-form" autocomplete="off">
-          <input class="field" id="task-text" type="text" maxlength="100" placeholder="添加待办事项…">
-          <div class="task-form-row">
-            <input class="field" id="task-start" type="datetime-local" placeholder="开始（可选）">
-            <input class="field" id="task-end" type="datetime-local" placeholder="结束（可选）">
-          </div>
-          <button class="btn" type="submit">添加待办</button>
-        </form>
 
         <h3 class="section-title">每日固定</h3>
         <ul class="list" id="habit-daily-list"></ul>
@@ -1046,6 +1041,23 @@
         </div>
 
         <h3 class="section-title">日程</h3>
+        <div class="card setting-item clickable" id="open-task-page">
+          <div>
+            <div class="setting-title">待办事项</div>
+            <div class="setting-desc">集中添加、编辑、删除待办，并设置时间</div>
+          </div>
+          <span class="setting-chevron">›</span>
+        </div>
+        <div class="card setting-item">
+          <div>
+            <div class="setting-title">显示今日完成度</div>
+            <div class="setting-desc">在日程首页显示今日事项完成进度</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-show-schedule-progress">
+            <span class="slider"></span>
+          </label>
+        </div>
         <div class="card setting-item">
           <div>
             <div class="setting-title">完成时二次确认</div>
@@ -1189,6 +1201,48 @@
 
         <h3 class="section-title">已添加</h3>
         <ul class="list" id="habit-manage-list"></ul>
+      </section>
+
+      <!-- ============ 二级页：待办事项 ============ -->
+      <section id="view-tasks" class="main-section" hidden>
+        <div class="subpage-header">
+          <button class="subpage-back" id="tasks-back" type="button">
+            <span class="back-chevron">‹</span><span id="tasks-back-label">返回</span>
+          </button>
+          <h2 class="subpage-title">待办事项</h2>
+        </div>
+
+        <div class="card" style="padding:16px; margin-bottom:14px;">
+          <div class="field-block">
+            <div class="field-label">日期</div>
+            <input class="field" id="task-page-date" type="date">
+          </div>
+          <div class="field-block">
+            <div class="field-label">事项名称</div>
+            <input class="field" id="task-page-name" type="text" maxlength="100" placeholder="例如：整理客户资料" autocomplete="off">
+          </div>
+          <div class="task-form-row">
+            <div class="field-block">
+              <div class="field-label">开始时间（可选）</div>
+              <input class="field" id="task-page-start" type="datetime-local">
+            </div>
+            <div class="field-block">
+              <div class="field-label">结束时间（可选）</div>
+              <input class="field" id="task-page-end" type="datetime-local">
+            </div>
+          </div>
+          <div class="field-block">
+            <div class="field-label">备注（可选）</div>
+            <textarea class="field" id="task-page-note" rows="2" maxlength="200" placeholder="补充说明"></textarea>
+          </div>
+          <div class="row">
+            <button class="btn" id="task-page-save" type="button">添加待办</button>
+            <button class="btn ghost" id="task-page-cancel" type="button" hidden>取消编辑</button>
+          </div>
+        </div>
+
+        <h3 class="section-title">待办列表</h3>
+        <ul class="list" id="task-manage-list"></ul>
       </section>
 
       <!-- ============ 二级页：数据备份 ============ -->
@@ -1418,6 +1472,7 @@
     daily: {},
     settings: {
       showTotalCard: true,
+      showScheduleProgress: true,
       confirmComplete: true,
       lockCompleted: false,
       font: Object.assign({}, DEFAULT_FONT)
@@ -1449,7 +1504,7 @@
 
   var TAB_ORDER = ['schedule', 'timer', 'stats', 'settings'];
   var MAIN_TABS = ['schedule', 'timer', 'stats', 'settings'];
-  var SUBPAGES = ['font', 'habit', 'backup', 'records'];
+  var SUBPAGES = ['font', 'habit', 'backup', 'records', 'tasks'];
 
   /* ===== 基础工具 ===== */
   function pad(n) { return String(n).padStart(2, '0'); }
@@ -1630,6 +1685,7 @@
   function ensureSettings() {
     state.settings = state.settings || {};
     if (typeof state.settings.showTotalCard !== 'boolean') state.settings.showTotalCard = true;
+    if (typeof state.settings.showScheduleProgress !== 'boolean') state.settings.showScheduleProgress = true;
     if (typeof state.settings.confirmComplete !== 'boolean') state.settings.confirmComplete = true;
     if (typeof state.settings.lockCompleted !== 'boolean') state.settings.lockCompleted = false;
     state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
@@ -2252,6 +2308,7 @@
     });
 
     var pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
+    $('#schedule-progress-card').hidden = !state.settings.showScheduleProgress;
     $('#sch-rate').textContent = doneCount + ' / ' + totalCount;
     $('#sch-bar').style.width = pct + '%';
 
@@ -2320,7 +2377,6 @@
           noteHTML +
           doneTag +
         '</div>' +
-        (done ? '' : '<div class="actions"><button class="icon del" type="button" title="删除">✕</button></div>') +
       '</li>';
     }).join('');
   }
@@ -2577,6 +2633,117 @@
     rec.tasks = rec.tasks.filter(function (x) { return x.id !== taskId; });
     save();
     renderSchedule();
+  }
+
+  var editingTaskId = null;
+
+  function formatTaskInputDateTime(ts) {
+    if (typeof ts !== 'number' || !isFinite(ts)) return '';
+    var d = new Date(ts);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function resetTaskEditor() {
+    editingTaskId = null;
+    $('#task-page-name').value = '';
+    $('#task-page-start').value = '';
+    $('#task-page-end').value = '';
+    $('#task-page-note').value = '';
+    $('#task-page-save').textContent = '添加待办';
+    $('#task-page-cancel').hidden = true;
+  }
+
+  function openTaskManager(fromSchedule) {
+    $('#task-page-date').value = scheduleDate;
+    $('#tasks-back-label').textContent = fromSchedule ? '日程' : '设置';
+    resetTaskEditor();
+    openSubpage('tasks');
+    renderTaskManage();
+  }
+
+  function renderTaskManage() {
+    var date = $('#task-page-date').value || scheduleDate;
+    var rec = getDaily(date);
+    var el = $('#task-manage-list');
+    if (!rec.tasks.length) {
+      el.innerHTML = '<li class="empty"><span class="emoji">🗒️</span>这一天没有待办</li>';
+      return;
+    }
+    var sorted = rec.tasks.slice().sort(function(a,b){
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return (a.startAt || a.endAt || a.createdAt) - (b.startAt || b.endAt || b.createdAt);
+    });
+    el.innerHTML = sorted.map(function(t){
+      var times = '';
+      if (typeof t.startAt === 'number') times += '<span class="tag time-tag">起 ' + fmtDateTime(t.startAt) + '</span>';
+      if (typeof t.endAt === 'number') times += '<span class="tag time-tag">止 ' + fmtDateTime(t.endAt) + '</span>';
+      var note = t.note ? '<div class="rec-note">' + esc(t.note) + '</div>' : '';
+      return '<li class="item' + (t.done ? ' done' : '') + '" data-task-manage-id="' + t.id + '">' +
+        '<div class="content"><div class="text">' + esc(t.name) + '</div>' +
+        (times ? '<div class="task-times">' + times + '</div>' : '') + note +
+        (t.doneAt ? '<div class="item done-time">完成于 ' + fmtDateTimeFull(t.doneAt) + '</div>' : '') +
+        '</div><div class="actions">' +
+        '<button class="icon task-edit" type="button" title="编辑">✎</button>' +
+        '<button class="icon task-del" type="button" title="删除">✕</button>' +
+        '</div></li>';
+    }).join('');
+  }
+
+  function saveTaskFromManager() {
+    var date = $('#task-page-date').value || todayStr();
+    var name = $('#task-page-name').value.trim();
+    if (!name) { $('#task-page-name').focus(); return; }
+    var startVal = $('#task-page-start').value;
+    var endVal = $('#task-page-end').value;
+    var startAt = startVal ? new Date(startVal).getTime() : null;
+    var endAt = endVal ? new Date(endVal).getTime() : null;
+    if (startAt && endAt && endAt < startAt) { toast('结束时间不能早于开始时间'); return; }
+    var rec = ensureDaily(date);
+    if (editingTaskId) {
+      var t = rec.tasks.filter(function(x){ return x.id === editingTaskId; })[0];
+      if (!t) { resetTaskEditor(); renderTaskManage(); return; }
+      t.name = name; t.startAt = startAt; t.endAt = endAt; t.note = $('#task-page-note').value.trim();
+      toast('待办已修改');
+    } else {
+      rec.tasks.push({id:uid(), name:name, note:$('#task-page-note').value.trim(), done:false, doneAt:null, startAt:startAt, endAt:endAt, createdAt:Date.now()});
+      toast('待办已添加');
+    }
+    save();
+    scheduleDate = date;
+    resetTaskEditor();
+    renderTaskManage();
+    renderSchedule();
+  }
+
+  function editTaskFromManager(id) {
+    var date = $('#task-page-date').value || scheduleDate;
+    var rec = getDaily(date);
+    var t = rec.tasks.filter(function(x){ return x.id === id; })[0];
+    if (!t) return;
+    editingTaskId = id;
+    $('#task-page-name').value = t.name || '';
+    $('#task-page-start').value = formatTaskInputDateTime(t.startAt);
+    $('#task-page-end').value = formatTaskInputDateTime(t.endAt);
+    $('#task-page-note').value = t.note || '';
+    $('#task-page-save').textContent = '保存修改';
+    $('#task-page-cancel').hidden = false;
+    $('#main-wrap').scrollTo({top:0, behavior:'smooth'});
+  }
+
+  async function deleteTaskFromManager(id) {
+    var date = $('#task-page-date').value || scheduleDate;
+    var rec = getDaily(date);
+    var t = rec.tasks.filter(function(x){ return x.id === id; })[0];
+    if (!t) return;
+    var ok = await confirmDialog('删除待办「' + t.name + '」？', '删除');
+    if (!ok) return;
+    rec.tasks = rec.tasks.filter(function(x){ return x.id !== id; });
+    save();
+    if (editingTaskId === id) resetTaskEditor();
+    renderTaskManage();
+    renderSchedule();
+    toast('待办已删除');
   }
 
   /* ========== 渲染：记录 ========== */
@@ -3240,6 +3407,7 @@
   /* ========== 渲染：设置 / 备份 ========== */
   function renderSettings() {
     $('#set-show-total').checked = !!state.settings.showTotalCard;
+    $('#set-show-schedule-progress').checked = !!state.settings.showScheduleProgress;
     $('#set-confirm-complete').checked = !!state.settings.confirmComplete;
     $('#set-lock-completed').checked = !!state.settings.lockCompleted;
     syncFontButtons();
@@ -3435,6 +3603,9 @@
       renderBackup();
     } else if (name === 'records') {
       renderRecords();
+    } else if (name === 'tasks') {
+      if (!$('#task-page-date').value) $('#task-page-date').value = scheduleDate;
+      renderTaskManage();
     }
   }
 
@@ -3940,40 +4111,30 @@
       toggleHabitDone(li.dataset.habitId);
     });
 
-    // 日程：待办勾选 / 删除
+    // 日程：待办只允许勾选 / 撤销，不在日程页删除
     $('#task-list').addEventListener('click', function (e) {
       var li = e.target.closest('.item');
       if (!li) return;
-      var id = li.dataset.taskId;
-
-      if (e.target.closest('.del')) { deleteTask(id); return; }
       var btn = e.target.closest('.check-circle');
       if (!btn || btn.disabled) return;
-      toggleTaskDone(id);
+      toggleTaskDone(li.dataset.taskId);
     });
-
-    // 日程：添加待办
-    $('#task-form').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var input = $('#task-text');
-      var name = input.value.trim();
-      if (!name) { input.focus(); return; }
-
-      var startVal = $('#task-start').value;
-      var endVal = $('#task-end').value;
-      var startAt = startVal ? new Date(startVal).getTime() : null;
-      var endAt = endVal ? new Date(endVal).getTime() : null;
-
-      if (startAt && endAt && endAt < startAt) {
-        toast('结束时间不能早于开始时间');
-        return;
-      }
-
-      addTask(name, startAt, endAt);
-      input.value = '';
-      $('#task-start').value = '';
-      $('#task-end').value = '';
-      input.focus();
+    $('#open-task-page-schedule').addEventListener('click', function () { openTaskManager(true); });
+    $('#open-task-page').addEventListener('click', function () { openTaskManager(false); });
+    $('#tasks-back').addEventListener('click', function () { closeSubpage(); });
+    $('#task-page-date').addEventListener('change', function () {
+      scheduleDate = this.value || todayStr();
+      resetTaskEditor();
+      renderTaskManage();
+    });
+    $('#task-page-save').addEventListener('click', saveTaskFromManager);
+    $('#task-page-cancel').addEventListener('click', function () { resetTaskEditor(); });
+    $('#task-manage-list').addEventListener('click', function (e) {
+      var li = e.target.closest('[data-task-manage-id]');
+      if (!li) return;
+      var id = li.dataset.taskManageId;
+      if (e.target.closest('.task-edit')) { editTaskFromManager(id); return; }
+      if (e.target.closest('.task-del')) { deleteTaskFromManager(id); return; }
     });
 
     // 固定事项管理
@@ -4089,6 +4250,12 @@
       state.settings.showTotalCard = e.target.checked;
       save();
     });
+    $('#set-show-schedule-progress').addEventListener('change', function (e) {
+      state.settings.showScheduleProgress = e.target.checked;
+      save();
+      if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
+      toast(e.target.checked ? '今日完成度已显示' : '今日完成度已隐藏');
+    });
     $('#set-confirm-complete').addEventListener('change', function (e) {
       state.settings.confirmComplete = e.target.checked;
       save();
@@ -4116,7 +4283,7 @@
       if (!ok) return;
       state = {
         timers: [], records: [], checkins: [], habits: [], daily: {},
-        settings: { showTotalCard: true, confirmComplete: true, lockCompleted: false,
+        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false,
                     font: Object.assign({}, DEFAULT_FONT) }
       };
       try { localStorage.removeItem(KEY); } catch (e2) { /* 忽略 */ }
