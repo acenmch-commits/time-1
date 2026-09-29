@@ -522,6 +522,9 @@
   }
   .calendar-head-actions { display:flex; gap:5px; align-items:center; }
   .calendar-today-btn { min-height:34px; padding:7px 12px; font-size:0.78em; }
+  .calendar-expand-btn { min-height:34px; padding:7px 10px; font-size:0.78em; }
+  .calendar-card.calendar-expanded { max-height:none; }
+
   .calendar-card {
     padding:10px 8px 9px; margin-bottom:12px;
     overflow:hidden;
@@ -1004,6 +1007,7 @@
           <div class="calendar-month-title" id="calendar-month-title">2026年9月</div>
           <div class="calendar-head-actions">
             <button class="btn small calendar-today-btn" id="calendar-today" type="button">今天</button>
+            <button class="btn small calendar-expand-btn" id="calendar-expand" type="button">35天</button>
             <button class="icon-btn" id="calendar-prev" type="button">‹</button>
             <button class="icon-btn" id="calendar-next" type="button">›</button>
           </div>
@@ -2101,6 +2105,46 @@
       try { mergeLegacySchedule(localStorage.getItem(k)); } catch(e) {}
     });
 
+    // 最后再扫描一次本机 LocalStorage：兼容未知旧版本的日程存储键。
+    try {
+      for (var lk=0; lk<localStorage.length; lk++) {
+        var key=localStorage.key(lk);
+        if(!key || key===KEY) continue;
+        var txt=localStorage.getItem(key);
+        if(!txt || txt.length>1000000) continue;
+        var obj=null;
+        try { obj=JSON.parse(txt); } catch(e) { continue; }
+        if(!obj || typeof obj!=='object') continue;
+        if(obj.daily && typeof obj.daily==='object'){
+          Object.keys(obj.daily).forEach(function(ds){
+            var src=obj.daily[ds]; if(!src||typeof src!=='object') return;
+            var dst=ensureDaily(ds);
+            (Array.isArray(src.tasks)?src.tasks:[]).forEach(function(t){
+              var nt=normalizeTask(t); if(nt && !dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
+            });
+            if(src.habits&&typeof src.habits==='object') Object.keys(src.habits).forEach(function(hid){
+              if(dst.habits[hid]==null) dst.habits[hid]=src.habits[hid];
+            });
+          });
+        }
+        if(Array.isArray(obj.habits)) obj.habits.forEach(function(h){
+          var nh=normalizeHabit(h);
+          if(nh && !state.habits.some(function(x){return x.id===nh.id;})) state.habits.push(nh);
+        });
+        if(obj.records&&typeof obj.records==='object'){
+          Object.keys(obj.records).forEach(function(ds){
+            var rr=obj.records[ds];
+            if(!rr||typeof rr!=='object'||!Array.isArray(rr.tasks)) return;
+            var dst=ensureDaily(ds);
+            rr.tasks.forEach(function(t){
+              var nt=normalizeTask(t);
+              if(nt && !dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
+            });
+          });
+        }
+      }
+    } catch(e) {}
+
     ensureSettings();
   }
 
@@ -2619,6 +2663,7 @@
     var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
     var titleEnd=last.getFullYear()+'年'+(last.getMonth()+1)+'月';
     if(title) title.textContent=titleStart===titleEnd?titleStart:titleStart+' - '+titleEnd;
+    var expandBtn=$('#calendar-expand'); if(expandBtn) expandBtn.textContent=calendarExpanded?'本周':'35天';
     grid.classList.toggle('calendar-grid-expanded',calendarExpanded);
     var card=grid.closest('.calendar-card'); if(card) card.classList.toggle('calendar-expanded',calendarExpanded);
 
@@ -2733,7 +2778,11 @@
     $('#schedule-progress-card').hidden=!state.settings.showScheduleProgress;
     $('#sch-rate').textContent=doneCount+' / '+totalCount; $('#sch-bar').style.width=pct+'%';
     try { renderCalendar(); } catch(e) {}
-    renderScheduleList();
+    try { renderScheduleList(); } catch(e) {
+      var list=$('#schedule-list');
+      if(list) list.innerHTML='<div class="calendar-empty">日程加载异常，请点击「设置」→备份检查数据</div>';
+      console.error('renderScheduleList failed:',e);
+    }
   }
 
   function renderTaskList(tasks) {
@@ -4502,21 +4551,25 @@
       if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
 
-    // 日程：手势展开/收起 35 天日历
-    var mainWrap=$('#main-wrap');
-    if(mainWrap){
-      mainWrap.addEventListener('touchstart',function(e){
+    // 日程：在日历区域上下滑动切换「本周 / 35天」
+    var calendarCard=document.querySelector('.calendar-card');
+    if(calendarCard){
+      calendarCard.addEventListener('touchstart',function(e){
         if(activeTab!=='schedule' || currentSubpage) return;
         if(e.touches&&e.touches.length) calendarTouchStartY=e.touches[0].clientY;
       },{passive:true});
-      mainWrap.addEventListener('touchend',function(e){
+      calendarCard.addEventListener('touchend',function(e){
         if(activeTab!=='schedule' || currentSubpage || !e.changedTouches||!e.changedTouches.length) return;
         var dy=e.changedTouches[0].clientY-calendarTouchStartY;
-        if(Math.abs(dy)<45) return;
-        if(dy<0 && !calendarExpanded){ calendarExpanded=true; renderCalendar(); }
-        else if(dy>0 && calendarExpanded){ calendarExpanded=false; renderCalendar(); }
+        if(Math.abs(dy)<35) return;
+        calendarExpanded=!calendarExpanded;
+        renderCalendar();
       },{passive:true});
     }
+    $('#calendar-expand').addEventListener('click',function(){
+      calendarExpanded=!calendarExpanded;
+      renderCalendar();
+    });
 
     // 日程：周视图日历
     $('#calendar-prev').addEventListener('click', function(){
