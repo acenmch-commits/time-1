@@ -540,34 +540,16 @@
     flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     font-size:1.02em; font-weight:700; letter-spacing:-0.02em;
   }
-.calendar-head-actions {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-}
-
-.calendar-head-actions .btn.small {
-  min-height: 34px;
-  padding: 7px 12px;
-  font-family: inherit;      /* 强制继承页面字体族，避免系统样式干扰 */
-  font-size: 0.78rem;        /* 改用 rem，参照根元素，不受按钮自身 font-size 影响 */
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.calendar-head-actions .calendar-expand-btn {
-  min-width: 58px;
-  padding-left: 6px;
-  padding-right: 6px;
-  text-align: center;
-  font-family: inherit;
-  font-size: 0.78rem;        /* 两个按钮显式写相同的 rem 值 */
-}
-}
-.calendar-head-actions .calendar-expand-btn {
-  min-width:58px; padding-left:6px; padding-right:6px;
-  text-align:center;
-}
+  .calendar-head-actions {
+    display:flex; gap:5px; align-items:center;
+  }
+  .calendar-head-actions .btn.small {
+    min-height:34px; padding:7px 12px;
+    font-family:inherit; font-size:0.78rem; font-weight:600; line-height:1.2;
+  }
+  .calendar-head-actions .calendar-expand-btn {
+    min-width:58px; padding-left:6px; padding-right:6px; text-align:center;
+  }
   .calendar-card.calendar-expanded { max-height:none; }
 
   .calendar-card {
@@ -595,9 +577,10 @@
   }
   .calendar-day:active { transform:scale(.95); }
   .calendar-grid-expanded .calendar-day { min-height:62px; padding:5px 1px 4px; border-radius:10px; }
-  .calendar-grid-expanded .calendar-day .solar-num { width:30px; height:30px; font-size:calc(var(--font-size-base) * var(--num-scale) * 1.12); }
-  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:calc(var(--font-size-base) * .58); }
-  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:calc(var(--font-size-base) * .52); min-height:9px; }
+  /* 展开 35 天时只调整布局，不单独缩小文字，确保与本周视图字号一致。 */
+  .calendar-grid-expanded .calendar-day .solar-num { width:30px; height:30px; }
+  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; }
+  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; min-height:9px; }
   .calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
   .calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
   .calendar-card.calendar-expanded { padding-bottom:10px; }
@@ -613,7 +596,8 @@
   .calendar-day.today.selected { background:rgba(0,122,255,.16); }
   .calendar-day .solar-num {
     width:28px; height:28px; display:grid; place-items:center;
-    font-size:1.35em; line-height:1; font-weight:700;
+    font-size:calc(var(--font-size-base) * var(--num-scale) * 1.35);
+    line-height:1; font-weight:700;
     font-variant-numeric:tabular-nums; border-radius:50%;
   }
   .calendar-day.today .solar-num {
