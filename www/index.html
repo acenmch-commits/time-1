@@ -4498,12 +4498,10 @@
     if(todayBtn && !todayBtn.dataset.bound){
       todayBtn.dataset.bound='1';
       todayBtn.addEventListener('click',goToday);
-      todayBtn.addEventListener('touchend',goToday,{passive:false});
     }
     if(expandBtn && !expandBtn.dataset.bound){
       expandBtn.dataset.bound='1';
       expandBtn.addEventListener('click',toggleExpand);
-      expandBtn.addEventListener('touchend',toggleExpand,{passive:false});
     }
     if(prevBtn && !prevBtn.dataset.bound){
       prevBtn.dataset.bound='1';
