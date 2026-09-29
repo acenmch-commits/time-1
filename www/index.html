@@ -4511,7 +4511,6 @@
         var dx=e.clientX-startX, dy=e.clientY-startY;
         if(Math.abs(dy)<45 || Math.abs(dy)<Math.abs(dx)*1.2) return;
         // 只在真正从日历卡片内部拖动时切换，不影响页面其它区域。
-        if(startTarget && startTarget.closest && startTarget.closest('.calendar-day,.calendar-week')) return;
         calendarExpanded=dy<0;
         renderCalendar();
       },{passive:true});
