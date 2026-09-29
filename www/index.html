@@ -4668,7 +4668,7 @@
   load();
   calendarMonth=new Date(parseDate(scheduleDate).getFullYear(),parseDate(scheduleDate).getMonth(),1);
   applyFontSettings();
-  bindEvents();
+  try { bindEvents(); } catch (e) { console.error('bindEvents failed:', e); }
   bindSwipe();
   bindBackButton();
   updateSuggestions();
@@ -4684,7 +4684,10 @@
     if (s) s.hidden = true;
   });
   $$('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === 'schedule'); });
-  renderSchedule();
+  try { renderSchedule(); } catch (e) {
+    console.error('renderSchedule failed:', e);
+    try { renderCalendar(); } catch (e2) { console.error('renderCalendar failed:', e2); }
+  }
 
   setInterval(tickClock, 1000);
   setInterval(tickTimers, 1000);
