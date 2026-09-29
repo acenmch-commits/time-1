@@ -23,26 +23,20 @@ jobs:
       - name: Clean
         run: rm -rf node_modules android
 
-      - name: Prepare Web Dir
+      - name: Verify Web Dir
         run: |
-          mkdir -p www
-          if [ ! -f www/index.html ]; then
-            echo "<h1>Time Tracker</h1>" > www/index.html
-          fi
-          cp index.html www/index.html
+          test -f www/index.html
+          echo "Using www/index.html as the Capacitor web entry"
 
       - name: Install deps
+
         run: npm install
 
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Prepare notification sound
-        run: |
-          mkdir -p android/app/src/main/res/raw
-          cp notification.wav android/app/src/main/res/raw/notification.wav
-
       - name: Add Android notification permissions
+
         run: |
           python3 - <<'PY'
           from pathlib import Path
