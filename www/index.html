@@ -2518,40 +2518,38 @@
     return false;
   }
   function renderCalendar(){
+    var grid=$('#calendar-grid'), title=$('#calendar-month-title'), selectedInfo=$('#calendar-selected-date');
+    if(!grid) return;
     var selected=parseDate(scheduleDate);
     var weekStart=new Date(selected.getFullYear(),selected.getMonth(),selected.getDate());
-    var mondayOffset=(weekStart.getDay()+6)%7;
-    weekStart.setDate(weekStart.getDate()-mondayOffset);
+    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
     var weekEnd=new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
-
     var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
     var titleEnd=weekEnd.getFullYear()+'年'+(weekEnd.getMonth()+1)+'月';
-    $('#calendar-month-title').textContent =
-      titleStart===titleEnd ? titleStart : titleStart+' - '+titleEnd;
-
+    if(title) title.textContent=titleStart===titleEnd?titleStart:titleStart+' - '+titleEnd;
     var html='';
     for(var i=0;i<7;i++){
       var d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
-      var ds=dateStr(d), info=calendarInfo(ds), stat=dateHasSchedule(ds);
-      var dots='';
-      var total=Math.min(4,stat.tasks+stat.habits);
-      for(var j=0;j<total;j++) dots += '<i class="calendar-dot '+(j<stat.tasks?'task':'habit')+'"></i>';
+      var ds=dateStr(d), info={lunar:'',term:'',holiday:''}, stat={tasks:0,done:0,habits:0};
+      try { info=calendarInfo(ds)||info; } catch(e) {}
+      try { stat=dateHasSchedule(ds)||stat; } catch(e) {}
+      var dots='', total=Math.min(4,(stat.tasks||0)+(stat.habits||0));
+      for(var j=0;j<total;j++) dots+='<i class="calendar-dot '+(j<(stat.tasks||0)?'task':'habit')+'"></i>';
       if(stat.done && stat.done===stat.tasks && stat.tasks) dots='<i class="calendar-dot done"></i>';
-      var event=info.term || info.holiday || '';
-      var cls='calendar-day'+
-        (d.getMonth()!==selected.getMonth()?' other-month':'')+
-        (ds===todayStr()?' today':'')+
-        (ds===scheduleDate?' selected':'');
-      html += '<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
+      var event=info.term||info.holiday||'';
+      var cls='calendar-day'+(d.getMonth()!==selected.getMonth()?' other-month':'')+(ds===todayStr()?' today':'')+(ds===scheduleDate?' selected':'');
+      html+='<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
         '<span class="solar-num">'+d.getDate()+'</span>'+
-        '<span class="lunar-text">'+esc(info.lunar || '')+'</span>'+
+        '<span class="lunar-text">'+esc(info.lunar||'')+'</span>'+
         '<span class="event-text">'+esc(event)+'</span>'+
         '<span class="calendar-dots">'+dots+'</span></button>';
     }
-    $('#calendar-grid').innerHTML=html;
-    var selInfo=calendarInfo(scheduleDate);
-    $('#calendar-selected-date').textContent=
-      (scheduleDate===todayStr()?'今天 · ':'')+selInfo.solar.replace(/^\d+年/,'');
+    grid.innerHTML=html;
+    if(selectedInfo){
+      var si={solar:selected.getFullYear()+'年'+(selected.getMonth()+1)+'月'+selected.getDate()+'日'};
+      try { si=calendarInfo(scheduleDate)||si; } catch(e) {}
+      selectedInfo.textContent=(scheduleDate===todayStr()?'今天 · ':'')+si.solar.replace(/^\d+年/,'');
+    }
   }
   function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
   function addMonthsClamped(d,n){ var x=new Date(d); var day=x.getDate(); x.setDate(1); x.setMonth(x.getMonth()+n); x.setDate(Math.min(day,daysInMonth(x.getFullYear(),x.getMonth()))); return x; }
@@ -2639,7 +2637,7 @@
     var pct=totalCount?Math.round(doneCount/totalCount*100):0;
     $('#schedule-progress-card').hidden=!state.settings.showScheduleProgress;
     $('#sch-rate').textContent=doneCount+' / '+totalCount; $('#sch-bar').style.width=pct+'%';
-    renderCalendar();
+    try { renderCalendar(); } catch(e) {}
     renderScheduleList();
   }
 
