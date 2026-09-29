@@ -540,11 +540,29 @@
     flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     font-size:1.02em; font-weight:700; letter-spacing:-0.02em;
   }
-.calendar-head-actions { display:flex; gap:5px; align-items:center; }
+.calendar-head-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
 .calendar-head-actions .btn.small {
-  min-height:34px; padding:7px 12px;
-  font-size:0.78em; line-height:1.2;
-  font-weight:600;
+  min-height: 34px;
+  padding: 7px 12px;
+  font-family: inherit;      /* 强制继承页面字体族，避免系统样式干扰 */
+  font-size: 0.78rem;        /* 改用 rem，参照根元素，不受按钮自身 font-size 影响 */
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.calendar-head-actions .calendar-expand-btn {
+  min-width: 58px;
+  padding-left: 6px;
+  padding-right: 6px;
+  text-align: center;
+  font-family: inherit;
+  font-size: 0.78rem;        /* 两个按钮显式写相同的 rem 值 */
+}
 }
 .calendar-head-actions .calendar-expand-btn {
   min-width:58px; padding-left:6px; padding-right:6px;
