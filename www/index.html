@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -49,6 +48,7 @@
 
     --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
     --dur-1: 180ms; --dur-2: 280ms; --dur-3: 420ms; --dur-4: 600ms;
     --blur: 30px;
   }
@@ -126,6 +126,25 @@
     padding: max(20px, env(safe-area-inset-top)) 16px 0;
     box-sizing: border-box;
   }
+
+  /* ===== Header ===== */
+  .header {
+    padding: 4px 4px 0;
+    margin-bottom: 16px;
+    flex: none;
+  }
+  .header h1 {
+    margin: 0;
+    font-size: 1.55em;
+    font-weight: 700;
+    letter-spacing: -0.028em;
+  }
+  .header .sub {
+    margin: 4px 0 0;
+    font-size: 0.8em;
+    color: var(--label-2);
+  }
+
   /* ===== Tabs ===== */
   .tabs {
     display: flex; gap: 0;
@@ -971,7 +990,7 @@
   }
 
   @media (max-width: 380px) {
-    .header { padding: 4px 4px 0; margin-bottom: 14px; flex: none; }
+    .header { margin-bottom: 14px; }
     .checkin-actions { gap: 8px; }
     .timer-actions { gap: 8px; }
     .tab { font-size: 0.68em; }
@@ -1181,7 +1200,7 @@
         <div class="card setting-item">
           <div>
             <div class="setting-title">安卓系统提醒</div>
-            <div class="setting-desc">条幅、声音、震动、闹钟提醒；首次使用会请求系统通知权限</div>
+            <div class="setting-desc">条幅、声音、震动、闹钟提醒；开启时会请求系统通知权限</div>
           </div>
           <label class="switch">
             <input type="checkbox" id="set-notifications-enabled">
@@ -1606,6 +1625,7 @@
   var KEY_V8 = 'time-tracker-v8';
   var KEY_V7 = 'time-tracker-v7';
   var KEY_SCHEDULE = 'daily-tracker-v1';
+  var MIGRATE_KEY = 'time-tracker-migrated-v10';
 
   var DEFAULT_FONT = {
     family: 'system', size: 'normal', weight: 'regular',
@@ -1639,6 +1659,7 @@
       showScheduleProgress: true,
       confirmComplete: true,
       lockCompleted: false,
+      notificationsEnabled: false,
       font: Object.assign({}, DEFAULT_FONT)
     }
   };
@@ -1854,7 +1875,7 @@
     if (typeof state.settings.showScheduleProgress !== 'boolean') state.settings.showScheduleProgress = true;
     if (typeof state.settings.confirmComplete !== 'boolean') state.settings.confirmComplete = true;
     if (typeof state.settings.lockCompleted !== 'boolean') state.settings.lockCompleted = false;
-    if (typeof state.settings.notificationsEnabled !== 'boolean') state.settings.notificationsEnabled = true;
+    if (typeof state.settings.notificationsEnabled !== 'boolean') state.settings.notificationsEnabled = false;
     state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
     draftFont = Object.assign({}, state.settings.font);
   }
@@ -2109,57 +2130,65 @@
     });
 
     // 最后再扫描一次本机 LocalStorage：兼容未知旧版本的日程存储键。
-    try {
-      for (var lk=0; lk<localStorage.length; lk++) {
-        var key=localStorage.key(lk);
-        if(!key || key===KEY) continue;
-        var txt=localStorage.getItem(key);
-        if(!txt || txt.length>1000000) continue;
-        var obj=null;
-        try { obj=JSON.parse(txt); } catch(e) { continue; }
-        if(!obj || typeof obj!=='object') continue;
-        if(obj.daily && typeof obj.daily==='object'){
-          Object.keys(obj.daily).forEach(function(ds){
-            var src=obj.daily[ds]; if(!src||typeof src!=='object') return;
-            var dst=ensureDaily(ds);
-            (Array.isArray(src.tasks)?src.tasks:[]).forEach(function(t){
-              var nt=normalizeTask(t); if(nt && !dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
+    // 只在首次运行时执行，扫描完成后写入标记，避免每次启动都遍历解析。
+    function importTaskArray(arr, fallbackDate) {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(function(t){
+        if (!t || typeof t !== 'object') return;
+        var nt = normalizeTask(t);
+        var ds = nt && (nt.date || (typeof nt.startAt === 'number' ? dateStr(new Date(nt.startAt)) : null) || fallbackDate);
+        if (!nt || !ds) return;
+        nt.date = ds;
+        var dst = ensureDaily(ds);
+        if (!dst.tasks.some(function(x){ return x.id === nt.id; })) dst.tasks.push(nt);
+      });
+    }
+
+    var alreadyMigrated = false;
+    try { alreadyMigrated = localStorage.getItem(MIGRATE_KEY) === '1'; } catch (e) {}
+
+    if (!alreadyMigrated) {
+      try {
+        for (var lk=0; lk<localStorage.length; lk++) {
+          var key=localStorage.key(lk);
+          if(!key || key===KEY || key===MIGRATE_KEY) continue;
+          var txt=localStorage.getItem(key);
+          if(!txt || txt.length>1000000) continue;
+          var obj=null;
+          try { obj=JSON.parse(txt); } catch(e) { continue; }
+          if(!obj || typeof obj!=='object') continue;
+          if(obj.daily && typeof obj.daily==='object'){
+            Object.keys(obj.daily).forEach(function(ds){
+              var src=obj.daily[ds]; if(!src||typeof src!=='object') return;
+              var dst=ensureDaily(ds);
+              (Array.isArray(src.tasks)?src.tasks:[]).forEach(function(t){
+                var nt=normalizeTask(t); if(nt && !dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
+              });
+              if(src.habits&&typeof src.habits==='object') Object.keys(src.habits).forEach(function(hid){
+                if(dst.habits[hid]==null) dst.habits[hid]=src.habits[hid];
+              });
             });
-            if(src.habits&&typeof src.habits==='object') Object.keys(src.habits).forEach(function(hid){
-              if(dst.habits[hid]==null) dst.habits[hid]=src.habits[hid];
+          }
+          if(Array.isArray(obj.habits)) obj.habits.forEach(function(h){
+            var nh=normalizeHabit(h);
+            if(nh && !state.habits.some(function(x){return x.id===nh.id;})) state.habits.push(nh);
+          });
+          importTaskArray(obj.tasks,todayStr());
+          importTaskArray(obj.todos,todayStr());
+          importTaskArray(obj.schedule,todayStr());
+          if(obj.records&&typeof obj.records==='object'){
+            Object.keys(obj.records).forEach(function(ds){
+              var rr=obj.records[ds];
+              if(!rr||typeof rr!=='object') return;
+              importTaskArray(rr.tasks,ds);
+              importTaskArray(rr.items,ds);
+              importTaskArray(rr.todos,ds);
             });
-          });
+          }
         }
-        if(Array.isArray(obj.habits)) obj.habits.forEach(function(h){
-          var nh=normalizeHabit(h);
-          if(nh && !state.habits.some(function(x){return x.id===nh.id;})) state.habits.push(nh);
-        });
-        function importTaskArray(arr, fallbackDate){
-          if(!Array.isArray(arr)) return;
-          arr.forEach(function(t){
-            if(!t || typeof t!=='object') return;
-            var nt=normalizeTask(t);
-            var ds=nt && (nt.date || (typeof nt.startAt==='number'?dateStr(new Date(nt.startAt)):null) || fallbackDate);
-            if(!nt || !ds) return;
-            nt.date=ds;
-            var dst=ensureDaily(ds);
-            if(!dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
-          });
-        }
-        importTaskArray(obj.tasks,todayStr());
-        importTaskArray(obj.todos,todayStr());
-        importTaskArray(obj.schedule,todayStr());
-        if(obj.records&&typeof obj.records==='object'){
-          Object.keys(obj.records).forEach(function(ds){
-            var rr=obj.records[ds];
-            if(!rr||typeof rr!=='object') return;
-            importTaskArray(rr.tasks,ds);
-            importTaskArray(rr.items,ds);
-            importTaskArray(rr.todos,ds);
-          });
-        }
-      }
-    } catch(e) {}
+      } catch(e) {}
+      try { localStorage.setItem(MIGRATE_KEY, '1'); } catch(e) {}
+    }
 
     ensureSettings();
     try { save(); } catch(e) {}
@@ -2791,101 +2820,38 @@
 
   /* ========== 渲染：日程 ========== */
   function renderSchedule() {
-    var today=todayStr();
-    if(scheduleDate && scheduleDate!==today && scheduleDate<today){ /* allow past dates */ }
-    var d=parseDate(scheduleDate);
-    $('#sch-title').textContent=(scheduleDate===today?'今天 · ':'')+(d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+WEEK_CN(d));
-
-    var rec=getDaily(scheduleDate);
-    var visibleHabits=state.habits.filter(function(h){ return h.createdAt<=scheduleDate; });
-    var doneCount=rec.tasks.filter(function(t){return t.done;}).length, totalCount=rec.tasks.length;
-    visibleHabits.forEach(function(h){ totalCount++; if(habitOccursOnDate(h,scheduleDate) && (h.type==='daily'?isHabitDone(h.id,scheduleDate):habitProgress(h,scheduleDate).completed)) doneCount++; });
-    var pct=totalCount?Math.round(doneCount/totalCount*100):0;
-    $('#schedule-progress-card').hidden=!state.settings.showScheduleProgress;
-    $('#sch-rate').textContent=doneCount+' / '+totalCount; $('#sch-bar').style.width=pct+'%';
-    try { renderCalendar(); } catch(e) {}
-    try { renderScheduleList(); } catch(e) {
-      var list=$('#schedule-list');
-      if(list) list.innerHTML='<div class="calendar-empty">日程加载异常，请点击「设置」→备份检查数据</div>';
-      console.error('renderScheduleList failed:',e);
-    }
-  }
-
-  function renderTaskList(tasks) {
-    var el = $('#task-list');
-    if (!tasks.length) {
-      el.innerHTML = '<li class="empty"><span class="emoji">🗒️</span>这一天没有待办</li>';
-      return;
-    }
-
-    var now = Date.now();
-    var sorted = tasks.slice().sort(function (a, b) {
-      if (a.done !== b.done) return a.done ? 1 : -1;
-      if (!a.done) {
-        var aHas = typeof a.endAt === 'number';
-        var bHas = typeof b.endAt === 'number';
-        if (aHas && bHas) return a.endAt - b.endAt;
-        if (aHas) return -1;
-        if (bHas) return 1;
-        return b.createdAt - a.createdAt;
+    var rec = getDaily(scheduleDate);
+    var visibleHabits = state.habits.filter(function(h){ return h.createdAt<=scheduleDate; });
+    var doneCount = rec.tasks.filter(function(t){return t.done;}).length;
+    var totalCount = rec.tasks.length;
+    visibleHabits.forEach(function(h){
+      totalCount++;
+      if (habitOccursOnDate(h, scheduleDate) &&
+          (h.type === 'daily' ? isHabitDone(h.id, scheduleDate) : habitProgress(h, scheduleDate).completed)) {
+        doneCount++;
       }
-      return (b.doneAt || 0) - (a.doneAt || 0);
     });
+    var pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
+    $('#schedule-progress-card').hidden = !state.settings.showScheduleProgress;
+    $('#sch-rate').textContent = doneCount + ' / ' + totalCount;
+    $('#sch-bar').style.width = pct + '%';
 
-    var canUndo = !state.settings.lockCompleted;
-
-    el.innerHTML = sorted.map(function (t) {
-      var done = !!t.done;
-      var timeTags = '';
-      if (typeof t.startAt === 'number') {
-        timeTags += '<span class="tag time-tag">起 ' + fmtDateTime(t.startAt) + '</span>';
-      }
-      if (typeof t.endAt === 'number') {
-        timeTags += '<span class="tag time-tag">止 ' + fmtDateTime(t.endAt) + '</span>';
-        if (!done) {
-          var remain = t.endAt - now;
-          if (remain <= 0) {
-            timeTags += '<span class="tag countdown urgent">已超时 ' + fmtCountdown(-remain) + '</span>';
-          } else {
-            timeTags += '<span class="tag countdown">剩余 ' + fmtCountdown(remain) + '</span>';
-          }
-        }
-      }
-
-      var doneTag = '';
-      if (done && t.doneAt) {
-        doneTag = '<div class="item done-time">完成于 ' + fmtDateTimeFull(t.doneAt) + '</div>';
-      }
-
-      var noteHTML = t.note ? '<div class="rec-note">' + esc(t.note) + '</div>' : '';
-
-      var disabledAttr = (done && !canUndo) ? ' disabled' : '';
-      var lockedCls = (done && !canUndo) ? ' locked' : '';
-
-      return '<li class="item checkable' + (done ? ' done' : '') + lockedCls +
-          '" data-task-id="' + t.id + '">' +
-        '<button class="check-circle" type="button"' + disabledAttr + '></button>' +
-        '<div class="content">' +
-          '<div class="text">' + esc(t.name) + '</div>' +
-          (timeTags ? '<div class="task-times">' + timeTags + '</div>' : '') +
-          noteHTML +
-          doneTag +
-        '</div>' +
-      '</li>';
-    }).join('');
+    try { renderCalendar(); } catch(e) { console.error('renderCalendar failed:', e); }
+    try { renderScheduleList(); } catch(e) {
+      var list = $('#schedule-list');
+      if (list) list.innerHTML = '<div class="calendar-empty">日程加载异常，请点击「设置」→备份检查数据</div>';
+      console.error('renderScheduleList failed:', e);
+    }
   }
 
   /* ========== 周期固定事项的"水杯"填充（含右边缘正弦波纹） ==========
-     关键：SVG 的 data URL 用【单引号】包裹，避免与外层 style="..." 的双引号冲突。
-     这正是之前波纹完全没渲染的原因——浏览器在 url(" 处截断了 style 属性。
-     波纹条 24px 宽、40px 一周期；放在 right:-12px 使波纹中心正好落在填充边缘。 */
+     关键：SVG 的 data URL 用【单引号】包裹，避免与外层 style="..." 的双引号冲突。 */
   function waterFillHTML(pct) {
     var svg =
       "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 40' preserveAspectRatio='none'>" +
         "<path d='M0 0 L12 0 C24 6 24 14 12 20 C0 26 0 34 12 40 L0 40 Z' " +
         "fill='#34C759' fill-opacity='0.6'/>" +
       "</svg>";
-    // ↓↓↓ 这里必须是单引号
     var waveURL = "url('data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg) + "')";
 
     var conf = [
@@ -2909,14 +2875,11 @@
     return '<span style="position:absolute;left:0;top:0;bottom:0;width:' + pct + '%;' +
       'pointer-events:none;z-index:0;' +
       'transition:width 800ms cubic-bezier(0.32,0.72,0,1);">' +
-        // 水身
         '<span style="position:absolute;left:0;right:0;top:0;bottom:0;' +
         'background:linear-gradient(180deg,rgba(52,199,89,0.30) 0%,rgba(52,199,89,0.14) 100%);"></span>' +
-        // 气泡（限制在填充区域内）
         '<span style="position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden;">' +
           bubblesHTML +
         '</span>' +
-        // 竖向正弦波纹：右边界，纵向滚动
         '<span style="position:absolute;right:-12px;top:0;bottom:0;width:24px;' +
         'background-image:' + waveURL + ';' +
         'background-repeat:repeat-y;background-size:24px 40px;' +
@@ -2998,33 +2961,6 @@
     if(t.done){ if(state.settings.lockCompleted){toast('该事项已完成且不可撤销');return;} var ok=await confirmDialog('撤销完成「'+t.name+'」？','撤销'); if(!ok)return; t.done=false;t.doneAt=null; }
     else { if(state.settings.confirmComplete){var ok2=await confirmDialog('确认完成「'+t.name+'」？','确认完成');if(!ok2)return;} t.done=true;t.doneAt=Date.now(); }
     save(); renderSchedule(); syncNotifications();
-  }
-
-  async function toggleTaskDone(taskId) {
-    var rec = ensureDaily(scheduleDate);
-    var t = rec.tasks.filter(function (x) { return x.id === taskId; })[0];
-    if (!t) return;
-
-    if (t.done) {
-      if (state.settings.lockCompleted) {
-        toast('该事项已完成且不可撤销');
-        return;
-      }
-      var ok = await confirmDialog('撤销完成「' + t.name + '」？', '撤销');
-      if (!ok) return;
-      t.done = false;
-      t.doneAt = null;
-    } else {
-      if (state.settings.confirmComplete) {
-        var ok2 = await confirmDialog('确认完成「' + t.name + '」？', '确认完成');
-        if (!ok2) return;
-      }
-      t.done = true;
-      t.doneAt = Date.now();
-    }
-    save();
-    renderSchedule();
-    syncNotifications();
   }
 
   async function toggleHabitDone(habitId) {
@@ -3125,15 +3061,6 @@
       endAt: endAt || null,
       createdAt: Date.now()
     });
-    save();
-    renderSchedule();
-  }
-
-  function deleteTask(taskId) {
-    var rec = ensureDaily(scheduleDate);
-    var t = rec.tasks.filter(function (x) { return x.id === taskId; })[0];
-    if (!t || t.done) return;
-    rec.tasks = rec.tasks.filter(function (x) { return x.id !== taskId; });
     save();
     renderSchedule();
   }
@@ -3868,7 +3795,7 @@
     $('#set-show-total').checked = !!state.settings.showTotalCard;
     $('#set-show-schedule-progress').checked = !!state.settings.showScheduleProgress;
     $('#set-confirm-complete').checked = !!state.settings.confirmComplete;
-    $('#set-notifications-enabled').checked = state.settings.notificationsEnabled !== false;
+    $('#set-notifications-enabled').checked = state.settings.notificationsEnabled === true;
     $('#set-lock-completed').checked = !!state.settings.lockCompleted;
     syncFontButtons();
   }
@@ -4219,7 +4146,7 @@
       }
     });
 
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (type) {
+    ['pointerup', 'pointercancel'].forEach(function (type) {
       list.addEventListener(type, function (e) {
         var li = e.target.closest('.record-item');
         clearRecordLongPress(li);
@@ -4853,7 +4780,7 @@
       if (!ok) return;
       state = {
         timers: [], records: [], checkins: [], habits: [], daily: {},
-        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false, notificationsEnabled: true,
+        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false, notificationsEnabled: false,
                     font: Object.assign({}, DEFAULT_FONT) }
       };
       try { localStorage.removeItem(KEY); } catch (e2) { /* 忽略 */ }
@@ -4945,11 +4872,17 @@
       if(td!==liveScheduleDate){ liveScheduleDate=td; if(scheduleDate===dateStr(new Date(Date.now()-86400000)) || scheduleDate===liveScheduleDate){ scheduleDate=td; calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1); renderSchedule(); } }
     }
   },1000);
-  setTimeout(async function(){ var p=getLocalNotifications(); if(p){ try{ await ensureNotificationPermission(); await ensureNotificationChannels(); }catch(e){} } await syncNotifications(); },800);
+
+  // 启动时只创建通知渠道，不主动请求权限；权限在用户手动开启开关时再请求。
+  setTimeout(async function(){
+    var p = getLocalNotifications();
+    if (p && state.settings.notificationsEnabled === true) {
+      try { await ensureNotificationChannels(); } catch(e) {}
+    }
+    syncNotifications();
+  }, 800);
 
 })();
 </script>
 </body>
 </html>
-```
-
