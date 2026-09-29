@@ -518,7 +518,8 @@
     gap:10px; margin-bottom:10px;
   }
   .calendar-month-title {
-    font-size:1.08em; font-weight:700; letter-spacing:-0.02em;
+    flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:1.02em; font-weight:700; letter-spacing:-0.02em;
   }
   .calendar-head-actions { display:flex; gap:5px; align-items:center; }
   .calendar-today-btn { min-height:34px; padding:7px 12px; font-size:0.78em; }
@@ -534,14 +535,14 @@
     gap:4px; margin-bottom:0;
   }
   .calendar-week span {
-    text-align:center; font-size:.64em; color:var(--label-3);
+    text-align:center; font:inherit; font-size:.72em; color:var(--label-3);
     padding:3px 0 5px; font-weight:600;
   }
   .calendar-grid {
     display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;
   }
   .calendar-day {
-    min-width:0; min-height:76px; padding:7px 2px 6px;
+    min-width:0; min-height:76px; font:inherit; padding:7px 2px 6px;
     border:1px solid transparent; border-radius:13px;
     background:transparent; color:var(--label); cursor:pointer;
     text-align:center; display:flex; flex-direction:column;
@@ -550,9 +551,9 @@
   }
   .calendar-day:active { transform:scale(.95); }
   .calendar-grid-expanded .calendar-day { min-height:62px; padding:5px 1px 4px; border-radius:10px; }
-  .calendar-grid-expanded .calendar-day .solar-num { width:27px; height:27px; font-size:1.02em; }
-  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:.58em; }
-  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:.54em; min-height:9px; }
+  .calendar-grid-expanded .calendar-day .solar-num { width:30px; height:30px; font-size:1.18em; }
+  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:.62em; }
+  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:.58em; min-height:9px; }
   .calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
   .calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
   .calendar-card.calendar-expanded { padding-bottom:10px; }
@@ -568,7 +569,7 @@
   .calendar-day.today.selected { background:rgba(0,122,255,.16); }
   .calendar-day .solar-num {
     width:28px; height:28px; display:grid; place-items:center;
-    font-size:1.18em; line-height:1; font-weight:700;
+    font-size:1.35em; line-height:1; font-weight:700;
     font-variant-numeric:tabular-nums; border-radius:50%;
   }
   .calendar-day.today .solar-num {
@@ -576,12 +577,12 @@
   }
   .calendar-day.selected:not(.today) .solar-num { color:var(--blue); }
   .calendar-day .lunar-text {
-    margin-top:4px; font-size:.68em; line-height:1.15;
+    margin-top:4px; font-size:.72em; line-height:1.15;
     color:var(--label-2); white-space:nowrap; overflow:hidden;
     max-width:100%; text-overflow:ellipsis;
   }
   .calendar-day .event-text {
-    margin-top:3px; font-size:.62em; line-height:1.15;
+    margin-top:3px; font-size:.68em; line-height:1.15;
     color:var(--orange); white-space:nowrap; overflow:hidden;
     max-width:100%; text-overflow:ellipsis; min-height:11px;
   }
@@ -4397,7 +4398,6 @@
     wrap.addEventListener('touchend', function (e) {
       if (locked || currentSubpage) return;
       var target = e.target;
-      if (target && target.closest && target.closest('.calendar-card')) return;
       if (target && target.closest && target.closest('input, textarea, select, button, a, [data-no-swipe]')) return;
       var t = e.changedTouches[0];
       var dx = t.clientX - startX;
@@ -4453,75 +4453,69 @@
   function bindCalendarEvents() {
     var card=document.querySelector('.calendar-card');
     var grid=$('#calendar-grid');
-    var todayBtn=$('#calendar-today');
-    var expandBtn=$('#calendar-expand');
+    if(!document.documentElement.dataset.calendarDelegated){
+      document.documentElement.dataset.calendarDelegated='1';
 
-    if(card && !card.dataset.calendarBound){
-      card.dataset.calendarBound='1';
-      var startY=0;
-      card.addEventListener('touchstart',function(e){
-        if(e.touches && e.touches.length===1) startY=e.touches[0].clientY;
+      // 用 document 级事件代理，避免其它事件绑定失败导致「今天」按钮失效。
+      document.addEventListener('click',function(e){
+        var target=e.target && e.target.closest ? e.target.closest('#calendar-today,#calendar-expand,#calendar-prev,#calendar-next,[data-calendar-date]') : null;
+        if(!target) return;
+
+        if(target.id==='calendar-today'){
+          e.preventDefault(); e.stopPropagation();
+          scheduleDate=todayStr();
+          calendarMonth=new Date();
+          calendarExpanded=false;
+          renderSchedule();
+          var wrap=$('#main-wrap');
+          if(wrap) wrap.scrollTop=0;
+          return;
+        }
+
+        if(target.id==='calendar-expand'){
+          e.preventDefault(); e.stopPropagation();
+          calendarExpanded=!calendarExpanded;
+          renderCalendar();
+          return;
+        }
+
+        if(target.id==='calendar-prev' || target.id==='calendar-next'){
+          e.preventDefault(); e.stopPropagation();
+          var nd=parseDate(scheduleDate);
+          nd.setDate(nd.getDate()+(target.id==='calendar-prev'?-7:7));
+          scheduleDate=dateStr(nd);
+          calendarMonth=new Date(nd.getFullYear(),nd.getMonth(),1);
+          renderSchedule();
+          return;
+        }
+
+        if(target.hasAttribute('data-calendar-date')){
+          e.preventDefault(); e.stopPropagation();
+          scheduleDate=target.getAttribute('data-calendar-date');
+          var sd=parseDate(scheduleDate);
+          calendarMonth=new Date(sd.getFullYear(),sd.getMonth(),1);
+          renderSchedule();
+        }
+      },true);
+    }
+
+    if(card && !card.dataset.pointerBound){
+      card.dataset.pointerBound='1';
+      var startY=0,startX=0,startTarget=null;
+      card.addEventListener('pointerdown',function(e){
+        if(e.pointerType==='mouse' && e.button!==0) return;
+        startX=e.clientX; startY=e.clientY; startTarget=e.target;
       },{passive:true});
-      card.addEventListener('touchmove',function(e){
-        if(e.touches && e.touches.length===1) e.preventDefault();
-      },{passive:false});
-      card.addEventListener('touchend',function(e){
-        if(!e.changedTouches || !e.changedTouches.length) return;
-        var dy=e.changedTouches[0].clientY-startY;
-        if(Math.abs(dy)<35) return;
+      card.addEventListener('pointerup',function(e){
+        if(e.pointerType==='mouse' && e.button!==0) return;
+        var dx=e.clientX-startX, dy=e.clientY-startY;
+        if(Math.abs(dy)<45 || Math.abs(dy)<Math.abs(dx)*1.2) return;
+        // 只在真正从日历卡片内部拖动时切换，不影响页面其它区域。
+        if(startTarget && startTarget.closest && startTarget.closest('.calendar-day,.calendar-week')) return;
         calendarExpanded=dy<0;
         renderCalendar();
       },{passive:true});
     }
-
-    if(expandBtn && !expandBtn.dataset.bound){
-      expandBtn.dataset.bound='1';
-      expandBtn.addEventListener('click',function(e){
-        e.preventDefault();
-        calendarExpanded=!calendarExpanded;
-        renderCalendar();
-      });
-    }
-
-    if(todayBtn && !todayBtn.dataset.bound){
-      todayBtn.dataset.bound='1';
-      todayBtn.addEventListener('click',function(e){
-        e.preventDefault();
-        scheduleDate=todayStr();
-        calendarMonth=new Date();
-        calendarExpanded=false;
-        renderSchedule();
-        $('#main-wrap').scrollTo({top:0,behavior:'smooth'});
-      });
-    }
-
-    if(grid && !grid.dataset.bound){
-      grid.dataset.bound='1';
-      grid.addEventListener('click',function(e){
-        var btn=e.target.closest('[data-calendar-date]');
-        if(!btn) return;
-        e.preventDefault();
-        scheduleDate=btn.dataset.calendarDate;
-        var d=parseDate(scheduleDate);
-        calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
-        renderSchedule();
-      });
-    }
-
-    ['calendar-prev','calendar-next'].forEach(function(id){
-      var btn=$('#'+id);
-      if(btn && !btn.dataset.bound){
-        btn.dataset.bound='1';
-        btn.addEventListener('click',function(e){
-          e.preventDefault();
-          var d=parseDate(scheduleDate);
-          d.setDate(d.getDate()+(id==='calendar-prev'?-7:7));
-          scheduleDate=dateStr(d);
-          calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
-          renderSchedule();
-        });
-      }
-    });
   }
 
   function bindEvents() {
