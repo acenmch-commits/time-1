@@ -512,29 +512,81 @@
     color: var(--label-2); text-align: center;
   }
 
-  .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
-  .calendar-month-title { font-size:1.05em; font-weight:700; letter-spacing:-0.02em; }
-  .calendar-head-actions { display:flex; gap:6px; align-items:center; }
+  /* ===== 日程周视图日历 ===== */
+  .calendar-head {
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; margin-bottom:10px;
+  }
+  .calendar-month-title {
+    font-size:1.08em; font-weight:700; letter-spacing:-0.02em;
+  }
+  .calendar-head-actions { display:flex; gap:5px; align-items:center; }
   .calendar-today-btn { min-height:34px; padding:7px 12px; font-size:0.78em; }
-  .calendar-card { padding:12px; margin-bottom:14px; }
-  .calendar-week { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
-  .calendar-week span { text-align:center; font-size:0.68em; color:var(--label-3); padding:4px 0; }
-  .calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
-  .calendar-day { min-width:0; min-height:72px; padding:6px 3px 5px; border:1px solid transparent; border-radius:12px; background:transparent; color:var(--label); cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; transition:background-color 140ms ease, border-color 140ms ease, transform 140ms ease; }
-  .calendar-day:active { transform:scale(.96); }
-  .calendar-day.other-month { opacity:.34; }
-  .calendar-day.today { background:rgba(0,122,255,.09); }
-  .calendar-day.selected { border-color:var(--blue); background:rgba(0,122,255,.13); }
-  .calendar-day .solar-num { font-size:1.02em; line-height:1.1; font-weight:700; font-variant-numeric:tabular-nums; }
-  .calendar-day .lunar-text { margin-top:3px; font-size:.61em; line-height:1.15; color:var(--label-2); white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; }
-  .calendar-day .event-text { margin-top:3px; font-size:.57em; line-height:1.15; color:var(--orange); white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; min-height:11px; }
-  .calendar-dots { display:flex; justify-content:center; gap:3px; min-height:7px; margin-top:5px; }
+  .calendar-card {
+    padding:10px 8px 9px; margin-bottom:12px;
+    overflow:hidden;
+  }
+  .calendar-week {
+    display:grid; grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:4px; margin-bottom:0;
+  }
+  .calendar-week span {
+    text-align:center; font-size:.64em; color:var(--label-3);
+    padding:3px 0 5px; font-weight:600;
+  }
+  .calendar-grid {
+    display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;
+  }
+  .calendar-day {
+    min-width:0; min-height:76px; padding:7px 2px 6px;
+    border:1px solid transparent; border-radius:13px;
+    background:transparent; color:var(--label); cursor:pointer;
+    text-align:center; display:flex; flex-direction:column;
+    align-items:center; justify-content:flex-start;
+    transition:background-color 140ms ease,border-color 140ms ease,transform 140ms ease;
+  }
+  .calendar-day:active { transform:scale(.95); }
+  .calendar-day.other-month .solar-num,
+  .calendar-day.other-month .lunar-text,
+  .calendar-day.other-month .event-text { opacity:.48; }
+  .calendar-day.today { background:rgba(0,122,255,.08); }
+  .calendar-day.selected {
+    border-color:var(--blue); background:rgba(0,122,255,.13);
+    box-shadow:0 2px 7px rgba(0,122,255,.10);
+  }
+  .calendar-day.today.selected { background:rgba(0,122,255,.16); }
+  .calendar-day .solar-num {
+    width:28px; height:28px; display:grid; place-items:center;
+    font-size:1.03em; line-height:1; font-weight:700;
+    font-variant-numeric:tabular-nums; border-radius:50%;
+  }
+  .calendar-day.today .solar-num {
+    background:var(--blue); color:#fff;
+  }
+  .calendar-day.selected:not(.today) .solar-num { color:var(--blue); }
+  .calendar-day .lunar-text {
+    margin-top:4px; font-size:.59em; line-height:1.15;
+    color:var(--label-2); white-space:nowrap; overflow:hidden;
+    max-width:100%; text-overflow:ellipsis;
+  }
+  .calendar-day .event-text {
+    margin-top:3px; font-size:.55em; line-height:1.15;
+    color:var(--orange); white-space:nowrap; overflow:hidden;
+    max-width:100%; text-overflow:ellipsis; min-height:11px;
+  }
+  .calendar-dots {
+    display:flex; justify-content:center; gap:3px;
+    min-height:7px; margin-top:5px;
+  }
   .calendar-dot { width:5px; height:5px; border-radius:50%; display:block; }
   .calendar-dot.task { background:var(--blue); }
   .calendar-dot.habit { background:var(--green); }
   .calendar-dot.reminder { background:var(--orange); }
   .calendar-dot.done { background:var(--gray); }
-  .calendar-selected-info { margin:0 4px 12px; font-size:.78em; color:var(--label-2); display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .calendar-selected-info {
+    margin:0 4px 12px; font-size:.78em; color:var(--label-2);
+    display:flex; justify-content:space-between; gap:10px; align-items:center;
+  }
   .calendar-selected-info strong { color:var(--label); }
   .schedule-list .item { padding-top:11px; padding-bottom:11px; }
   .schedule-date-group { margin:18px 4px 7px; font-size:.72em; font-weight:700; color:var(--label-2); }
@@ -555,10 +607,12 @@
   .notify-grid .field-block { margin:0; }
   .notification-hint { font-size:.68em; color:var(--label-3); margin-top:6px; line-height:1.4; }
   @media (max-width:430px) {
-    .calendar-day { min-height:67px; padding-left:1px; padding-right:1px; }
-    .calendar-day .solar-num { font-size:.95em; }
-    .calendar-day .lunar-text { font-size:.55em; }
-    .calendar-day .event-text { font-size:.52em; }
+    .calendar-card { padding-left:5px; padding-right:5px; }
+    .calendar-grid, .calendar-week { gap:2px; }
+    .calendar-day { min-height:70px; padding-left:1px; padding-right:1px; border-radius:11px; }
+    .calendar-day .solar-num { width:26px; height:26px; font-size:.94em; }
+    .calendar-day .lunar-text { font-size:.54em; }
+    .calendar-day .event-text { font-size:.50em; }
     .calendar-dot { width:4px; height:4px; }
   }
 
@@ -2464,18 +2518,30 @@
     return false;
   }
   function renderCalendar(){
-    var y=calendarMonth.getFullYear(), m=calendarMonth.getMonth();
-    $('#calendar-month-title').textContent=y+'年'+(m+1)+'月';
-    var first=new Date(y,m,1), start=new Date(y,m,1); start.setDate(1-((first.getDay()+6)%7));
+    var selected=parseDate(scheduleDate);
+    var weekStart=new Date(selected.getFullYear(),selected.getMonth(),selected.getDate());
+    var mondayOffset=(weekStart.getDay()+6)%7;
+    weekStart.setDate(weekStart.getDate()-mondayOffset);
+    var weekEnd=new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+
+    var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
+    var titleEnd=weekEnd.getFullYear()+'年'+(weekEnd.getMonth()+1)+'月';
+    $('#calendar-month-title').textContent =
+      titleStart===titleEnd ? titleStart : titleStart+' - '+titleEnd;
+
     var html='';
-    for(var i=0;i<42;i++){
-      var d=new Date(start); d.setDate(start.getDate()+i); var ds=dateStr(d), info=calendarInfo(ds), stat=dateHasSchedule(ds);
+    for(var i=0;i<7;i++){
+      var d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
+      var ds=dateStr(d), info=calendarInfo(ds), stat=dateHasSchedule(ds);
       var dots='';
-      var dotCount=Math.min(4,stat.tasks+stat.habits);
-      for(var j=0;j<dotCount;j++) dots += '<i class="calendar-dot '+(j<stat.tasks?'task':'habit')+'"></i>';
-      if(stat.done && stat.done===stat.tasks && stat.tasks) dots = '<i class="calendar-dot done"></i>' + dots.slice(Math.min(dots.length,0));
+      var total=Math.min(4,stat.tasks+stat.habits);
+      for(var j=0;j<total;j++) dots += '<i class="calendar-dot '+(j<stat.tasks?'task':'habit')+'"></i>';
+      if(stat.done && stat.done===stat.tasks && stat.tasks) dots='<i class="calendar-dot done"></i>';
       var event=info.term || info.holiday || '';
-      var cls='calendar-day'+(d.getMonth()!==m?' other-month':'')+(ds===todayStr()?' today':'')+(ds===scheduleDate?' selected':'');
+      var cls='calendar-day'+
+        (d.getMonth()!==selected.getMonth()?' other-month':'')+
+        (ds===todayStr()?' today':'')+
+        (ds===scheduleDate?' selected':'');
       html += '<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
         '<span class="solar-num">'+d.getDate()+'</span>'+
         '<span class="lunar-text">'+esc(info.lunar || '')+'</span>'+
@@ -2484,7 +2550,8 @@
     }
     $('#calendar-grid').innerHTML=html;
     var selInfo=calendarInfo(scheduleDate);
-    $('#calendar-selected-date').textContent=(scheduleDate===todayStr()?'今天 · ':'')+selInfo.solar.replace(/^\\d+年/,'');
+    $('#calendar-selected-date').textContent=
+      (scheduleDate===todayStr()?'今天 · ':'')+selInfo.solar.replace(/^\d+年/,'');
   }
   function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
   function addMonthsClamped(d,n){ var x=new Date(d); var day=x.getDate(); x.setDate(1); x.setMonth(x.getMonth()+n); x.setDate(Math.min(day,daysInMonth(x.getFullYear(),x.getMonth()))); return x; }
@@ -2507,11 +2574,16 @@
     return scheduleDate;
   }
   function allTaskEntriesFrom(startDate){
-    var out=[];
+    var out=[], startTs=parseDate(startDate).getTime();
     Object.keys(state.daily).forEach(function(ds){
-      if(ds<startDate) return;
       var rec=state.daily[ds]; if(!rec || !Array.isArray(rec.tasks)) return;
-      rec.tasks.forEach(function(t){ out.push({date:ds,kind:'task',id:t.id,name:t.name,done:!!t.done,startAt:t.startAt,endAt:t.endAt,note:t.note||'',data:t}); });
+      rec.tasks.forEach(function(t){
+        var st=typeof t.startAt==='number'?t.startAt:null;
+        var en=typeof t.endAt==='number'?t.endAt:null;
+        var visible=(ds>=startDate) || (en && en>=startTs);
+        if(!visible) return;
+        out.push({date:ds,kind:'task',id:t.id,name:t.name,done:!!t.done,startAt:st,endAt:en,note:t.note||'',data:t});
+      });
     });
     return out;
   }
@@ -4337,11 +4409,26 @@
       if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
 
-    // 日程：日历
-    $('#calendar-prev').addEventListener('click', function(){ calendarMonth.setMonth(calendarMonth.getMonth()-1); renderSchedule(); });
-    $('#calendar-next').addEventListener('click', function(){ calendarMonth.setMonth(calendarMonth.getMonth()+1); renderSchedule(); });
-    $('#calendar-today').addEventListener('click', function(){ scheduleDate=todayStr(); calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1); renderSchedule(); });
-    $('#calendar-grid').addEventListener('click', function(e){ var btn=e.target.closest('[data-calendar-date]'); if(!btn)return; scheduleDate=btn.dataset.calendarDate; var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule(); });
+    // 日程：周视图日历
+    $('#calendar-prev').addEventListener('click', function(){
+      var d=parseDate(scheduleDate); d.setDate(d.getDate()-7);
+      scheduleDate=dateStr(d); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule();
+    });
+    $('#calendar-next').addEventListener('click', function(){
+      var d=parseDate(scheduleDate); d.setDate(d.getDate()+7);
+      scheduleDate=dateStr(d); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule();
+    });
+    $('#calendar-today').addEventListener('click', function(){
+      scheduleDate=todayStr();
+      var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
+      renderSchedule();
+    });
+    $('#calendar-grid').addEventListener('click', function(e){
+      var btn=e.target.closest('[data-calendar-date]'); if(!btn)return;
+      scheduleDate=btn.dataset.calendarDate;
+      var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
+      renderSchedule();
+    });
 
     // 日程：每个日程只保留勾选，不提供删除
     $('#schedule-list').addEventListener('click', function(e){
