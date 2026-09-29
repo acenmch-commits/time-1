@@ -540,9 +540,16 @@
     flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
     font-size:1.02em; font-weight:700; letter-spacing:-0.02em;
   }
-  .calendar-head-actions { display:flex; gap:5px; align-items:center; }
-  .calendar-today-btn { min-height:34px; padding:7px 12px; font-size:0.78em; }
-  .calendar-expand-btn { min-height:34px; padding:7px 10px; font-size:0.78em; }
+.calendar-head-actions { display:flex; gap:5px; align-items:center; }
+.calendar-head-actions .btn.small {
+  min-height:34px; padding:7px 12px;
+  font-size:0.78em; line-height:1.2;
+  font-weight:600;
+}
+.calendar-head-actions .calendar-expand-btn {
+  min-width:58px; padding-left:6px; padding-right:6px;
+  text-align:center;
+}
   .calendar-card.calendar-expanded { max-height:none; }
 
   .calendar-card {
