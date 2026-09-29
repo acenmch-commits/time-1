@@ -550,9 +550,9 @@
   }
   .calendar-day:active { transform:scale(.95); }
   .calendar-grid-expanded .calendar-day { min-height:62px; padding:5px 1px 4px; border-radius:10px; }
-  .calendar-grid-expanded .calendar-day .solar-num { width:25px; height:25px; font-size:.93em; }
-  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:.51em; }
-  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:.48em; min-height:9px; }
+  .calendar-grid-expanded .calendar-day .solar-num { width:27px; height:27px; font-size:1.02em; }
+  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:.58em; }
+  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:.54em; min-height:9px; }
   .calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
   .calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
   .calendar-card.calendar-expanded { padding-bottom:10px; }
@@ -568,7 +568,7 @@
   .calendar-day.today.selected { background:rgba(0,122,255,.16); }
   .calendar-day .solar-num {
     width:28px; height:28px; display:grid; place-items:center;
-    font-size:1.03em; line-height:1; font-weight:700;
+    font-size:1.18em; line-height:1; font-weight:700;
     font-variant-numeric:tabular-nums; border-radius:50%;
   }
   .calendar-day.today .solar-num {
@@ -576,12 +576,12 @@
   }
   .calendar-day.selected:not(.today) .solar-num { color:var(--blue); }
   .calendar-day .lunar-text {
-    margin-top:4px; font-size:.59em; line-height:1.15;
+    margin-top:4px; font-size:.68em; line-height:1.15;
     color:var(--label-2); white-space:nowrap; overflow:hidden;
     max-width:100%; text-overflow:ellipsis;
   }
   .calendar-day .event-text {
-    margin-top:3px; font-size:.55em; line-height:1.15;
+    margin-top:3px; font-size:.62em; line-height:1.15;
     color:var(--orange); white-space:nowrap; overflow:hidden;
     max-width:100%; text-overflow:ellipsis; min-height:11px;
   }
@@ -1877,7 +1877,9 @@
   }
 
   function normalizeTask(t) {
-    if (!t || !t.id) return null;
+    if (!t) return null;
+    if (!t.id) t.id = uid();
+    if (!t.name && typeof t.text === 'string') t.name = t.text;
     if (!t.name) t.name = '未命名';
     if (typeof t.done !== 'boolean') t.done = false;
     if (typeof t.note !== 'string') t.note = '';
@@ -2739,7 +2741,15 @@
     var start=scheduleDate, items=allTaskEntriesFrom(start).concat(recurringEntriesFrom(start,90));
     items.sort(function(a,b){ var at=typeof a.startAt==='number'?a.startAt:parseDate(a.date).getTime(); var bt=typeof b.startAt==='number'?b.startAt:parseDate(b.date).getTime(); return at-bt || (a.done?1:-1); });
     var el=$('#schedule-list');
-    if(!items.length){ el.innerHTML='<div class="calendar-empty">从'+esc(start)+'开始暂无日程</div>'; return; }
+    if(!items.length){
+      var rawCount=0;
+      Object.keys(state.daily).forEach(function(ds){
+        var rr=state.daily[ds];
+        if(ds>=start && rr && Array.isArray(rr.tasks)) rawCount+=rr.tasks.length;
+      });
+      el.innerHTML='<div class="calendar-empty">'+(rawCount?'检测到 '+rawCount+' 条旧日程但未能正常转换，请重新打开 App':'从'+esc(start)+'开始暂无日程')+'</div>';
+      return;
+    }
     var now=Date.now(), html='', lastDate='';
     items.slice(0,120).forEach(function(it){
       if(it.date!==lastDate){ lastDate=it.date; var di=calendarInfo(it.date); html+='<div class="schedule-date-group">'+(it.date===todayStr()?'今天':it.date)+' · '+esc(di.lunar)+(di.term?' · '+esc(di.term):'')+'</div>'; }
@@ -4387,6 +4397,7 @@
     wrap.addEventListener('touchend', function (e) {
       if (locked || currentSubpage) return;
       var target = e.target;
+      if (target && target.closest && target.closest('.calendar-card')) return;
       if (target && target.closest && target.closest('input, textarea, select, button, a, [data-no-swipe]')) return;
       var t = e.changedTouches[0];
       var dx = t.clientX - startX;
@@ -4439,6 +4450,80 @@
   }
 
   /* ========== 事件绑定 ========== */
+  function bindCalendarEvents() {
+    var card=document.querySelector('.calendar-card');
+    var grid=$('#calendar-grid');
+    var todayBtn=$('#calendar-today');
+    var expandBtn=$('#calendar-expand');
+
+    if(card && !card.dataset.calendarBound){
+      card.dataset.calendarBound='1';
+      var startY=0;
+      card.addEventListener('touchstart',function(e){
+        if(e.touches && e.touches.length===1) startY=e.touches[0].clientY;
+      },{passive:true});
+      card.addEventListener('touchmove',function(e){
+        if(e.touches && e.touches.length===1) e.preventDefault();
+      },{passive:false});
+      card.addEventListener('touchend',function(e){
+        if(!e.changedTouches || !e.changedTouches.length) return;
+        var dy=e.changedTouches[0].clientY-startY;
+        if(Math.abs(dy)<35) return;
+        calendarExpanded=dy<0;
+        renderCalendar();
+      },{passive:true});
+    }
+
+    if(expandBtn && !expandBtn.dataset.bound){
+      expandBtn.dataset.bound='1';
+      expandBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        calendarExpanded=!calendarExpanded;
+        renderCalendar();
+      });
+    }
+
+    if(todayBtn && !todayBtn.dataset.bound){
+      todayBtn.dataset.bound='1';
+      todayBtn.addEventListener('click',function(e){
+        e.preventDefault();
+        scheduleDate=todayStr();
+        calendarMonth=new Date();
+        calendarExpanded=false;
+        renderSchedule();
+        $('#main-wrap').scrollTo({top:0,behavior:'smooth'});
+      });
+    }
+
+    if(grid && !grid.dataset.bound){
+      grid.dataset.bound='1';
+      grid.addEventListener('click',function(e){
+        var btn=e.target.closest('[data-calendar-date]');
+        if(!btn) return;
+        e.preventDefault();
+        scheduleDate=btn.dataset.calendarDate;
+        var d=parseDate(scheduleDate);
+        calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
+        renderSchedule();
+      });
+    }
+
+    ['calendar-prev','calendar-next'].forEach(function(id){
+      var btn=$('#'+id);
+      if(btn && !btn.dataset.bound){
+        btn.dataset.bound='1';
+        btn.addEventListener('click',function(e){
+          e.preventDefault();
+          var d=parseDate(scheduleDate);
+          d.setDate(d.getDate()+(id==='calendar-prev'?-7:7));
+          scheduleDate=dateStr(d);
+          calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
+          renderSchedule();
+        });
+      }
+    });
+  }
+
   function bindEvents() {
     $$('.tab').forEach(function (btn) {
       btn.addEventListener('click', function () { switchTab(btn.dataset.tab); });
@@ -4455,6 +4540,8 @@
             b.classList.toggle('active', b === btn);
           });
           updateFontPreview();
+          commitFontDraft();
+          syncFontButtons();
           return;
         }
         if (seg.dataset.newhabit) {
@@ -4551,46 +4638,7 @@
       if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
 
-    // 日程：在日历区域上下滑动切换「本周 / 35天」
-    var calendarCard=document.querySelector('.calendar-card');
-    if(calendarCard){
-      calendarCard.addEventListener('touchstart',function(e){
-        if(activeTab!=='schedule' || currentSubpage) return;
-        if(e.touches&&e.touches.length) calendarTouchStartY=e.touches[0].clientY;
-      },{passive:true});
-      calendarCard.addEventListener('touchend',function(e){
-        if(activeTab!=='schedule' || currentSubpage || !e.changedTouches||!e.changedTouches.length) return;
-        var dy=e.changedTouches[0].clientY-calendarTouchStartY;
-        if(Math.abs(dy)<35) return;
-        calendarExpanded=!calendarExpanded;
-        renderCalendar();
-      },{passive:true});
-    }
-    $('#calendar-expand').addEventListener('click',function(){
-      calendarExpanded=!calendarExpanded;
-      renderCalendar();
-    });
-
-    // 日程：周视图日历
-    $('#calendar-prev').addEventListener('click', function(){
-      var d=parseDate(scheduleDate); d.setDate(d.getDate()-7);
-      scheduleDate=dateStr(d); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule();
-    });
-    $('#calendar-next').addEventListener('click', function(){
-      var d=parseDate(scheduleDate); d.setDate(d.getDate()+7);
-      scheduleDate=dateStr(d); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule();
-    });
-    $('#calendar-today').addEventListener('click', function(){
-      scheduleDate=todayStr();
-      var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
-      renderSchedule();
-    });
-    $('#calendar-grid').addEventListener('click', function(e){
-      var btn=e.target.closest('[data-calendar-date]'); if(!btn)return;
-      scheduleDate=btn.dataset.calendarDate;
-      var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
-      renderSchedule();
-    });
+    bindCalendarEvents();
 
     // 日程：每个日程只保留勾选，不提供删除
     $('#schedule-list').addEventListener('click', function(e){
@@ -4833,6 +4881,7 @@
   calendarMonth=new Date(parseDate(scheduleDate).getFullYear(),parseDate(scheduleDate).getMonth(),1);
   applyFontSettings();
   try { bindEvents(); } catch (e) { console.error('bindEvents failed:', e); }
+  try { bindCalendarEvents(); } catch (e) { console.error('bindCalendarEvents failed:', e); }
   bindSwipe();
   bindBackButton();
   updateSuggestions();
