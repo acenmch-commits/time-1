@@ -29,12 +29,36 @@ jobs:
           if [ ! -f www/index.html ]; then
             echo "<h1>Time Tracker</h1>" > www/index.html
           fi
+          cp index.html www/index.html
 
       - name: Install deps
         run: npm install
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Prepare notification sound
+        run: |
+          mkdir -p android/app/src/main/res/raw
+          cp notification.wav android/app/src/main/res/raw/notification.wav
+
+      - name: Add Android notification permissions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          s = path.read_text(encoding='utf-8')
+          perms = [
+              'android.permission.POST_NOTIFICATIONS',
+              'android.permission.SCHEDULE_EXACT_ALARM'
+          ]
+          for perm in perms:
+              line = f'    <uses-permission android:name="{perm}" />\n'
+              if perm not in s:
+                  pos = s.find('>', s.find('<manifest')) + 1
+                  s = s[:pos] + '\n' + line + s[pos:]
+          path.write_text(s, encoding='utf-8')
+          PY
 
       - name: Set 64-bit only
         run: |
@@ -43,7 +67,7 @@ jobs:
       - name: Set version code from run number
         run: |
           sed -i "s/versionCode 1/versionCode ${{ github.run_number }}/" android/app/build.gradle
-          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.1.${{ github.run_number }}\"/" android/app/build.gradle
 
       - name: Decode keystore
         run: |
