@@ -512,6 +512,56 @@
     color: var(--label-2); text-align: center;
   }
 
+  .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; }
+  .calendar-month-title { font-size:1.05em; font-weight:700; letter-spacing:-0.02em; }
+  .calendar-head-actions { display:flex; gap:6px; align-items:center; }
+  .calendar-today-btn { min-height:34px; padding:7px 12px; font-size:0.78em; }
+  .calendar-card { padding:12px; margin-bottom:14px; }
+  .calendar-week { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+  .calendar-week span { text-align:center; font-size:0.68em; color:var(--label-3); padding:4px 0; }
+  .calendar-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+  .calendar-day { min-width:0; min-height:72px; padding:6px 3px 5px; border:1px solid transparent; border-radius:12px; background:transparent; color:var(--label); cursor:pointer; text-align:center; display:flex; flex-direction:column; align-items:center; transition:background-color 140ms ease, border-color 140ms ease, transform 140ms ease; }
+  .calendar-day:active { transform:scale(.96); }
+  .calendar-day.other-month { opacity:.34; }
+  .calendar-day.today { background:rgba(0,122,255,.09); }
+  .calendar-day.selected { border-color:var(--blue); background:rgba(0,122,255,.13); }
+  .calendar-day .solar-num { font-size:1.02em; line-height:1.1; font-weight:700; font-variant-numeric:tabular-nums; }
+  .calendar-day .lunar-text { margin-top:3px; font-size:.61em; line-height:1.15; color:var(--label-2); white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; }
+  .calendar-day .event-text { margin-top:3px; font-size:.57em; line-height:1.15; color:var(--orange); white-space:nowrap; overflow:hidden; max-width:100%; text-overflow:ellipsis; min-height:11px; }
+  .calendar-dots { display:flex; justify-content:center; gap:3px; min-height:7px; margin-top:5px; }
+  .calendar-dot { width:5px; height:5px; border-radius:50%; display:block; }
+  .calendar-dot.task { background:var(--blue); }
+  .calendar-dot.habit { background:var(--green); }
+  .calendar-dot.reminder { background:var(--orange); }
+  .calendar-dot.done { background:var(--gray); }
+  .calendar-selected-info { margin:0 4px 12px; font-size:.78em; color:var(--label-2); display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .calendar-selected-info strong { color:var(--label); }
+  .schedule-list .item { padding-top:11px; padding-bottom:11px; }
+  .schedule-date-group { margin:18px 4px 7px; font-size:.72em; font-weight:700; color:var(--label-2); }
+  .schedule-date-group:first-child { margin-top:0; }
+  .schedule-kind { font-size:.62em; padding:2px 6px; border-radius:6px; background:var(--fill-primary); color:var(--label-2); white-space:nowrap; }
+  .schedule-kind.task { color:var(--blue); background:rgba(0,122,255,.12); }
+  .schedule-kind.daily { color:var(--green); background:rgba(52,199,89,.12); }
+  .schedule-kind.weekly, .schedule-kind.monthly, .schedule-kind.yearly { color:var(--indigo); background:rgba(88,86,214,.12); }
+  .schedule-item-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .schedule-item-time { font-size:.72em; color:var(--label-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .schedule-countdown { margin-top:5px; font-size:.68em; color:var(--orange); font-weight:600; font-variant-numeric:tabular-nums; }
+  .schedule-countdown.urgent { color:var(--red); }
+  .schedule-countdown.done { color:var(--gray); }
+  .calendar-empty { padding:22px 12px; text-align:center; color:var(--label-2); font-size:.82em; }
+  .task-form-row { display:flex; gap:8px; }
+  .task-form-row .field-block { flex:1; min-width:0; }
+  .notify-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .notify-grid .field-block { margin:0; }
+  .notification-hint { font-size:.68em; color:var(--label-3); margin-top:6px; line-height:1.4; }
+  @media (max-width:430px) {
+    .calendar-day { min-height:67px; padding-left:1px; padding-right:1px; }
+    .calendar-day .solar-num { font-size:.95em; }
+    .calendar-day .lunar-text { font-size:.55em; }
+    .calendar-day .event-text { font-size:.52em; }
+    .calendar-dot { width:4px; height:4px; }
+  }
+
   .progress-card { padding: 16px 18px; margin-bottom: 12px; }
   .progress-head {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -888,12 +938,25 @@
     <main>
       <!-- ============ 日程（首页） ============ -->
       <section id="view-schedule" class="main-section">
-        <div class="date-bar">
-          <button class="icon-btn" id="sch-prev" type="button">‹</button>
-          <input class="field" id="sch-date" type="date">
-          <button class="icon-btn" id="sch-next" type="button">›</button>
+        <div class="calendar-head">
+          <div class="calendar-month-title" id="calendar-month-title">2026年9月</div>
+          <div class="calendar-head-actions">
+            <button class="btn small calendar-today-btn" id="calendar-today" type="button">今天</button>
+            <button class="icon-btn" id="calendar-prev" type="button">‹</button>
+            <button class="icon-btn" id="calendar-next" type="button">›</button>
+          </div>
         </div>
-        <p class="date-caption" id="sch-title"></p>
+        <div class="card calendar-card">
+          <div class="calendar-week">
+            <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+          </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+
+        <div class="calendar-selected-info">
+          <span><strong id="calendar-selected-date">今天</strong> · 当日及未来日程</span>
+          <button class="btn small" id="open-task-page-schedule" type="button">＋ 添加</button>
+        </div>
 
         <div class="card progress-card" id="schedule-progress-card">
           <div class="progress-head">
@@ -903,17 +966,7 @@
           <div class="bar"><div class="bar-fill" id="sch-bar"></div></div>
         </div>
 
-        <div class="section-head-row">
-          <h3 class="section-title">待办事项</h3>
-          <button class="btn small" id="open-task-page-schedule" type="button">＋ 添加</button>
-        </div>
-        <ul class="list" id="task-list"></ul>
-
-        <h3 class="section-title">每日固定</h3>
-        <ul class="list" id="habit-daily-list"></ul>
-
-        <h3 class="section-title">周期固定</h3>
-        <ul class="list" id="habit-cycle-list"></ul>
+        <div class="schedule-list" id="schedule-list"></div>
       </section>
 
       <!-- ============ 计时 ============ -->
@@ -1060,6 +1113,16 @@
         </div>
         <div class="card setting-item">
           <div>
+            <div class="setting-title">安卓系统提醒</div>
+            <div class="setting-desc">条幅、声音、震动、闹钟提醒；首次使用会请求系统通知权限</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-notifications-enabled">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="card setting-item">
+          <div>
             <div class="setting-title">完成时二次确认</div>
             <div class="setting-desc">勾选事项前弹出确认</div>
           </div>
@@ -1194,8 +1257,31 @@
           </div>
           <div class="field-block" id="newhabit-target-wrap" hidden>
             <div class="field-label">周期内目标次数</div>
-            <input class="field" id="newhabit-target" type="number" min="1" max="100" value="3">
+            <input class="field" id="newhabit-target" type="number" min="1" max="100" value="1">
           </div>
+          <div class="field-block" id="newhabit-rule-wrap">
+            <div class="field-label" id="newhabit-rule-label">每周星期</div>
+            <select class="field" id="newhabit-weekday">
+              <option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option><option value="6">星期六</option><option value="0">星期日</option>
+            </select>
+            <div class="task-form-row" id="newhabit-month-rule" hidden style="margin-top:8px;">
+              <select class="field" id="newhabit-monthday"></select>
+              <select class="field" id="newhabit-month"><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select>
+            </div>
+          </div>
+          <div class="notify-grid">
+            <div class="field-block">
+              <div class="field-label">提醒时间</div>
+              <input class="field" id="newhabit-time" type="time" value="09:00">
+            </div>
+            <div class="field-block">
+              <div class="field-label">提醒方式</div>
+              <select class="field" id="newhabit-notify">
+                <option value="banner">仅条幅</option><option value="sound">条幅 + 声音</option><option value="vibrate">条幅 + 震动</option><option value="alarm">闹钟（声音 + 震动）</option><option value="none">关闭提醒</option>
+              </select>
+            </div>
+          </div>
+          <div class="notification-hint">完成后自动进入下一周期；每周 / 每月 / 每年按下方周期规则生成下一次。</div>
           <button class="btn" id="newhabit-add" type="button" style="width:100%;">添加固定事项</button>
         </div>
 
@@ -1214,10 +1300,6 @@
 
         <div class="card" style="padding:16px; margin-bottom:14px;">
           <div class="field-block">
-            <div class="field-label">日期</div>
-            <input class="field" id="task-page-date" type="date">
-          </div>
-          <div class="field-block">
             <div class="field-label">事项名称</div>
             <input class="field" id="task-page-name" type="text" maxlength="100" placeholder="例如：整理客户资料" autocomplete="off">
           </div>
@@ -1231,6 +1313,21 @@
               <input class="field" id="task-page-end" type="datetime-local">
             </div>
           </div>
+          <div class="notify-grid">
+            <div class="field-block">
+              <div class="field-label">提前提醒</div>
+              <select class="field" id="task-page-remind">
+                <option value="0">准时</option><option value="5">提前5分钟</option><option value="10">提前10分钟</option><option value="30">提前30分钟</option><option value="60">提前1小时</option>
+              </select>
+            </div>
+            <div class="field-block">
+              <div class="field-label">提醒方式</div>
+              <select class="field" id="task-page-notify">
+                <option value="banner">仅条幅</option><option value="sound">条幅 + 声音</option><option value="vibrate">条幅 + 震动</option><option value="alarm">闹钟（声音 + 震动）</option><option value="none">关闭提醒</option>
+              </select>
+            </div>
+          </div>
+          <div class="notification-hint">开始时间已包含日期，不再重复填写“日期”。未填写开始时间的待办按当前选中日期归档。</div>
           <div class="field-block">
             <div class="field-label">备注（可选）</div>
             <textarea class="field" id="task-page-note" rows="2" maxlength="200" placeholder="补充说明"></textarea>
@@ -1688,6 +1785,7 @@
     if (typeof state.settings.showScheduleProgress !== 'boolean') state.settings.showScheduleProgress = true;
     if (typeof state.settings.confirmComplete !== 'boolean') state.settings.confirmComplete = true;
     if (typeof state.settings.lockCompleted !== 'boolean') state.settings.lockCompleted = false;
+    if (typeof state.settings.notificationsEnabled !== 'boolean') state.settings.notificationsEnabled = true;
     state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
     draftFont = Object.assign({}, state.settings.font);
   }
@@ -1702,6 +1800,11 @@
       h.target = 1;
     }
     h.createdAt = normalizeDateOnly(h.createdAt);
+    if (typeof h.weekday !== 'number') h.weekday = 1;
+    if (typeof h.monthday !== 'number') h.monthday = 1;
+    if (typeof h.month !== 'number') h.month = 1;
+    if (typeof h.reminderTime !== 'string') h.reminderTime = '09:00';
+    if (typeof h.notifyMode !== 'string') h.notifyMode = 'banner';
     return h;
   }
 
@@ -1713,6 +1816,9 @@
     if (typeof t.startAt !== 'number') t.startAt = null;
     if (typeof t.endAt !== 'number') t.endAt = null;
     if (typeof t.createdAt !== 'number') t.createdAt = Date.now();
+    if (typeof t.remindMin !== 'number') t.remindMin = 0;
+    if (typeof t.notifyMode !== 'string') t.notifyMode = 'banner';
+    if (!t.date && typeof t.startAt === 'number') t.date = dateStr(new Date(t.startAt));
     return t;
   }
 
@@ -2270,51 +2376,199 @@
     '</li>';
   }
 
+  /* ========== 日历 / 农历 / 节气 ========== */
+  var LUNAR_INFO = [
+    0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,
+    0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,
+    0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,
+    0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,
+    0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,
+    0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,
+    0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,
+    0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,
+    0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,
+    0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x055c0,0x0ab60,0x096d5,0x092e0,
+    0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,
+    0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,
+    0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,
+    0x05aa0,0x076a3,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,
+    0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0,
+    0x14b63,0x09370,0x049f8,0x04970,0x064b0,0x168a6,0x0ea50,0x06b20,0x1a6c4,0x0aae0,
+    0x0a2e0,0x0d2e3,0x0c960,0x0d557,0x0d4a0,0x0da50,0x05d55,0x056a0,0x0a6d0,0x055d4,
+    0x052d0,0x0a9b8,0x0a950,0x0b4a0,0x0b6a6,0x0ad50,0x055a0,0x0aba4,0x0a5b0,0x052b0,
+    0x0b273,0x06930,0x07337,0x06aa0,0x0ad50,0x14b55,0x04b60,0x0a570,0x054e4,0x0d160,
+    0x0e968,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252,0x0d520
+  ];
+  var SOLAR_TERMS = ['小寒','大寒','立春','雨水','惊蛰','春分','清明','谷雨','立夏','小满','芒种','夏至','小暑','大暑','立秋','处暑','白露','秋分','寒露','霜降','立冬','小雪','大雪','冬至'];
+  var SOLAR_TERM_INFO = [0,21208,42467,63836,85337,107014,128867,150921,173149,195551,218072,240693,263343,285989,308563,331033,353350,375494,397447,419210,440795,462224,483532,504758];
+  var LUNAR_MONTH_NAMES = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月'];
+  var LUNAR_DAY_NAMES = ['','初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+  var SOLAR_HOLIDAYS = {'01-01':'元旦','03-08':'妇女节','05-01':'劳动节','05-04':'青年节','06-01':'儿童节','07-01':'建党节','08-01':'建军节','09-10':'教师节','10-01':'国庆节','12-25':'圣诞节'};
+  var LUNAR_HOLIDAYS = {'1-1':'春节','1-15':'元宵节','2-2':'龙抬头','5-5':'端午节','7-7':'七夕','7-15':'中元节','8-15':'中秋节','9-9':'重阳节','12-8':'腊八节','12-23':'小年','12-24':'小年'};
+  var calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  function lunarLeapMonth(y) { return LUNAR_INFO[y - 1900] & 15; }
+  function lunarLeapDays(y) { return lunarLeapMonth(y) ? ((LUNAR_INFO[y - 1900] & 0x10000) ? 30 : 29) : 0; }
+  function lunarMonthDays(y,m) { return (LUNAR_INFO[y - 1900] & (0x10000 >> m)) ? 30 : 29; }
+  function lunarYearDays(y) { var sum=348, i; for(i=0x8000;i>8;i>>=1) sum += (LUNAR_INFO[y-1900] & i) ? 1 : 0; return sum + lunarLeapDays(y); }
+  function lunarSolar2Lunar(y,m,d) {
+    if (y < 1900 || y > 2100) return null;
+    var base = new Date(1900,0,31), target = new Date(y,m-1,d);
+    var offset = Math.floor((target-base)/86400000), i, ml, leap;
+    var ly=1900;
+    for(; ly<2100 && offset>0; ly++){ var yd=lunarYearDays(ly); offset-=yd; }
+    if(offset<0){ offset += lunarYearDays(--ly); }
+    var lm=1; leap=lunarLeapMonth(ly); var isLeap=false;
+    for(; lm<=12 && offset>=0; lm++){
+      ml = isLeap ? lunarLeapDays(ly) : lunarMonthDays(ly,lm);
+      if(offset < ml) break;
+      offset -= ml;
+      if(leap===lm && !isLeap){ isLeap=true; lm--; }
+      else if(isLeap){ isLeap=false; }
+    }
+    var ld=offset+1;
+    return {year:ly, month:lm, day:ld, isLeap:isLeap};
+  }
+  function lunarDayText(d){ return LUNAR_DAY_NAMES[d] || String(d); }
+  function lunarLabel(info){ if(!info) return ''; return (info.isLeap?'闰':'') + (LUNAR_MONTH_NAMES[info.month-1] || '') + ' ' + lunarDayText(info.day); }
+  function solarTermDay(y,n){
+    var ms = (31556925974.7 * (y - 1900) + SOLAR_TERM_INFO[n] * 60000) + Date.UTC(1900,0,6,2,5);
+    return new Date(ms).getUTCDate();
+  }
+  function solarTermForDate(y,m,d){
+    if(y<1900 || y>2100) return '';
+    var idx=(m-1)*2;
+    if(solarTermDay(y,idx)===d) return SOLAR_TERMS[idx];
+    if(solarTermDay(y,idx+1)===d) return SOLAR_TERMS[idx+1];
+    return '';
+  }
+  function lunarHoliday(info){ if(!info || info.isLeap) return ''; return LUNAR_HOLIDAYS[info.month+'-'+info.day] || ''; }
+  function calendarInfo(ds){
+    var d=parseDate(ds), y=d.getFullYear(), m=d.getMonth()+1, day=d.getDate();
+    var lunar=lunarSolar2Lunar(y,m,day), term=solarTermForDate(y,m,day), holiday=SOLAR_HOLIDAYS[pad(m)+'-'+pad(day)] || lunarHoliday(lunar);
+    return {solar:y+'年'+m+'月'+day+'日', lunar:lunarLabel(lunar), term:term, holiday:holiday};
+  }
+  function dateHasSchedule(ds){
+    var rec=state.daily[ds], tasks=rec && Array.isArray(rec.tasks) ? rec.tasks : [];
+    var taskCount=tasks.length, doneCount=tasks.filter(function(t){return !!t.done;}).length;
+    var d=parseDate(ds), habits=state.habits.filter(function(h){ return h.createdAt<=ds && habitOccursOnDate(h,ds); });
+    return {tasks:taskCount, done:doneCount, habits:habits.length};
+  }
+  function habitOccursOnDate(h,ds){
+    if(!h || h.createdAt>ds) return false;
+    var d=parseDate(ds);
+    if(h.type==='daily') return true;
+    if(h.type==='weekly') return d.getDay() === (typeof h.weekday==='number' ? h.weekday : 1);
+    if(h.type==='monthly') return d.getDate() === (Number(h.monthday)||1);
+    if(h.type==='yearly') return d.getMonth()+1 === (Number(h.month)||1) && d.getDate() === (Number(h.monthday)||1);
+    return false;
+  }
+  function renderCalendar(){
+    var y=calendarMonth.getFullYear(), m=calendarMonth.getMonth();
+    $('#calendar-month-title').textContent=y+'年'+(m+1)+'月';
+    var first=new Date(y,m,1), start=new Date(y,m,1); start.setDate(1-((first.getDay()+6)%7));
+    var html='';
+    for(var i=0;i<42;i++){
+      var d=new Date(start); d.setDate(start.getDate()+i); var ds=dateStr(d), info=calendarInfo(ds), stat=dateHasSchedule(ds);
+      var dots='';
+      var dotCount=Math.min(4,stat.tasks+stat.habits);
+      for(var j=0;j<dotCount;j++) dots += '<i class="calendar-dot '+(j<stat.tasks?'task':'habit')+'"></i>';
+      if(stat.done && stat.done===stat.tasks && stat.tasks) dots = '<i class="calendar-dot done"></i>' + dots.slice(Math.min(dots.length,0));
+      var event=info.term || info.holiday || '';
+      var cls='calendar-day'+(d.getMonth()!==m?' other-month':'')+(ds===todayStr()?' today':'')+(ds===scheduleDate?' selected':'');
+      html += '<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
+        '<span class="solar-num">'+d.getDate()+'</span>'+
+        '<span class="lunar-text">'+esc(info.lunar || '')+'</span>'+
+        '<span class="event-text">'+esc(event)+'</span>'+
+        '<span class="calendar-dots">'+dots+'</span></button>';
+    }
+    $('#calendar-grid').innerHTML=html;
+    var selInfo=calendarInfo(scheduleDate);
+    $('#calendar-selected-date').textContent=(scheduleDate===todayStr()?'今天 · ':'')+selInfo.solar.replace(/^\\d+年/,'');
+  }
+  function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
+  function addMonthsClamped(d,n){ var x=new Date(d); var day=x.getDate(); x.setDate(1); x.setMonth(x.getMonth()+n); x.setDate(Math.min(day,daysInMonth(x.getFullYear(),x.getMonth()))); return x; }
+  function fmtCountdownMDHM(target, now){
+    if(!target) return '';
+    var t=new Date(target), n=new Date(now || Date.now()), diff=t-n;
+    var future=diff>=0, a=future?n:t, b=future?t:n, months=0;
+    if(future){ while(addMonthsClamped(a,months+1)<=b && months<240){ months++; } }
+    else { while(addMonthsClamped(b,months+1)<=a && months<240){ months++; } }
+    var anchor=addMonthsClamped(future?n:t,months), remain=Math.abs((future?t:n)-anchor);
+    var days=Math.floor(remain/86400000); remain%=86400000;
+    var hours=Math.floor(remain/3600000); remain%=3600000;
+    var mins=Math.floor(remain/60000);
+    var text=months+'月'+days+'天'+hours+'小时'+mins+'分钟';
+    return future ? '距'+text : '已过'+text;
+  }
+  function taskScheduleDate(t){
+    if(t && typeof t.startAt==='number') return dateStr(new Date(t.startAt));
+    if(t && t.date) return t.date;
+    return scheduleDate;
+  }
+  function allTaskEntriesFrom(startDate){
+    var out=[];
+    Object.keys(state.daily).forEach(function(ds){
+      if(ds<startDate) return;
+      var rec=state.daily[ds]; if(!rec || !Array.isArray(rec.tasks)) return;
+      rec.tasks.forEach(function(t){ out.push({date:ds,kind:'task',id:t.id,name:t.name,done:!!t.done,startAt:t.startAt,endAt:t.endAt,note:t.note||'',data:t}); });
+    });
+    return out;
+  }
+  function recurringEntriesFrom(startDate, days){
+    var out=[], cur=parseDate(startDate), end=new Date(cur); end.setDate(end.getDate()+days);
+    while(cur<=end){ var ds=dateStr(cur); state.habits.forEach(function(h){
+      if(h.createdAt>ds || !habitOccursOnDate(h,ds)) return;
+      var rec=state.daily[ds] || {habits:{}}; var done=habitDoneList(rec,h.id).length>0;
+      var time=h.reminderTime || '09:00', p=time.split(':'); var ts=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate(),Number(p[0])||0,Number(p[1])||0).getTime();
+      out.push({date:ds,kind:h.type,id:h.id,name:h.name,done:done,startAt:ts,endAt:null,note:'',data:h});
+    }); cur.setDate(cur.getDate()+1); }
+    return out;
+  }
+  function renderScheduleList(){
+    var start=scheduleDate, items=allTaskEntriesFrom(start).concat(recurringEntriesFrom(start,90));
+    items.sort(function(a,b){ var at=typeof a.startAt==='number'?a.startAt:parseDate(a.date).getTime(); var bt=typeof b.startAt==='number'?b.startAt:parseDate(b.date).getTime(); return at-bt || (a.done?1:-1); });
+    var el=$('#schedule-list');
+    if(!items.length){ el.innerHTML='<div class="calendar-empty">从'+esc(start)+'开始暂无日程</div>'; return; }
+    var now=Date.now(), html='', lastDate='';
+    items.slice(0,120).forEach(function(it){
+      if(it.date!==lastDate){ lastDate=it.date; var di=calendarInfo(it.date); html+='<div class="schedule-date-group">'+(it.date===todayStr()?'今天':it.date)+' · '+esc(di.lunar)+(di.term?' · '+esc(di.term):'')+'</div>'; }
+      var kindLabel=it.kind==='task'?'待办':CYCLE_LABEL[it.kind]||'日程';
+      var timeText=typeof it.startAt==='number'?fmtTime(it.startAt):'';
+      var countdown=''; var target=typeof it.startAt==='number'?it.startAt:it.endAt;
+      if(!it.done && target){ countdown=fmtCountdownMDHM(target,now); if(it.startAt && it.endAt && now>=it.startAt && now<it.endAt) countdown=fmtCountdownMDHM(it.endAt,now); }
+      var countdownCls=countdown.indexOf('已过')===0?' urgent':'';
+      var note=it.note?'<div class="rec-note">'+esc(it.note)+'</div>':'';
+      var disabled=(it.done && state.settings.lockCompleted)?' disabled':'';
+      html+='<div class="item checkable schedule-entry '+(it.done?'done':'')+'" data-schedule-kind="'+it.kind+'" data-schedule-id="'+it.id+'" data-schedule-date="'+it.date+'">'+
+        '<button class="check-circle" type="button"'+disabled+'></button><div class="content">'+
+        '<div class="schedule-item-top"><div class="text">'+esc(it.name)+'</div><span class="schedule-kind '+it.kind+'">'+esc(kindLabel)+'</span></div>'+
+        (timeText?'<div class="schedule-item-time">'+timeText+'</div>':'')+(countdown?'<div class="schedule-countdown'+countdownCls+'" data-countdown-target="'+(target||0)+'">'+esc(countdown)+'</div>':'')+note+'</div></div>';
+    });
+    el.innerHTML=html;
+  }
+  function tickScheduleCountdowns(){
+    if(activeTab!=='schedule' || currentSubpage) return;
+    var now=Date.now();
+    $$('#schedule-list [data-countdown-target]').forEach(function(el){ el.textContent=fmtCountdownMDHM(Number(el.dataset.countdownTarget),now); });
+  }
+
   /* ========== 渲染：日程 ========== */
   function renderSchedule() {
-    var today = todayStr();
-    var isToday = scheduleDate === today;
-    var d = parseDate(scheduleDate);
+    var today=todayStr();
+    if(scheduleDate && scheduleDate!==today && scheduleDate<today){ /* allow past dates */ }
+    var d=parseDate(scheduleDate);
+    $('#sch-title').textContent=(scheduleDate===today?'今天 · ':'')+(d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日 '+WEEK_CN(d));
 
-    $('#sch-date').value = scheduleDate;
-    $('#sch-date').max = today;
-    $('#sch-next').disabled = isToday;
-    $('#sch-title').textContent =
-      (isToday ? '今天 · ' : '') +
-      (d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d));
-
-    var rec = getDaily(scheduleDate);
-    var visibleHabits = state.habits.filter(function (h) {
-      return h.createdAt <= scheduleDate;
-    });
-    var dailyHabits = visibleHabits.filter(function (h) { return h.type === 'daily'; });
-    var cycleHabits = visibleHabits.filter(function (h) { return h.type !== 'daily'; });
-
-    var doneCount = 0;
-    var totalCount = 0;
-
-    var tasksDone = rec.tasks.filter(function (t) { return t.done; }).length;
-    doneCount += tasksDone;
-    totalCount += rec.tasks.length;
-
-    dailyHabits.forEach(function (h) {
-      totalCount++;
-      if (rec.habits[h.id]) doneCount++;
-    });
-
-    cycleHabits.forEach(function (h) {
-      totalCount++;
-      if (habitProgress(h, scheduleDate).completed) doneCount++;
-    });
-
-    var pct = totalCount ? Math.round(doneCount / totalCount * 100) : 0;
-    $('#schedule-progress-card').hidden = !state.settings.showScheduleProgress;
-    $('#sch-rate').textContent = doneCount + ' / ' + totalCount;
-    $('#sch-bar').style.width = pct + '%';
-
-    renderTaskList(rec.tasks);
-    renderHabitGroup($('#habit-daily-list'), dailyHabits, rec, 'daily');
-    renderHabitGroup($('#habit-cycle-list'), cycleHabits, rec, 'cycle');
+    var rec=getDaily(scheduleDate);
+    var visibleHabits=state.habits.filter(function(h){ return h.createdAt<=scheduleDate; });
+    var doneCount=rec.tasks.filter(function(t){return t.done;}).length, totalCount=rec.tasks.length;
+    visibleHabits.forEach(function(h){ totalCount++; if(habitOccursOnDate(h,scheduleDate) && (h.type==='daily'?isHabitDone(h.id,scheduleDate):habitProgress(h,scheduleDate).completed)) doneCount++; });
+    var pct=totalCount?Math.round(doneCount/totalCount*100):0;
+    $('#schedule-progress-card').hidden=!state.settings.showScheduleProgress;
+    $('#sch-rate').textContent=doneCount+' / '+totalCount; $('#sch-bar').style.width=pct+'%';
+    renderCalendar();
+    renderScheduleList();
   }
 
   function renderTaskList(tasks) {
@@ -2499,6 +2753,13 @@
   }
 
   /* ========== 日程操作：切换完成 / 撤销 ========== */
+  async function toggleTaskDoneByDate(taskId,date){
+    var rec=ensureDaily(date), t=rec.tasks.filter(function(x){return x.id===taskId;})[0]; if(!t)return;
+    if(t.done){ if(state.settings.lockCompleted){toast('该事项已完成且不可撤销');return;} var ok=await confirmDialog('撤销完成「'+t.name+'」？','撤销'); if(!ok)return; t.done=false;t.doneAt=null; }
+    else { if(state.settings.confirmComplete){var ok2=await confirmDialog('确认完成「'+t.name+'」？','确认完成');if(!ok2)return;} t.done=true;t.doneAt=Date.now(); }
+    save(); renderSchedule(); syncNotifications();
+  }
+
   async function toggleTaskDone(taskId) {
     var rec = ensureDaily(scheduleDate);
     var t = rec.tasks.filter(function (x) { return x.id === taskId; })[0];
@@ -2523,6 +2784,7 @@
     }
     save();
     renderSchedule();
+    syncNotifications();
   }
 
   async function toggleHabitDone(habitId) {
@@ -2572,6 +2834,7 @@
     }
     save();
     renderSchedule();
+    syncNotifications();
   }
 
   function removeLatestHabitEntry(habit) {
@@ -2644,107 +2907,63 @@
       'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
 
-  function resetTaskEditor() {
-    editingTaskId = null;
-    $('#task-page-name').value = '';
-    $('#task-page-start').value = '';
-    $('#task-page-end').value = '';
-    $('#task-page-note').value = '';
-    $('#task-page-save').textContent = '添加待办';
-    $('#task-page-cancel').hidden = true;
+  function resetTaskEditor(){
+    editingTaskId=null;
+    $('#task-page-name').value=''; $('#task-page-start').value=''; $('#task-page-end').value=''; $('#task-page-note').value='';
+    $('#task-page-remind').value='0'; $('#task-page-notify').value='banner';
+    $('#task-page-save').textContent='添加待办'; $('#task-page-cancel').hidden=true;
   }
-
-  function openTaskManager(fromSchedule) {
-    $('#task-page-date').value = scheduleDate;
-    $('#tasks-back-label').textContent = fromSchedule ? '日程' : '设置';
-    resetTaskEditor();
-    openSubpage('tasks');
-    renderTaskManage();
+  function openTaskManager(fromSchedule){
+    $('#tasks-back-label').textContent=fromSchedule?'日程':'设置';
+    resetTaskEditor(); openSubpage('tasks'); renderTaskManage();
   }
-
-  function renderTaskManage() {
-    var date = $('#task-page-date').value || scheduleDate;
-    var rec = getDaily(date);
-    var el = $('#task-manage-list');
-    if (!rec.tasks.length) {
-      el.innerHTML = '<li class="empty"><span class="emoji">🗒️</span>这一天没有待办</li>';
-      return;
-    }
-    var sorted = rec.tasks.slice().sort(function(a,b){
-      if (a.done !== b.done) return a.done ? 1 : -1;
-      return (a.startAt || a.endAt || a.createdAt) - (b.startAt || b.endAt || b.createdAt);
-    });
-    el.innerHTML = sorted.map(function(t){
-      var times = '';
-      if (typeof t.startAt === 'number') times += '<span class="tag time-tag">起 ' + fmtDateTime(t.startAt) + '</span>';
-      if (typeof t.endAt === 'number') times += '<span class="tag time-tag">止 ' + fmtDateTime(t.endAt) + '</span>';
-      var note = t.note ? '<div class="rec-note">' + esc(t.note) + '</div>' : '';
-      return '<li class="item' + (t.done ? ' done' : '') + '" data-task-manage-id="' + t.id + '">' +
-        '<div class="content"><div class="text">' + esc(t.name) + '</div>' +
-        (times ? '<div class="task-times">' + times + '</div>' : '') + note +
-        (t.doneAt ? '<div class="item done-time">完成于 ' + fmtDateTimeFull(t.doneAt) + '</div>' : '') +
-        '</div><div class="actions">' +
-        '<button class="icon task-edit" type="button" title="编辑">✎</button>' +
-        '<button class="icon task-del" type="button" title="删除">✕</button>' +
-        '</div></li>';
+  function renderTaskManage(){
+    var el=$('#task-manage-list'), date=scheduleDate, all=allTaskEntriesFrom(date).filter(function(x){return x.kind==='task';});
+    if(!all.length){el.innerHTML='<li class="empty"><span class="emoji">🗒️</span>从'+esc(date)+'开始还没有待办</li>';return;}
+    all.sort(function(a,b){return (a.startAt||parseDate(a.date).getTime())-(b.startAt||parseDate(b.date).getTime());});
+    el.innerHTML=all.map(function(x){
+      var times=x.startAt?'<span class="tag time-tag">'+fmtDateTime(x.startAt)+'</span>':'';
+      if(x.endAt) times+='<span class="tag time-tag">止 '+fmtDateTime(x.endAt)+'</span>';
+      return '<li class="item '+(x.done?'done':'')+'" data-task-manage-id="'+x.id+'"><div class="content"><div class="text">'+esc(x.name)+'</div><div class="meta"><span class="tag">'+esc(x.date)+'</span>'+times+'</div>'+(x.note?'<div class="rec-note">'+esc(x.note)+'</div>':'')+'</div><div class="actions" style="opacity:1"><button class="icon task-edit" type="button">✎</button><button class="icon task-del" type="button">✕</button></div></li>';
     }).join('');
   }
-
-  function saveTaskFromManager() {
-    var date = $('#task-page-date').value || todayStr();
-    var name = $('#task-page-name').value.trim();
-    if (!name) { $('#task-page-name').focus(); return; }
-    var startVal = $('#task-page-start').value;
-    var endVal = $('#task-page-end').value;
-    var startAt = startVal ? new Date(startVal).getTime() : null;
-    var endAt = endVal ? new Date(endVal).getTime() : null;
-    if (startAt && endAt && endAt < startAt) { toast('结束时间不能早于开始时间'); return; }
-    var rec = ensureDaily(date);
-    if (editingTaskId) {
-      var t = rec.tasks.filter(function(x){ return x.id === editingTaskId; })[0];
-      if (!t) { resetTaskEditor(); renderTaskManage(); return; }
-      t.name = name; t.startAt = startAt; t.endAt = endAt; t.note = $('#task-page-note').value.trim();
+  function saveTaskFromManager(){
+    var name=$('#task-page-name').value.trim(); if(!name){$('#task-page-name').focus();return;}
+    var startVal=$('#task-page-start').value, endVal=$('#task-page-end').value;
+    var startAt=startVal?new Date(startVal).getTime():null, endAt=endVal?new Date(endVal).getTime():null;
+    if(startAt && endAt && endAt<startAt){toast('结束时间不能早于开始时间');return;}
+    var date=startAt?dateStr(new Date(startAt)):scheduleDate, rec=ensureDaily(date);
+    var remindMin=Number($('#task-page-remind').value)||0, notifyMode=$('#task-page-notify').value||'banner';
+    if(editingTaskId){
+      var found=null, oldDate=null; Object.keys(state.daily).some(function(ds){var r=state.daily[ds];var t=(r.tasks||[]).filter(function(x){return x.id===editingTaskId;})[0];if(t){found=t;oldDate=ds;return true;}return false;});
+      if(!found){resetTaskEditor();renderTaskManage();return;}
+      if(oldDate!==date){ state.daily[oldDate].tasks=state.daily[oldDate].tasks.filter(function(x){return x.id!==editingTaskId;}); rec.tasks.push(found); }
+      found.name=name; found.startAt=startAt; found.endAt=endAt; found.note=$('#task-page-note').value.trim(); found.remindMin=remindMin; found.notifyMode=notifyMode; found.date=date;
       toast('待办已修改');
     } else {
-      rec.tasks.push({id:uid(), name:name, note:$('#task-page-note').value.trim(), done:false, doneAt:null, startAt:startAt, endAt:endAt, createdAt:Date.now()});
+      rec.tasks.push({id:uid(),name:name,note:$('#task-page-note').value.trim(),done:false,doneAt:null,startAt:startAt,endAt:endAt,createdAt:Date.now(),date:date,remindMin:remindMin,notifyMode:notifyMode});
       toast('待办已添加');
     }
-    save();
-    scheduleDate = date;
-    resetTaskEditor();
-    renderTaskManage();
-    renderSchedule();
+    save(); scheduleDate=date; resetTaskEditor(); renderTaskManage(); renderSchedule(); syncNotifications();
   }
 
-  function editTaskFromManager(id) {
-    var date = $('#task-page-date').value || scheduleDate;
-    var rec = getDaily(date);
-    var t = rec.tasks.filter(function(x){ return x.id === id; })[0];
-    if (!t) return;
-    editingTaskId = id;
-    $('#task-page-name').value = t.name || '';
-    $('#task-page-start').value = formatTaskInputDateTime(t.startAt);
-    $('#task-page-end').value = formatTaskInputDateTime(t.endAt);
-    $('#task-page-note').value = t.note || '';
-    $('#task-page-save').textContent = '保存修改';
-    $('#task-page-cancel').hidden = false;
-    $('#main-wrap').scrollTo({top:0, behavior:'smooth'});
+  function editTaskFromManager(id){
+    var found=null, dsFound=null; Object.keys(state.daily).some(function(ds){var r=state.daily[ds];var t=(r.tasks||[]).filter(function(x){return x.id===id;})[0];if(t){found=t;dsFound=ds;return true;}return false;});
+    if(!found) return;
+    editingTaskId=id; scheduleDate=dsFound;
+    $('#task-page-name').value=found.name||''; $('#task-page-start').value=formatTaskInputDateTime(found.startAt); $('#task-page-end').value=formatTaskInputDateTime(found.endAt); $('#task-page-note').value=found.note||'';
+    $('#task-page-remind').value=String(found.remindMin||0); $('#task-page-notify').value=found.notifyMode||'banner';
+    $('#task-page-save').textContent='保存修改'; $('#task-page-cancel').hidden=false; renderTaskManage();
+    $('#main-wrap').scrollTo({top:0,behavior:'smooth'});
   }
 
-  async function deleteTaskFromManager(id) {
-    var date = $('#task-page-date').value || scheduleDate;
-    var rec = getDaily(date);
-    var t = rec.tasks.filter(function(x){ return x.id === id; })[0];
-    if (!t) return;
-    var ok = await confirmDialog('删除待办「' + t.name + '」？', '删除');
-    if (!ok) return;
-    rec.tasks = rec.tasks.filter(function(x){ return x.id !== id; });
-    save();
-    if (editingTaskId === id) resetTaskEditor();
-    renderTaskManage();
-    renderSchedule();
-    toast('待办已删除');
+  async function deleteTaskFromManager(id){
+    var found=null, dsFound=null; Object.keys(state.daily).some(function(ds){var r=state.daily[ds];var t=(r.tasks||[]).filter(function(x){return x.id===id;})[0];if(t){found=t;dsFound=ds;return true;}return false;});
+    if(!found) return;
+    var ok=await confirmDialog('删除待办「'+found.name+'」？','删除'); if(!ok) return;
+    state.daily[dsFound].tasks=state.daily[dsFound].tasks.filter(function(x){return x.id!==id;}); save(); resetTaskEditor(); renderTaskManage(); renderSchedule(); syncNotifications(); toast('待办已删除');
   }
+
 
   /* ========== 渲染：记录 ========== */
   function renderRecords() {
@@ -3409,6 +3628,7 @@
     $('#set-show-total').checked = !!state.settings.showTotalCard;
     $('#set-show-schedule-progress').checked = !!state.settings.showScheduleProgress;
     $('#set-confirm-complete').checked = !!state.settings.confirmComplete;
+    $('#set-notifications-enabled').checked = state.settings.notificationsEnabled !== false;
     $('#set-lock-completed').checked = !!state.settings.lockCompleted;
     syncFontButtons();
   }
@@ -3446,9 +3666,11 @@
     });
     el.innerHTML = sorted.map(function (h) {
       var cycleTag = '<span class="tag">' + CYCLE_LABEL[h.type] + '</span>';
-      if (h.type !== 'daily') {
-        cycleTag += '<span class="tag">目标 ' + h.target + ' 次</span>';
-      }
+      if (h.type !== 'daily') cycleTag += '<span class="tag">目标 ' + h.target + ' 次</span>';
+      if (h.type === 'weekly') cycleTag += '<span class="tag">周' + ['日','一','二','三','四','五','六'][h.weekday == null ? 1 : h.weekday] + '</span>';
+      if (h.type === 'monthly') cycleTag += '<span class="tag">每月' + (h.monthday || 1) + '日</span>';
+      if (h.type === 'yearly') cycleTag += '<span class="tag">每年' + (h.month || 1) + '月' + (h.monthday || 1) + '日</span>';
+      if (h.reminderTime && h.notifyMode !== 'none') cycleTag += '<span class="tag">' + esc(h.reminderTime) + ' · ' + esc(h.notifyMode === 'alarm' ? '闹钟' : '提醒') + '</span>';
       return '<li class="item" data-habit-id="' + h.id + '">' +
         '<div class="content">' +
           '<div class="text">' + esc(h.name) + '</div>' +
@@ -3461,20 +3683,61 @@
     }).join('');
   }
 
-  function addHabit(name, type, target) {
-    if (!name) return;
-    var h = normalizeHabit({
-      id: uid(), name: name, type: type,
-      target: type === 'daily' ? 1 : Math.max(1, parseInt(target) || 1),
-      createdAt: todayStr()
-    });
-    state.habits.push(h);
-    save();
+  function addHabit(name,type,target,opts){
+    if(!name)return; opts=opts||{};
+    var h=normalizeHabit({id:uid(),name:name,type:type,target:type==='daily'?1:Math.max(1,parseInt(target)||1),createdAt:todayStr(),weekday:opts.weekday,monthday:opts.monthday,month:opts.month,reminderTime:opts.reminderTime||'09:00',notifyMode:opts.notifyMode||'banner'});
+    state.habits.push(h); save(); syncNotifications();
   }
 
   function removeHabit(id) {
     state.habits = state.habits.filter(function (h) { return h.id !== id; });
     save();
+  }
+
+  /* ========== 安卓本地通知 ========== */
+  var exactAlarmPrompted=false;
+  async function ensureExactAlarmPermission(){
+    var p=getLocalNotifications(); if(!p || exactAlarmPrompted) return true;
+    try{ var st=await p.checkExactNotificationSetting(); if(st.value!=='granted'){ exactAlarmPrompted=true; await p.changeExactNotificationSetting(); } }catch(e){}
+    return true;
+  }
+  function getLocalNotifications(){
+    try { return window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.LocalNotifications ? Capacitor.Plugins.LocalNotifications : null; } catch(e){ return null; }
+  }
+  async function ensureNotificationPermission(){
+    var plugin=getLocalNotifications(); if(!plugin || !state.settings.notificationsEnabled) return false;
+    try { var p=await plugin.checkPermissions(); if(p.display!=='granted'){ p=await plugin.requestPermissions(); } return p.display==='granted'; } catch(e){ return false; }
+  }
+  function notifyChannel(mode){ return mode==='alarm'?'time_alarm':mode==='sound'?'time_sound':mode==='vibrate'?'time_vibrate':'time_banner'; }
+  function notificationId(seed){ var h=2166136261; String(seed).split('').forEach(function(c){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}); return Math.abs(h>>>0)%2000000000+1; }
+  async function ensureNotificationChannels(){
+    var p=getLocalNotifications(); if(!p||!p.createChannel)return;
+    try { await p.createChannel({id:'time_banner',name:'时间记录 · 条幅',description:'日程条幅提醒',importance:4,vibration:false}); }catch(e){}
+    try { await p.createChannel({id:'time_sound',name:'时间记录 · 声音',description:'日程声音提醒',importance:4,sound:'notification',vibration:false}); }catch(e){}
+    try { await p.createChannel({id:'time_vibrate',name:'时间记录 · 震动',description:'日程震动提醒',importance:4,vibration:true}); }catch(e){}
+    try { await p.createChannel({id:'time_alarm',name:'时间记录 · 闹钟',description:'高优先级闹钟提醒',importance:5,sound:'notification',vibration:true}); }catch(e){}
+  }
+  async function scheduleOneNotification(item, at, mode, extra){
+    var p=getLocalNotifications(); if(!p||!at||at<=Date.now()||mode==='none'||!state.settings.notificationsEnabled)return;
+    if(!(await ensureNotificationPermission()))return;
+    if(mode==='alarm') await ensureExactAlarmPermission();
+    await ensureNotificationChannels();
+    try { await p.schedule({notifications:[{id:notificationId(extra||item.id+'-'+at),title:item.name||'时间记录',body:'日程提醒 · '+fmtDateTime(at),schedule:{at:new Date(at),allowWhileIdle:mode==='alarm'},channelId:notifyChannel(mode),extra:{kind:item.kind||'task',id:item.id}}]}); }catch(e){}
+  }
+  async function cancelAllNotifications(){ var p=getLocalNotifications(); if(!p)return; try{var x=await p.getPending(); if(x&&x.notifications&&x.notifications.length) await p.cancel({notifications:x.notifications.map(function(n){return {id:n.id};})});}catch(e){} }
+  function taskReminderTime(t){ if(typeof t.startAt!=='number')return null; return t.startAt-(Number(t.remindMin)||0)*60000; }
+  function nextHabitOccurrences(h,fromDate,count){
+    var out=[], cur=parseDate(fromDate), limit=0;
+    while(out.length<count && limit<800){ var ds=dateStr(cur); if(habitOccursOnDate(h,ds)){ var p=(h.reminderTime||'09:00').split(':'); var ts=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate(),Number(p[0])||0,Number(p[1])||0).getTime(); if(ts>Date.now()) out.push(ts); } cur.setDate(cur.getDate()+1); limit++; }
+    return out;
+  }
+  async function syncNotifications(){
+    var p=getLocalNotifications(); if(!p||!state.settings.notificationsEnabled)return;
+    if(!(await ensureNotificationPermission()))return;
+    try{await cancelAllNotifications();}catch(e){}
+    var today=todayStr();
+    Object.keys(state.daily).forEach(function(ds){ var r=state.daily[ds]; (r.tasks||[]).forEach(function(t){ if(!t.done){ var at=taskReminderTime(t); if(at&&at>Date.now()) scheduleOneNotification({name:t.name,kind:'task',id:t.id},at,t.notifyMode||'banner','task-'+t.id+'-'+at); } }); });
+    state.habits.forEach(function(h){ if(h.notifyMode==='none')return; nextHabitOccurrences(h,today,24).forEach(function(ts){ scheduleOneNotification({name:h.name,kind:h.type,id:h.id},ts,h.notifyMode||'banner','habit-'+h.id+'-'+ts); }); });
   }
 
   /* ========== 统一渲染 ========== */
@@ -3487,6 +3750,7 @@
     if (currentSubpage === 'records') renderRecords();
     else if (currentSubpage === 'habit') renderHabitManage();
     else if (currentSubpage === 'backup') renderBackup();
+    else if (currentSubpage === 'tasks') renderTaskManage();
   }
 
   function renderHome() {
@@ -3604,7 +3868,6 @@
     } else if (name === 'records') {
       renderRecords();
     } else if (name === 'tasks') {
-      if (!$('#task-page-date').value) $('#task-page-date').value = scheduleDate;
       renderTaskManage();
     }
   }
@@ -4074,59 +4337,21 @@
       if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
 
-    // 日程：日期导航
-    $('#sch-prev').addEventListener('click', function () {
-      var d = parseDate(scheduleDate);
-      d.setDate(d.getDate() - 1);
-      scheduleDate = dateStr(d);
-      renderSchedule();
-    });
-    $('#sch-next').addEventListener('click', function () {
-      var d = parseDate(scheduleDate);
-      d.setDate(d.getDate() + 1);
-      if (dateStr(d) > todayStr()) return;
-      scheduleDate = dateStr(d);
-      renderSchedule();
-    });
-    $('#sch-date').addEventListener('change', function (e) {
-      var v = e.target.value;
-      if (!v) { renderSchedule(); return; }
-      scheduleDate = v > todayStr() ? todayStr() : v;
-      renderSchedule();
-    });
+    // 日程：日历
+    $('#calendar-prev').addEventListener('click', function(){ calendarMonth.setMonth(calendarMonth.getMonth()-1); renderSchedule(); });
+    $('#calendar-next').addEventListener('click', function(){ calendarMonth.setMonth(calendarMonth.getMonth()+1); renderSchedule(); });
+    $('#calendar-today').addEventListener('click', function(){ scheduleDate=todayStr(); calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1); renderSchedule(); });
+    $('#calendar-grid').addEventListener('click', function(e){ var btn=e.target.closest('[data-calendar-date]'); if(!btn)return; scheduleDate=btn.dataset.calendarDate; var d=parseDate(scheduleDate); calendarMonth=new Date(d.getFullYear(),d.getMonth(),1); renderSchedule(); });
 
-    // 日程：固定事项勾选（切换完成 / 撤销）
-    $('#habit-daily-list').addEventListener('click', function (e) {
-      var btn = e.target.closest('.check-circle');
-      if (!btn || btn.disabled) return;
-      var li = e.target.closest('.item');
-      if (!li) return;
-      toggleHabitDone(li.dataset.habitId);
-    });
-    $('#habit-cycle-list').addEventListener('click', function (e) {
-      var btn = e.target.closest('.check-circle');
-      if (!btn || btn.disabled) return;
-      var li = e.target.closest('.item');
-      if (!li) return;
-      toggleHabitDone(li.dataset.habitId);
-    });
-
-    // 日程：待办只允许勾选 / 撤销，不在日程页删除
-    $('#task-list').addEventListener('click', function (e) {
-      var li = e.target.closest('.item');
-      if (!li) return;
-      var btn = e.target.closest('.check-circle');
-      if (!btn || btn.disabled) return;
-      toggleTaskDone(li.dataset.taskId);
+    // 日程：每个日程只保留勾选，不提供删除
+    $('#schedule-list').addEventListener('click', function(e){
+      var li=e.target.closest('.schedule-entry'); if(!li)return; var btn=e.target.closest('.check-circle'); if(!btn||btn.disabled)return;
+      var kind=li.dataset.scheduleKind, id=li.dataset.scheduleId, ds=li.dataset.scheduleDate; scheduleDate=ds;
+      if(kind==='task') toggleTaskDoneByDate(id,ds); else toggleHabitDone(id);
     });
     $('#open-task-page-schedule').addEventListener('click', function () { openTaskManager(true); });
     $('#open-task-page').addEventListener('click', function () { openTaskManager(false); });
     $('#tasks-back').addEventListener('click', function () { closeSubpage(); });
-    $('#task-page-date').addEventListener('change', function () {
-      scheduleDate = this.value || todayStr();
-      resetTaskEditor();
-      renderTaskManage();
-    });
     $('#task-page-save').addEventListener('click', saveTaskFromManager);
     $('#task-page-cancel').addEventListener('click', function () { resetTaskEditor(); });
     $('#task-manage-list').addEventListener('click', function (e) {
@@ -4138,11 +4363,25 @@
     });
 
     // 固定事项管理
+    var monthdaySel=$('#newhabit-monthday');
+    if(monthdaySel){ var mh=''; for(var md=1;md<=31;md++) mh+='<option value="'+md+'">'+md+'日</option>'; monthdaySel.innerHTML=mh; }
+    function refreshHabitRuleUI(){
+      var wrap=$('#newhabit-rule-wrap'), wd=$('#newhabit-weekday'), mr=$('#newhabit-month-rule'), label=$('#newhabit-rule-label');
+      if(!wrap)return;
+      wrap.hidden=(newHabitType==='daily');
+      wd.hidden=(newHabitType!=='weekly');
+      mr.hidden=!(newHabitType==='monthly'||newHabitType==='yearly');
+      if(newHabitType==='monthly'){ label.textContent='每月日期'; $('#newhabit-month').hidden=true; }
+      else if(newHabitType==='yearly'){ label.textContent='每年固定日期'; $('#newhabit-month').hidden=false; }
+      else { label.textContent='每周星期'; $('#newhabit-month').hidden=true; }
+    }
+    refreshHabitRuleUI();
+    $('#view-habit').addEventListener('click', function(e){ var b=e.target.closest('.seg[data-newhabit] .seg-btn'); if(!b)return; setTimeout(refreshHabitRuleUI,0); });
     $('#newhabit-add').addEventListener('click', function () {
       var name = $('#newhabit-name').value.trim();
       if (!name) { $('#newhabit-name').focus(); return; }
       var target = parseInt($('#newhabit-target').value) || 1;
-      addHabit(name, newHabitType, target);
+      addHabit(name, newHabitType, target, {weekday:Number($('#newhabit-weekday').value)||1, monthday:Number($('#newhabit-monthday').value)||1, month:Number($('#newhabit-month').value)||1, reminderTime:$('#newhabit-time').value||'09:00', notifyMode:$('#newhabit-notify').value||'banner'});
       $('#newhabit-name').value = '';
       $('#newhabit-target').value = 3;
       renderHabitManage();
@@ -4256,6 +4495,8 @@
       if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
       toast(e.target.checked ? '今日完成度已显示' : '今日完成度已隐藏');
     });
+    $('#set-notifications-enabled').addEventListener('change', async function(e){ state.settings.notificationsEnabled=e.target.checked; save(); if(e.target.checked) await ensureNotificationPermission(); else await cancelAllNotifications(); toast(e.target.checked?'系统提醒已开启':'系统提醒已关闭'); });
+
     $('#set-confirm-complete').addEventListener('change', function (e) {
       state.settings.confirmComplete = e.target.checked;
       save();
@@ -4283,7 +4524,7 @@
       if (!ok) return;
       state = {
         timers: [], records: [], checkins: [], habits: [], daily: {},
-        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false,
+        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false, notificationsEnabled: true,
                     font: Object.assign({}, DEFAULT_FONT) }
       };
       try { localStorage.removeItem(KEY); } catch (e2) { /* 忽略 */ }
@@ -4340,6 +4581,7 @@
 
   /* ========== 启动 ========== */
   load();
+  calendarMonth=new Date(parseDate(scheduleDate).getFullYear(),parseDate(scheduleDate).getMonth(),1);
   applyFontSettings();
   bindEvents();
   bindSwipe();
@@ -4362,11 +4604,15 @@
   setInterval(tickClock, 1000);
   setInterval(tickTimers, 1000);
 
-  setInterval(function () {
-    if (activeTab === 'schedule' && !currentSubpage) {
-      renderSchedule();
+  var liveScheduleDate = todayStr();
+  setInterval(function(){
+    if(activeTab==='schedule' && !currentSubpage){
+      tickScheduleCountdowns();
+      var td=todayStr();
+      if(td!==liveScheduleDate){ liveScheduleDate=td; if(scheduleDate===dateStr(new Date(Date.now()-86400000)) || scheduleDate===liveScheduleDate){ scheduleDate=td; calendarMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1); renderSchedule(); } }
     }
-  }, 60000);
+  },1000);
+  setTimeout(async function(){ var p=getLocalNotifications(); if(p){ try{ await ensureNotificationPermission(); await ensureNotificationChannels(); }catch(e){} } await syncNotifications(); },800);
 
 })();
 </script>
