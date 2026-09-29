@@ -546,6 +546,14 @@
     transition:background-color 140ms ease,border-color 140ms ease,transform 140ms ease;
   }
   .calendar-day:active { transform:scale(.95); }
+  .calendar-grid-expanded .calendar-day { min-height:62px; padding:5px 1px 4px; border-radius:10px; }
+  .calendar-grid-expanded .calendar-day .solar-num { width:25px; height:25px; font-size:.93em; }
+  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; font-size:.51em; }
+  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; font-size:.48em; min-height:9px; }
+  .calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
+  .calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
+  .calendar-card.calendar-expanded { padding-bottom:10px; }
+
   .calendar-day.other-month .solar-num,
   .calendar-day.other-month .lunar-text,
   .calendar-day.other-month .event-text { opacity:.48; }
@@ -1642,6 +1650,8 @@
   var timerFilterName = '';
   var searchQuery = '';
   var scheduleDate = todayStr();
+  var calendarExpanded = false;
+  var calendarTouchStartY = 0;
   var pendingCheckin = null;
   var pendingStopTimerId = null;
   var confirmResolve = null;
@@ -2523,17 +2533,21 @@
     var selected=parseDate(scheduleDate);
     var weekStart=new Date(selected.getFullYear(),selected.getMonth(),selected.getDate());
     weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
-    var weekEnd=new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+    var count=calendarExpanded?35:7;
+    var last=new Date(weekStart); last.setDate(last.getDate()+count-1);
     var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
-    var titleEnd=weekEnd.getFullYear()+'年'+(weekEnd.getMonth()+1)+'月';
+    var titleEnd=last.getFullYear()+'年'+(last.getMonth()+1)+'月';
     if(title) title.textContent=titleStart===titleEnd?titleStart:titleStart+' - '+titleEnd;
+    grid.classList.toggle('calendar-grid-expanded',calendarExpanded);
+    var card=grid.closest('.calendar-card'); if(card) card.classList.toggle('calendar-expanded',calendarExpanded);
+
     var html='';
-    for(var i=0;i<7;i++){
+    for(var i=0;i<count;i++){
       var d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
       var ds=dateStr(d), info={lunar:'',term:'',holiday:''}, stat={tasks:0,done:0,habits:0};
       try { info=calendarInfo(ds)||info; } catch(e) {}
       try { stat=dateHasSchedule(ds)||stat; } catch(e) {}
-      var dots='', total=Math.min(4,(stat.tasks||0)+(stat.habits||0));
+      var dots='', total=Math.min(3,(stat.tasks||0)+(stat.habits||0));
       for(var j=0;j<total;j++) dots+='<i class="calendar-dot '+(j<(stat.tasks||0)?'task':'habit')+'"></i>';
       if(stat.done && stat.done===stat.tasks && stat.tasks) dots='<i class="calendar-dot done"></i>';
       var event=info.term||info.holiday||'';
@@ -2578,7 +2592,7 @@
       rec.tasks.forEach(function(t){
         var st=typeof t.startAt==='number'?t.startAt:null;
         var en=typeof t.endAt==='number'?t.endAt:null;
-        var visible=(ds>=startDate) || (en && en>=startTs);
+        var visible=(ds>=startDate) || (st && st>=startTs) || (en && en>=startTs);
         if(!visible) return;
         out.push({date:ds,kind:'task',id:t.id,name:t.name,done:!!t.done,startAt:st,endAt:en,note:t.note||'',data:t});
       });
@@ -4406,6 +4420,22 @@
     $('#stop-modal').addEventListener('click', function (e) {
       if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
     });
+
+    // 日程：手势展开/收起 35 天日历
+    var mainWrap=$('#main-wrap');
+    if(mainWrap){
+      mainWrap.addEventListener('touchstart',function(e){
+        if(activeTab!=='schedule' || currentSubpage) return;
+        if(e.touches&&e.touches.length) calendarTouchStartY=e.touches[0].clientY;
+      },{passive:true});
+      mainWrap.addEventListener('touchend',function(e){
+        if(activeTab!=='schedule' || currentSubpage || !e.changedTouches||!e.changedTouches.length) return;
+        var dy=e.changedTouches[0].clientY-calendarTouchStartY;
+        if(Math.abs(dy)<45) return;
+        if(dy<0 && !calendarExpanded){ calendarExpanded=true; renderCalendar(); }
+        else if(dy>0 && calendarExpanded){ calendarExpanded=false; renderCalendar(); }
+      },{passive:true});
+    }
 
     // 日程：周视图日历
     $('#calendar-prev').addEventListener('click', function(){
