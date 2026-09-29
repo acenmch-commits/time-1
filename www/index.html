@@ -2020,6 +2020,87 @@
       r.tasks = r.tasks.map(normalizeTask).filter(Boolean);
     });
 
+    // 兼容旧版本：如果当前 v10 已存在，但旧版本仍有日程数据，则把旧日程合并回来。
+    // 只补充当前不存在的日期/任务/固定事项，不覆盖当前已有数据。
+    function mergeLegacySchedule(rawText) {
+      if (!rawText) return;
+      try {
+        var old = JSON.parse(rawText);
+        if (old && old.daily && typeof old.daily === 'object') {
+          Object.keys(old.daily).forEach(function(ds) {
+            var src = old.daily[ds];
+            if (!src || typeof src !== 'object') return;
+            var dst = ensureDaily(ds);
+            if (Array.isArray(src.tasks)) {
+              src.tasks.forEach(function(t) {
+                var nt = normalizeTask(t);
+                if (!nt) return;
+                var exists = dst.tasks.some(function(x){ return x.id === nt.id; });
+                if (!exists) dst.tasks.push(nt);
+              });
+            }
+            if (src.habits && typeof src.habits === 'object') {
+              Object.keys(src.habits).forEach(function(hid){
+                if (dst.habits[hid] == null) dst.habits[hid] = src.habits[hid];
+              });
+            }
+          });
+        }
+        if (Array.isArray(old.habits)) {
+          old.habits.forEach(function(h){
+            var nh = normalizeHabit(h);
+            if (!nh) return;
+            if (!state.habits.some(function(x){ return x.id === nh.id; })) state.habits.push(nh);
+          });
+        }
+      } catch(e) {}
+    }
+
+    // 旧版 daily-tracker-v1 也可能保存过日程；当前 v10 存在时不能跳过它。
+    try {
+      var legacySchedule = localStorage.getItem(KEY_SCHEDULE);
+      if (legacySchedule) {
+        var oldSchedule = JSON.parse(legacySchedule);
+        if (oldSchedule && oldSchedule.records && typeof oldSchedule.records === 'object') {
+          Object.keys(oldSchedule.records).forEach(function(ds){
+            var r=oldSchedule.records[ds];
+            if(!r || typeof r!=='object') return;
+            var dst=ensureDaily(ds);
+            if(r.habits && typeof r.habits==='object'){
+              Object.keys(r.habits).forEach(function(hid){
+                if(dst.habits[hid]==null) dst.habits[hid]=r.habits[hid];
+              });
+            }
+            if(Array.isArray(r.tasks)){
+              r.tasks.forEach(function(t){
+                var nt=normalizeTask({
+                  id:t.id||uid(), name:t.name||t.text||'未命名',
+                  done:!!t.done, doneAt:t.doneAt||null,
+                  startAt:typeof t.startAt==='number'?t.startAt:null,
+                  endAt:typeof t.endAt==='number'?t.endAt:null,
+                  note:t.note||'', createdAt:t.createdAt||Date.now(),
+                  remindMin:typeof t.remindMin==='number'?t.remindMin:0,
+                  notifyMode:t.notifyMode||'banner', date:ds
+                });
+                if(nt && !dst.tasks.some(function(x){return x.id===nt.id;})) dst.tasks.push(nt);
+              });
+            }
+          });
+        }
+        if(Array.isArray(oldSchedule.habits)){
+          oldSchedule.habits.forEach(function(h){
+            var nh=normalizeHabit({id:h.id||uid(),name:h.name||h.text||'未命名',type:h.type||'daily',createdAt:h.createdAt||todayStr(),weekday:h.weekday,monthday:h.monthday,month:h.month});
+            if(nh && !state.habits.some(function(x){return x.id===nh.id;})) state.habits.push(nh);
+          });
+        }
+      }
+    } catch(e) {}
+
+    // v9/v8/v7 中如果有更早的日程，也合并到当前数据。
+    [KEY_V9, KEY_V8, KEY_V7].forEach(function(k){
+      try { mergeLegacySchedule(localStorage.getItem(k)); } catch(e) {}
+    });
+
     ensureSettings();
   }
 
