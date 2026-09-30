@@ -567,23 +567,20 @@
   .calendar-grid {
     display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;
   }
-  .calendar-day {
-    min-width:0; min-height:76px; font:inherit; padding:7px 2px 6px;
-    border:1px solid transparent; border-radius:13px;
-    background:transparent; color:var(--label); cursor:pointer;
-    text-align:center; display:flex; flex-direction:column;
-    align-items:center; justify-content:flex-start;
-    transition:background-color 140ms ease,border-color 140ms ease,transform 140ms ease;
-  }
-  .calendar-day:active { transform:scale(.95); }
-  .calendar-grid-expanded .calendar-day { min-height:62px; padding:5px 1px 4px; border-radius:10px; }
-  /* 展开 35 天时只调整布局，不单独缩小文字，确保与本周视图字号一致。 */
-  .calendar-grid-expanded .calendar-day .solar-num { width:30px; height:30px; }
-  .calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; }
-  .calendar-grid-expanded .calendar-day .event-text { margin-top:2px; min-height:9px; }
-  .calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
-  .calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
-  .calendar-card.calendar-expanded { padding-bottom:10px; }
+.calendar-day {
+  min-width:0; min-height:72px; font:inherit; padding:7px 2px 6px;
+  border:1px solid transparent; border-radius:13px;
+  background:transparent; color:var(--label); cursor:pointer;
+  text-align:center; display:flex; flex-direction:column;
+  align-items:center; justify-content:flex-start;
+  transition:background-color 140ms ease,border-color 140ms ease,transform 140ms ease;
+}
+.calendar-day:active { transform:scale(.95); }
+.calendar-grid-expanded .calendar-day { min-height:58px; padding:5px 1px 4px; border-radius:13px; }
+.calendar-grid-expanded .calendar-day .lunar-text { margin-top:2px; }
+.calendar-grid-expanded .calendar-dots { min-height:6px; margin-top:3px; }
+.calendar-grid-expanded .calendar-dot { width:5px; height:5px; }
+.calendar-card.calendar-expanded { padding-bottom:10px; }
 
   .calendar-day.other-month .solar-num,
   .calendar-day.other-month .lunar-text,
@@ -2674,7 +2671,13 @@
     return {year:ly, month:lm, day:ld, isLeap:isLeap};
   }
   function lunarDayText(d){ return LUNAR_DAY_NAMES[d] || String(d); }
-  function lunarLabel(info){ if(!info) return ''; return (info.isLeap?'闰':'') + (LUNAR_MONTH_NAMES[info.month-1] || '') + ' ' + lunarDayText(info.day); }
+function lunarLabel(info){
+  if(!info) return '';
+  var monthName = LUNAR_MONTH_NAMES[info.month-1] || '';
+  if(info.isLeap) return '闰' + monthName;
+  if(info.day === 1) return monthName;
+  return lunarDayText(info.day);
+}
   function solarTermDay(y,n){
     var ms = (31556925974.7 * (y - 1900) + SOLAR_TERM_INFO[n] * 60000) + Date.UTC(1900,0,6,2,5);
     return new Date(ms).getUTCDate();
@@ -2707,46 +2710,72 @@
     if(h.type==='yearly') return d.getMonth()+1 === (Number(h.month)||1) && d.getDate() === (Number(h.monthday)||1);
     return false;
   }
-  function renderCalendar(){
-    var grid=$('#calendar-grid'), title=$('#calendar-month-title'), selectedInfo=$('#calendar-selected-date');
-    if(!grid) return;
-    var selected=parseDate(scheduleDate);
-    var weekStart=new Date(selected.getFullYear(),selected.getMonth(),selected.getDate());
-    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
-    var count=calendarExpanded?35:7;
-    var last=new Date(weekStart); last.setDate(last.getDate()+count-1);
-    var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
-    var titleEnd=last.getFullYear()+'年'+(last.getMonth()+1)+'月';
-    if(title) title.textContent=titleStart===titleEnd?titleStart:titleStart+' - '+titleEnd;
-    var expandBtn=$('#calendar-expand'); if(expandBtn) expandBtn.textContent=calendarExpanded?'本周':'35天';
-    grid.classList.toggle('calendar-grid-expanded',calendarExpanded);
-    var card=grid.closest('.calendar-card'); if(card) card.classList.toggle('calendar-expanded',calendarExpanded);
 
-    var html='';
-    for(var i=0;i<count;i++){
-      var d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
-      var ds=dateStr(d), info={lunar:'',term:'',holiday:''}, stat={tasks:0,done:0,habits:0};
-      try { info=calendarInfo(ds)||info; } catch(e) {}
-      try { stat=dateHasSchedule(ds)||stat; } catch(e) {}
-      var dots='', total=Math.min(3,(stat.tasks||0)+(stat.habits||0));
-      for(var j=0;j<total;j++) dots+='<i class="calendar-dot '+(j<(stat.tasks||0)?'task':'habit')+'"></i>';
-      if(stat.done && stat.done===stat.tasks && stat.tasks) dots='<i class="calendar-dot done"></i>';
-      var event=info.term||info.holiday||'';
-      var cls='calendar-day'+(d.getMonth()!==selected.getMonth()?' other-month':'')+(ds===todayStr()?' today':'')+(ds===scheduleDate?' selected':'');
-      html+='<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
-        '<span class="solar-num">'+d.getDate()+'</span>'+
-        '<span class="lunar-text">'+esc(info.lunar||'')+'</span>'+
-        '<span class="event-text">'+esc(event)+'</span>'+
-        '<span class="calendar-dots">'+dots+'</span></button>';
-    }
-    grid.innerHTML=html;
-    bindCalendarEvents();
-    if(selectedInfo){
-      var si={solar:selected.getFullYear()+'年'+(selected.getMonth()+1)+'月'+selected.getDate()+'日'};
-      try { si=calendarInfo(scheduleDate)||si; } catch(e) {}
-      selectedInfo.textContent=(scheduleDate===todayStr()?'今天 · ':'')+si.solar.replace(/^\d+年/,'');
+
+
+
+function renderCalendar(){
+  var grid=$('#calendar-grid'), title=$('#calendar-month-title'), selectedInfo=$('#calendar-selected-date');
+  if(!grid) return;
+  var selected=parseDate(scheduleDate);
+  var weekStart, count;
+
+  if(calendarExpanded){
+    // 35天视图：按自然月排布，从本月1号所在周的周一开始，固定显示 5 周
+    weekStart=new Date(selected.getFullYear(),selected.getMonth(),1);
+    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+    count=35;
+  } else {
+    weekStart=new Date(selected.getFullYear(),selected.getMonth(),selected.getDate());
+    weekStart.setDate(weekStart.getDate()-((weekStart.getDay()+6)%7));
+    count=7;
+  }
+
+  var last=new Date(weekStart); last.setDate(last.getDate()+count-1);
+
+  if(title){
+    if(calendarExpanded){
+      title.textContent = selected.getFullYear()+'年'+(selected.getMonth()+1)+'月';
+    } else {
+      var titleStart=weekStart.getFullYear()+'年'+(weekStart.getMonth()+1)+'月';
+      var titleEnd=last.getFullYear()+'年'+(last.getMonth()+1)+'月';
+      title.textContent = titleStart===titleEnd ? titleStart : titleStart+' - '+titleEnd;
     }
   }
+
+  var expandBtn=$('#calendar-expand'); if(expandBtn) expandBtn.textContent=calendarExpanded?'本周':'35天';
+  grid.classList.toggle('calendar-grid-expanded',calendarExpanded);
+  var card=grid.closest('.calendar-card'); if(card) card.classList.toggle('calendar-expanded',calendarExpanded);
+
+  var html='';
+  for(var i=0;i<count;i++){
+    var d=new Date(weekStart); d.setDate(weekStart.getDate()+i);
+    var ds=dateStr(d), info={lunar:'',term:'',holiday:''}, stat={tasks:0,done:0,habits:0};
+    try { info=calendarInfo(ds)||info; } catch(e) {}
+    try { stat=dateHasSchedule(ds)||stat; } catch(e) {}
+    var dots='', total=Math.min(3,(stat.tasks||0)+(stat.habits||0));
+    for(var j=0;j<total;j++) dots+='<i class="calendar-dot '+(j<(stat.tasks||0)?'task':'habit')+'"></i>';
+    if(stat.done && stat.done===stat.tasks && stat.tasks) dots='<i class="calendar-dot done"></i>';
+
+    // 节假日 / 节气优先，其次阴历
+    var secondary = info.term || info.holiday || info.lunar || '';
+
+    var cls='calendar-day'+(d.getMonth()!==selected.getMonth()?' other-month':'')+(ds===todayStr()?' today':'')+(ds===scheduleDate?' selected':'');
+    html+='<button type="button" class="'+cls+'" data-calendar-date="'+ds+'">'+
+      '<span class="solar-num">'+d.getDate()+'</span>'+
+      '<span class="lunar-text">'+esc(secondary)+'</span>'+
+      '<span class="calendar-dots">'+dots+'</span></button>';
+  }
+  grid.innerHTML=html;
+  bindCalendarEvents();
+  if(selectedInfo){
+    var si={solar:selected.getFullYear()+'年'+(selected.getMonth()+1)+'月'+selected.getDate()+'日'};
+    try { si=calendarInfo(scheduleDate)||si; } catch(e) {}
+    selectedInfo.textContent=(scheduleDate===todayStr()?'今天 · ':'')+si.solar.replace(/^\d+年/,'');
+  }
+}
+
+
   function daysInMonth(y,m){ return new Date(y,m+1,0).getDate(); }
   function addMonthsClamped(d,n){ var x=new Date(d); var day=x.getDate(); x.setDate(1); x.setMonth(x.getMonth()+n); x.setDate(Math.min(day,daysInMonth(x.getFullYear(),x.getMonth()))); return x; }
   function fmtCountdownMDHM(target, now){
@@ -2791,8 +2820,38 @@
     }); cur.setDate(cur.getDate()+1); }
     return out;
   }
+
+  function currentCycleHabitEntries(refDate){
+    // 只返回 refDate 所在周期内的固定事项实例
+    // 日固定 → 仅当天；周固定 → 仅本周；月固定 → 仅本月；年固定 → 仅本年
+    var out = [];
+    state.habits.forEach(function(h){
+      if(h.createdAt > refDate) return;
+      var range = cycleRange(h.type, refDate);
+      var rangeStart = parseDate(range.start);
+      var rangeEnd = parseDate(range.end);
+      var cur = new Date(rangeStart);
+      while(cur <= rangeEnd){
+        var ds = dateStr(cur);
+        if(habitOccursOnDate(h, ds)){
+          var rec = state.daily[ds] || {habits:{}};
+          var done = habitDoneList(rec, h.id).length > 0;
+          var time = h.reminderTime || '09:00';
+          var p = time.split(':');
+          var ts = new Date(cur.getFullYear(),cur.getMonth(),cur.getDate(),
+                            Number(p[0])||0, Number(p[1])||0).getTime();
+          out.push({
+            date: ds, kind: h.type, id: h.id, name: h.name,
+            done: done, startAt: ts, endAt: null, note: '', data: h
+          });
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+    });
+    return out;
+  }
   function renderScheduleList(){
-    var start=scheduleDate, items=allTaskEntriesFrom(start).concat(recurringEntriesFrom(start,90));
+    var start=scheduleDate, items=allTaskEntriesFrom(start).concat(currentCycleHabitEntries(start));
     items.sort(function(a,b){ var at=typeof a.startAt==='number'?a.startAt:parseDate(a.date).getTime(); var bt=typeof b.startAt==='number'?b.startAt:parseDate(b.date).getTime(); return at-bt || (a.done?1:-1); });
     var el=$('#schedule-list');
     if(!items.length){
@@ -4422,10 +4481,20 @@
       renderCalendar();
       bindCalendarGesture();
     }
-    function moveWeek(delta,e){
+    function moveNav(delta,e){
       if(e){ e.preventDefault(); e.stopPropagation(); }
       var d=parseDate(scheduleDate);
-      d.setDate(d.getDate()+delta);
+
+      if(calendarExpanded){
+        // 35天视图：左右按钮按月跳，保留日号（超出该月天数时取月末）
+        var y=d.getFullYear(), m=d.getMonth()+delta, day=d.getDate();
+        var lastDay=new Date(y,m+1,0).getDate();
+        d=new Date(y,m,Math.min(day,lastDay));
+      } else {
+        // 周视图：左右按钮按周跳
+        d.setDate(d.getDate()+delta*7);
+      }
+
       scheduleDate=dateStr(d);
       calendarMonth=new Date(d.getFullYear(),d.getMonth(),1);
       renderSchedule();
@@ -4441,11 +4510,11 @@
     }
     if(prevBtn && !prevBtn.dataset.bound){
       prevBtn.dataset.bound='1';
-      prevBtn.addEventListener('click',function(e){moveWeek(-7,e);});
+      prevBtn.addEventListener('click',function(e){moveNav(-1,e);});
     }
     if(nextBtn && !nextBtn.dataset.bound){
       nextBtn.dataset.bound='1';
-      nextBtn.addEventListener('click',function(e){moveWeek(7,e);});
+      nextBtn.addEventListener('click',function(e){moveNav(1,e);});
     }
 
     // renderCalendar() 每次重建日期格子，因此日期点击在这里重新绑定。
@@ -4486,7 +4555,7 @@
       if(Date.now()-startT>900) return;
       if(Math.abs(dy)<55 || Math.abs(dy)<Math.abs(dx)*1.25) return;
       // 只监听 #calendar-grid；页面其它区域完全不参与。
-      calendarExpanded=dy<0;
+      calendarExpanded=dy>0;
       renderCalendar();
       bindCalendarEvents();
     },{passive:true});
