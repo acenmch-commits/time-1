@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="10dp"
+    android:background="@drawable/widget_bg">
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-light"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/idle_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00:00"
+        android:textSize="24sp"
+        android:textColor="#FFFFFF"
+        android:fontFamily="sans-serif-light" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:minWidth="88dp"
+            android:paddingHorizontal="12dp"
+            android:text="开始计时"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_primary" />
+
+        <Button
+            android:id="@+id/btn_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:minWidth="60dp"
+            android:paddingHorizontal="10dp"
+            android:text="暂停"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_secondary"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:minWidth="60dp"
+            android:layout_marginStart="6dp"
+            android:paddingHorizontal="10dp"
+            android:text="结束"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_danger"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>
