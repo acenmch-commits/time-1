@@ -1,0 +1,14 @@
+<receiver
+    android:name=".widget.TimerWidgetProvider"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="com.yourname.timetracker2.widget.START" />
+        <action android:name="com.yourname.timetracker2.widget.PAUSE" />
+        <action android:name="com.yourname.timetracker2.widget.RESUME" />
+        <action android:name="com.yourname.timetracker2.widget.STOP" />
+    </intent-filter>
+    <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/widget_timer_info" />
+</receiver>
