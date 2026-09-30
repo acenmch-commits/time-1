@@ -49,10 +49,13 @@
     --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+    --anim-mult: 1;
     --dur-1: 180ms; --dur-2: 280ms; --dur-3: 420ms; --dur-4: 600ms;
     --blur: 30px;
   }
-
+  :root[data-anim="slow"]   { --anim-mult: 1.8; }
+  :root[data-anim="fast"]   { --anim-mult: 0.55; }
+  :root[data-anim="none"]   { --anim-mult: 0; }
   @media (prefers-color-scheme: dark) {
     :root {
       --blue: #0A84FF; --green: #30D158; --red: #FF453A;
@@ -164,7 +167,8 @@
   main { display: grid; grid-template-columns: 1fr; }
   .main-section {
     grid-area: 1 / 1;
-    transition: opacity 220ms var(--ease-out), transform 260ms var(--ease-out);
+    transition: opacity calc(220ms * var(--anim-mult)) var(--ease-out),
+                transform calc(260ms * var(--anim-mult)) var(--ease-out);
     will-change: opacity, transform;
   }
   .main-section.slide-out-left { opacity: 0; transform: translateX(-8%); }
@@ -172,6 +176,32 @@
   .main-section.slide-in-left { opacity: 0; transform: translateX(8%); }
   .main-section.slide-in-right { opacity: 0; transform: translateX(-8%); }
 
+  /* 二级页：从右滑入 / 向右滑出 */
+  .header.header-hidden,
+  .tabs.tabs-hidden { display: none !important; }
+
+  .main-section.subpage-enter,
+  .main-section.subpage-exit {
+    transition: none;
+    z-index: 2;
+  }
+  .main-section.subpage-enter {
+    animation: subpageSlideIn calc(340ms * var(--anim-mult)) cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .main-section.subpage-exit {
+    animation: subpageSlideOut calc(280ms * var(--anim-mult)) cubic-bezier(0.32, 0.72, 0, 1) forwards;
+    pointer-events: none;
+  }
+  @keyframes subpageSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    60%  { opacity: 1; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes subpageSlideOut {
+    from { transform: translateX(0);    opacity: 1; }
+    40%  { opacity: 0.6; }
+    to   { transform: translateX(100%); opacity: 0; }
+  }
   .card {
     background: var(--glass-1);
     backdrop-filter: blur(var(--blur)) saturate(180%);
@@ -1127,7 +1157,15 @@
           </div>
           <span class="setting-chevron">›</span>
         </div>
-
+        <div class="card" style="padding:14px 18px 16px;">
+          <div class="setting-row-label" style="font-size:0.82em;font-weight:500;margin-bottom:10px;">过渡动画速度</div>
+          <div class="seg tiny" data-anim="speed">
+            <button class="seg-btn" data-value="slow" type="button">慢</button>
+            <button class="seg-btn active" data-value="normal" type="button">标准</button>
+            <button class="seg-btn" data-value="fast" type="button">快</button>
+            <button class="seg-btn" data-value="none" type="button">关闭</button>
+          </div>
+        </div>
         <h3 class="section-title">记录</h3>
         <div class="card setting-item clickable" id="open-records-page">
           <div>
@@ -1633,7 +1671,8 @@
       showScheduleProgress: true,
       confirmComplete: true,
       lockCompleted: false,
-      notificationsEnabled: false,
+           notificationsEnabled: false,
+      animSpeed: 'normal',
       font: Object.assign({}, DEFAULT_FONT)
     }
   };
@@ -1907,7 +1946,8 @@
     if (typeof state.settings.confirmComplete !== 'boolean') state.settings.confirmComplete = true;
     if (typeof state.settings.lockCompleted !== 'boolean') state.settings.lockCompleted = false;
     if (typeof state.settings.notificationsEnabled !== 'boolean') state.settings.notificationsEnabled = false;
-    state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
+    if (typeof state.settings.animSpeed !== 'string') state.settings.animSpeed = 'normal';    
+state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
     draftFont = Object.assign({}, state.settings.font);
   }
 
@@ -2287,6 +2327,11 @@
     root.setProperty('--font-weight-base', FONT_PRESETS.weight[f.weight] || FONT_PRESETS.weight.regular);
     root.setProperty('--num-scale', FONT_PRESETS.numSize[f.numSize] || FONT_PRESETS.numSize.normal);
     root.setProperty('--num-weight', FONT_PRESETS.numWeight[f.numWeight] || FONT_PRESETS.numWeight.medium);
+  }
+  function applyAnimSpeed() {
+    var v = state.settings.animSpeed || 'normal';
+    if (['slow', 'normal', 'fast', 'none'].indexOf(v) < 0) v = 'normal';
+    document.documentElement.setAttribute('data-anim', v);
   }
   function syncFontButtons() {
     var f = state.settings.font;
@@ -2866,12 +2911,12 @@
         if(c.createdAt>start) return;
         var info=getCycleInfo(c,start);
         items.push({
-          date: todayStr(),
+          date: info.end,
           kind: 'cycle',
           id: c.id,
           name: c.name,
           done: info.completed,
-          startAt: null,
+          startAt: parseDate(info.end).getTime() + 86399000,
           endAt: null,
           note: '',
           cycleInfo: info,
@@ -2881,14 +2926,10 @@
     }
 
     items.sort(function(a,b){
-      if(a.kind==='cycle' && b.kind!=='cycle') return 1;
-      if(a.kind!=='cycle' && b.kind==='cycle') return -1;
-      if(a.kind==='cycle' && b.kind==='cycle'){
-        return (a.data.createdAt||'').localeCompare(b.data.createdAt||'');
-      }
       var at=typeof a.startAt==='number'?a.startAt:parseDate(a.date).getTime();
       var bt=typeof b.startAt==='number'?b.startAt:parseDate(b.date).getTime();
-      return at-bt || (a.done?1:-1);
+      if (at !== bt) return at - bt;
+      return (a.done?1:0) - (b.done?1:0);
     });
 
     var el=$('#schedule-list');
@@ -2898,7 +2939,7 @@
     }
     var now=Date.now(), html='', lastDate='';
     items.slice(0,120).forEach(function(it){
-      if(it.date!==lastDate){ lastDate=it.date; var di=calendarInfo(it.date); html+='<div class="schedule-date-group">'+(it.date===todayStr()?'今天':it.date)+' · '+esc(di.lunar)+(di.term?' · '+esc(di.term):'')+'</div>'; }
+      if(it.date!==lastDate){ lastDate=it.date; var di=calendarInfo(it.date); html+='<div class="schedule-date-group">'+(it.date===todayStr()?'今天':it.date)+(di.term?' · '+esc(di.term):'')+'</div>'; }
       var kindLabel = it.kind==='cycle' ? '循环' : (it.kind==='task' ? '待办' : CYCLE_LABEL[it.kind] || '日程');
       var timeText = '';
       var countdown = '';
@@ -3150,7 +3191,7 @@
       rec.tasks.push({id:uid(),name:name,note:$('#task-page-note').value.trim(),done:false,doneAt:null,startAt:startAt,endAt:endAt,createdAt:Date.now(),date:date,remindMin:remindMin,notifyMode:notifyMode});
       toast('待办已添加');
     }
-    save(); scheduleDate=date; resetTaskEditor(); renderTaskManage(); renderSchedule(); syncNotifications();
+    save(); resetTaskEditor(); renderTaskManage(); renderSchedule(); syncNotifications();
   }
 
   function editTaskFromManager(id){
@@ -3769,6 +3810,11 @@
     $('#set-notifications-enabled').checked = state.settings.notificationsEnabled === true;
     $('#set-lock-completed').checked = !!state.settings.lockCompleted;
     syncFontButtons();
+
+    var animVal = state.settings.animSpeed || 'normal';
+    $$('.seg[data-anim] .seg-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.value === animVal);
+    });
   }
 
   function renderBackup() {
@@ -3970,10 +4016,11 @@
         });
       });
 
+      var switchMs = 260 * (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-mult')) || 1);
       setTimeout(function () {
         oldSection.hidden = true;
         oldSection.classList.remove('slide-out-left','slide-out-right');
-      }, 260);
+      }, switchMs + 40);
     } else {
       MAIN_TABS.forEach(function (t) {
         var s = document.querySelector('#view-' + t);
@@ -3997,15 +4044,23 @@
     subpageHistoryActive = true;
     try { history.pushState({ app: 'time-tracker', subpage: name }, '', location.href); } catch (e) {}
 
+    var hdr = document.querySelector('.header');
+    var tbs = document.querySelector('.tabs');
+    if (hdr) hdr.classList.add('header-hidden');
+    if (tbs) tbs.classList.add('tabs-hidden');
+
     document.querySelector('#view-' + activeTab).hidden = true;
 
     var section = document.querySelector('#view-' + name);
     if (section) {
+      section.classList.remove('subpage-exit');
       section.hidden = false;
+           section.classList.add('subpage-enter');
+      var enterMs = 340 * (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-mult')) || 1);
+      setTimeout(function () { section.classList.remove('subpage-enter'); }, enterMs + 40);
       var wrap1 = $('#main-wrap');
-      if (wrap1) wrap1.scrollTo({ top: 0, behavior: 'smooth' });
+      if (wrap1) wrap1.scrollTo({ top: 0, behavior: 'auto' });
     }
-
     if (name === 'font') {
       draftFont = Object.assign({}, state.settings.font);
       syncDraftFontButtons();
@@ -4032,6 +4087,8 @@
     }
   }
 
+
+
   function closeSubpage(silent, fromHistory) {
     if (!currentSubpage) return;
 
@@ -4041,18 +4098,36 @@
     }
 
     var section = document.querySelector('#view-' + currentSubpage);
-    if (section) section.hidden = true;
-
-    currentSubpage = null;
-
     var hadHistory = subpageHistoryActive;
     subpageHistoryActive = false;
+    currentSubpage = null;
+
+    var hdr = document.querySelector('.header');
+    var tbs = document.querySelector('.tabs');
+    if (hdr) hdr.classList.remove('header-hidden');
+    if (tbs) tbs.classList.remove('tabs-hidden');
 
     var home = document.querySelector('#view-' + activeTab);
     if (home) home.hidden = false;
+
+    if (section) {
+      if (silent) {
+        section.hidden = true;
+        section.classList.remove('subpage-enter', 'subpage-exit');
+      } else {
+        section.classList.remove('subpage-enter');
+            section.classList.add('subpage-exit');
+        var exitMs = 280 * (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-mult')) || 1);
+        setTimeout(function () {
+          section.hidden = true;
+          section.classList.remove('subpage-exit');
+        }, exitMs + 40);
+      }
+    }
+
     if (!silent) {
       var wrap2 = $('#main-wrap');
-      if (wrap2) wrap2.scrollTo({ top: 0, behavior: 'smooth' });
+      if (wrap2) wrap2.scrollTo({ top: 0, behavior: 'auto' });
     }
 
     if (hadHistory && !fromHistory) {
@@ -4200,6 +4275,7 @@
       if (!ok) return;
       var res = importData(json);
       applyFontSettings();
+applyAnimSpeed();
       updateSuggestions();
       renderAll();
       toast('导入完成：+' + res.records + ' 计时、+' + res.checkins + ' 打卡、+' + res.habits + ' 固定事项');
@@ -4289,6 +4365,7 @@
       try { res = importData(json); }
       catch (err) { toast('数据格式不正确'); return; }
       applyFontSettings();
+      applyAnimSpeed();
       updateSuggestions();
       renderAll();
       toast('导入完成：+' + res.records + ' 计时、+' + res.checkins + ' 打卡、+' + res.habits + ' 固定事项');
@@ -4493,7 +4570,15 @@
           $('#newhabit-target-wrap').hidden = (newHabitType === 'daily');
           return;
         }
-
+        if (seg.dataset.anim) {
+          state.settings.animSpeed = btn.dataset.value;
+          save();
+          applyAnimSpeed();
+          seg.querySelectorAll('.seg-btn').forEach(function (b) {
+            b.classList.toggle('active', b === btn);
+          });
+          return;
+        }
         seg.querySelectorAll('.seg-btn').forEach(function (b) { b.classList.toggle('active', b === btn); });
         var g = seg.dataset.group;
         var val = btn.dataset.value;
@@ -4719,12 +4804,13 @@
       if (!ok) return;
       state = {
         timers: [], records: [], checkins: [], habits: [], cycles: [], daily: {},
-        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false, notificationsEnabled: false, font: Object.assign({}, DEFAULT_FONT) }
+        settings: { showTotalCard: true, showScheduleProgress: true, confirmComplete: true, lockCompleted: false, notificationsEnabled: false, animSpeed: 'normal', font: Object.assign({}, DEFAULT_FONT) }
       };
       try { localStorage.removeItem(KEY); } catch (e2) {}
       save();
       draftFont = Object.assign({}, DEFAULT_FONT);
       applyFontSettings();
+      applyAnimSpeed();
       updateSuggestions();
       renderAll();
       toast('已清空全部数据');
@@ -4761,6 +4847,7 @@
   advanceCyclesTo(todayStr());
   calendarMonth=new Date(parseDate(scheduleDate).getFullYear(),parseDate(scheduleDate).getMonth(),1);
   applyFontSettings();
+  applyAnimSpeed();
   try { bindEvents(); } catch (e) { console.error('bindEvents failed:', e); }
   try { bindCalendarEvents(); } catch (e) { console.error('bindCalendarEvents failed:', e); }
   try { bindScheduleGesture(); } catch (e) { console.error('bindScheduleGesture failed:', e); }
