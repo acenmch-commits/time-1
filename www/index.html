@@ -4855,7 +4855,11 @@
   updateSuggestions();
   refreshAllChips();
   tickClock();
-
+  pullWidgetTimer();
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) pullWidgetTimer();
+  });
+  window.addEventListener('focus', pullWidgetTimer);
   MAIN_TABS.forEach(function (t) {
     var s = document.querySelector('#view-' + t);
     if (s) s.hidden = (t !== 'schedule');
@@ -4869,7 +4873,35 @@
     console.error('renderSchedule failed:', e);
     try { renderCalendar(); } catch (e2) { console.error('renderCalendar failed:', e2); }
   }
+  /* ========== 桌面小组件计时导入 ========== */
+  async function pullWidgetTimer() {
+    try {
+      var Prefs = window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.Preferences;
+      if (!Prefs) return;
+      var res = await Prefs.get({ key: 'pendingTimer' });
+      if (!res || !res.value) return;
 
+      var rec;
+      try { rec = JSON.parse(res.value); } catch (e) { return; }
+      if (!rec || typeof rec.duration !== 'number') return;
+
+      state.records.push({
+        id: uid(),
+        name: '临时计时',
+        note: '',
+        start: rec.start,
+        end: rec.end,
+        duration: rec.duration,
+        pausedMs: rec.pausedMs || 0,
+        createdAt: Date.now()
+      });
+      save();
+
+      await Prefs.remove({ key: 'pendingTimer' });
+      renderAll();
+      toast('已导入桌面组件的一次计时，可在记录中改名');
+    } catch (e) { /* 忽略 */ }
+  }
   setInterval(tickClock, 1000);
   setInterval(tickTimers, 1000);
 
