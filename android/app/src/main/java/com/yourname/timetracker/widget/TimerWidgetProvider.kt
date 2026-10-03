@@ -119,7 +119,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
             "idle" -> {
                 v.setViewVisibility(R.id.chronometer, View.GONE)
                 v.setViewVisibility(R.id.idle_text,   View.VISIBLE)
-                v.setTextViewText(R.id.idle_text, "00:00:00")
+                v.setTextViewText(R.id.idle_text, "V2-TEST")
                 v.setViewVisibility(R.id.btn_start,   View.VISIBLE)
                 v.setViewVisibility(R.id.btn_pause,   View.GONE)
                 v.setViewVisibility(R.id.btn_stop,    View.GONE)
@@ -130,7 +130,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 v.setViewVisibility(R.id.btn_start,   View.GONE)
                 v.setViewVisibility(R.id.btn_pause,   View.VISIBLE)
                 v.setViewVisibility(R.id.btn_stop,    View.VISIBLE)
-                v.setTextViewText(R.id.btn_pause, "暂停")
+                v.setTextViewText(R.id.btn_pause_text, "暂停")
                 v.setOnClickPendingIntent(R.id.btn_pause, pi(context, ACTION_PAUSE))
 
                 val base = p.getLong(KEY_BASE, SystemClock.elapsedRealtime())
@@ -148,7 +148,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 v.setViewVisibility(R.id.btn_start,   View.GONE)
                 v.setViewVisibility(R.id.btn_pause,   View.VISIBLE)
                 v.setViewVisibility(R.id.btn_stop,    View.VISIBLE)
-                v.setTextViewText(R.id.btn_pause, "继续")
+                v.setTextViewText(R.id.btn_pause_text, "继续")
                 v.setOnClickPendingIntent(R.id.btn_pause, pi(context, ACTION_RESUME))
             }
         }
