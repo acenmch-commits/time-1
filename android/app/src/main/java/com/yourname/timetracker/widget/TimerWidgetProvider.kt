@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
+import android.widget.Toast
 import com.yourname.timetracker2.R
 
 class TimerWidgetProvider : AppWidgetProvider() {
@@ -20,12 +21,13 @@ class TimerWidgetProvider : AppWidgetProvider() {
         const val ACTION_STOP   = "com.yourname.timetracker2.widget.STOP"
 
         const val PREFS        = "timer_widget_prefs"
-        const val KEY_STATE    = "state"
+        const val KEY_STATE    = "state"          // idle / running / paused
         const val KEY_START    = "start_at"
         const val KEY_PAUSED   = "paused_total"
         const val KEY_PAUSED_AT= "paused_at"
         const val KEY_BASE     = "chrono_base"
 
+        // Capacitor 的 Preferences 插件用的就是这个 SharedPreferences
         const val CAP_PREFS    = "CapacitorStorage"
         const val CAP_KEY      = "pendingTimer"
     }
@@ -36,6 +38,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
+        Toast.makeText(context, "收到: $action", Toast.LENGTH_SHORT).show()   // ← 诊断用，问题解决后删
         if (action !in setOf(ACTION_START, ACTION_PAUSE, ACTION_RESUME, ACTION_STOP)) {
             super.onReceive(context, intent)
             return
@@ -82,6 +85,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 val endTs      = System.currentTimeMillis()
                 val duration   = (endTs - startedAt - pausedTot).coerceAtLeast(1000L)
 
+                // 交给主 App 的一条待处理记录
                 val json = """{"start":$startedAt,"end":$endTs,"duration":$duration,"pausedMs":$pausedTot}"""
                 context.getSharedPreferences(CAP_PREFS, Context.MODE_PRIVATE)
                     .edit().putString(CAP_KEY, json).apply()
@@ -149,10 +153,13 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     private fun pi(ctx: Context, action: String): PendingIntent {
-        val i = Intent(ctx, TimerWidgetProvider::class.java).apply { this.action = action }
+        val i = Intent(ctx, TimerWidgetProvider::class.java).apply {
+            this.action = action
+            this.setPackage(ctx.packageName)
+        }
         return PendingIntent.getBroadcast(
             ctx, action.hashCode(), i,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
         )
     }
 
