@@ -24,23 +24,23 @@ class TimerWidgetProviderV3 : AppWidgetProvider() {
 
     fun updateWidget(context: Context, manager: AppWidgetManager, id: Int) {
         val prefs = context.getSharedPreferences(
-            TimerWidgetProvider.PREFS,
+            TimerWidgetConstants.PREFS,
             Context.MODE_PRIVATE
         )
-        val state = prefs.getString(TimerWidgetProvider.KEY_STATE, "idle")
+        val state = prefs.getString(TimerWidgetConstants.KEY_STATE, "idle")
         val views = RemoteViews(context.packageName, R.layout.widget_timer_v3)
 
         views.setOnClickPendingIntent(
             R.id.btn_start_v3,
-            createPendingIntent(context, TimerWidgetProvider.ACTION_START, id, 1)
+            createPendingIntent(context, TimerWidgetConstants.ACTION_START, id, 1)
         )
         views.setOnClickPendingIntent(
             R.id.btn_pause_v3,
-            createPendingIntent(context, TimerWidgetProvider.ACTION_PAUSE, id, 2)
+            createPendingIntent(context, TimerWidgetConstants.ACTION_PAUSE, id, 2)
         )
         views.setOnClickPendingIntent(
             R.id.btn_stop_v3,
-            createPendingIntent(context, TimerWidgetProvider.ACTION_STOP, id, 4)
+            createPendingIntent(context, TimerWidgetConstants.ACTION_STOP, id, 4)
         )
 
         when (state) {
@@ -55,7 +55,7 @@ class TimerWidgetProviderV3 : AppWidgetProvider() {
                 views.setChronometer(
                     R.id.chronometer_v3,
                     prefs.getLong(
-                        TimerWidgetProvider.KEY_BASE,
+                        TimerWidgetConstants.KEY_BASE,
                         SystemClock.elapsedRealtime()
                     ),
                     null,
@@ -65,10 +65,10 @@ class TimerWidgetProviderV3 : AppWidgetProvider() {
 
             "paused" -> {
                 val now = System.currentTimeMillis()
-                val startedAt = prefs.getLong(TimerWidgetProvider.KEY_START, now)
-                val pausedAt = prefs.getLong(TimerWidgetProvider.KEY_PAUSED_AT, now)
+                val startedAt = prefs.getLong(TimerWidgetConstants.KEY_START, now)
+                val pausedAt = prefs.getLong(TimerWidgetConstants.KEY_PAUSED_AT, now)
                 val pausedTotal =
-                    prefs.getLong(TimerWidgetProvider.KEY_PAUSED, 0L) +
+                    prefs.getLong(TimerWidgetConstants.KEY_PAUSED, 0L) +
                         (now - pausedAt).coerceAtLeast(0L)
                 val elapsed =
                     (now - startedAt - pausedTotal).coerceAtLeast(0L)
@@ -84,7 +84,7 @@ class TimerWidgetProviderV3 : AppWidgetProvider() {
                     R.id.btn_pause_v3,
                     createPendingIntent(
                         context,
-                        TimerWidgetProvider.ACTION_RESUME,
+                        TimerWidgetConstants.ACTION_RESUME,
                         id,
                         3
                     )
