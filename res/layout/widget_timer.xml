@@ -20,7 +20,7 @@
         android:id="@+id/idle_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="V2-TEST"
+        android:text="00:00:00"
         android:textSize="24sp"
         android:textColor="#FFFFFF"
         android:fontFamily="sans-serif-light" />
@@ -31,54 +31,32 @@
         android:orientation="horizontal"
         android:layout_marginTop="8dp">
 
-        <!-- 开始按钮：外层 LinearLayout 接收点击 -->
-        <LinearLayout
+        <Button
             android:id="@+id/btn_start"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
             android:minWidth="88dp"
             android:paddingLeft="12dp"
             android:paddingRight="12dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:background="@drawable/btn_primary"
-            android:clickable="true"
-            android:focusable="true">
+            android:text="开始计时"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/btn_primary" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="开始计时"
-                android:textSize="12sp"
-                android:textColor="#FFFFFF" />
-        </LinearLayout>
-
-        <!-- 暂停/继续按钮 -->
-        <LinearLayout
+        <Button
             android:id="@+id/btn_pause"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
             android:minWidth="60dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:gravity="center"
-            android:orientation="horizontal"
+            android:text="暂停"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
             android:background="@drawable/btn_secondary"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone">
+            android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/btn_pause_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="暂停"
-                android:textSize="12sp"
-                android:textColor="#FFFFFF" />
-        </LinearLayout>
-
-        <!-- 结束按钮 -->
-        <LinearLayout
+        <Button
             android:id="@+id/btn_stop"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
@@ -86,19 +64,10 @@
             android:layout_marginLeft="6dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
-            android:gravity="center"
-            android:orientation="horizontal"
+            android:text="结束"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
             android:background="@drawable/btn_danger"
-            android:clickable="true"
-            android:focusable="true"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="结束"
-                android:textSize="12sp"
-                android:textColor="#FFFFFF" />
-        </LinearLayout>
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>
