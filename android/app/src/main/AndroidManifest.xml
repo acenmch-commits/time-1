@@ -38,6 +38,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- 透明 Activity：按钮点击走这里，绕开红魔对广播的拦截 -->
         <activity
             android:name=".widget.WidgetActionActivity"
             android:exported="false"
@@ -47,20 +49,9 @@
             android:taskAffinity=""
             android:launchMode="singleInstance" />
 
+        <!-- 桌面小组件 -->
         <receiver
-            android:name=".widget.TimerWidgetActionReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.yourname.timetracker2.widget.START" />
-                <action android:name="com.yourname.timetracker2.widget.PAUSE" />
-                <action android:name="com.yourname.timetracker2.widget.RESUME" />
-                <action android:name="com.yourname.timetracker2.widget.STOP" />
-                <action android:name="com.yourname.timetracker2.widget.IGNORE" />
-            </intent-filter>
-        </receiver>
-
-        <receiver
-            android:name=".widget.TimerWidgetProviderV3"
+            android:name=".widget.TimerWidgetProvider"
             android:label="时间记录"
             android:exported="true">
             <intent-filter>
@@ -68,7 +59,7 @@
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_timer_info_v3" />
+                android:resource="@xml/widget_timer_info" />
         </receiver>
 
     </application>
