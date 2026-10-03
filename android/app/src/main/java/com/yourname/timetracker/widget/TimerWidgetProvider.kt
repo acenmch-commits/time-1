@@ -13,67 +13,6 @@ import com.yourname.timetracker2.R
 
 class TimerWidgetProvider : AppWidgetProvider() {
 
-    override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            ACTION_START -> {
-                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                p.edit().putString(KEY_STATE, "running")
-                    .putLong(KEY_START, System.currentTimeMillis())
-                    .putLong(KEY_PAUSED, 0L)
-                    .putLong(KEY_PAUSED_AT, 0L)
-                    .putLong(KEY_BASE, SystemClock.elapsedRealtime())
-                    .apply()
-                refreshAll(context)
-                return
-            }
-            ACTION_PAUSE -> {
-                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                if (p.getString(KEY_STATE, "idle") == "running") {
-                    p.edit().putString(KEY_STATE, "paused")
-                        .putLong(KEY_PAUSED_AT, System.currentTimeMillis()).apply()
-                    refreshAll(context)
-                }
-                return
-            }
-            ACTION_RESUME -> {
-                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                if (p.getString(KEY_STATE, "idle") == "paused") {
-                    val pauseDur = (System.currentTimeMillis() -
-                        p.getLong(KEY_PAUSED_AT, 0L)).coerceAtLeast(0L)
-                    p.edit().putString(KEY_STATE, "running")
-                        .putLong(KEY_PAUSED, p.getLong(KEY_PAUSED, 0L) + pauseDur)
-                        .putLong(KEY_PAUSED_AT, 0L).apply()
-                    refreshAll(context)
-                }
-                return
-            }
-            ACTION_STOP -> {
-                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                val state = p.getString(KEY_STATE, "idle")
-                if (state == "running" || state == "paused") {
-                    val startedAt = p.getLong(KEY_START, 0L)
-                    var pausedTot = p.getLong(KEY_PAUSED, 0L)
-                    if (state == "paused") {
-                        pausedTot += (System.currentTimeMillis() -
-                            p.getLong(KEY_PAUSED_AT, 0L)).coerceAtLeast(0L)
-                    }
-                    val endTs = System.currentTimeMillis()
-                    val duration = (endTs - startedAt - pausedTot).coerceAtLeast(1000L)
-                    val json = """{"start":$startedAt,"end":$endTs,"duration":$duration,"pausedMs":$pausedTot}"""
-                    context.getSharedPreferences(CAP_PREFS, Context.MODE_PRIVATE)
-                        .edit().putString(CAP_KEY, json).apply()
-                    p.edit().putString(KEY_STATE, "idle")
-                        .putLong(KEY_START, 0L).putLong(KEY_PAUSED, 0L)
-                        .putLong(KEY_PAUSED_AT, 0L).apply()
-                    refreshAll(context)
-                }
-                return
-            }
-            ACTION_IGNORE -> return
-        }
-        super.onReceive(context, intent)
-    }
-
     companion object {
         const val ACTION_START = "com.yourname.timetracker2.widget.START"
         const val ACTION_PAUSE = "com.yourname.timetracker2.widget.PAUSE"
@@ -172,7 +111,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         action: String,
         widgetId: Int
     ): PendingIntent {
-        val intent = Intent(context, TimerWidgetProvider::class.java).apply {
+        val intent = Intent(context, TimerWidgetActionReceiver::class.java).apply {
             this.action = action
             putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
             setPackage(context.packageName)
