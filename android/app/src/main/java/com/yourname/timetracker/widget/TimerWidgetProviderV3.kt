@@ -28,6 +28,18 @@ class TimerWidgetProviderV3 : AppWidgetProvider() {
             val state = prefs.getString(TimerWidgetConstants.KEY_STATE, "idle")
             val views = RemoteViews(context.packageName, R.layout.widget_timer_v3)
 
+            // AppWidgetHostView gives the widget root a default click that launches
+            // the app. Replace that default with a no-op broadcast.
+            views.setOnClickPendingIntent(
+                R.id.widget_root_v3,
+                createPendingIntent(
+                    context,
+                    TimerWidgetConstants.ACTION_IGNORE,
+                    id,
+                    9
+                )
+            )
+
             views.setOnClickPendingIntent(
                 R.id.btn_start_v3,
                 createPendingIntent(context, TimerWidgetConstants.ACTION_START, id, 1)
