@@ -21,7 +21,7 @@ jobs:
           java-version: 17
 
       - name: Clean
-        run: rm -rf node_modules android
+        run: rm -rf node_modules
 
       - name: Verify Web Dir
         run: |
