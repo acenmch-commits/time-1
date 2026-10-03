@@ -39,7 +39,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- 透明 Activity：按钮点击走这里，绕开红魔对广播的拦截 -->
         <activity
             android:name=".widget.WidgetActionActivity"
             android:exported="false"
@@ -49,7 +48,6 @@
             android:taskAffinity=""
             android:launchMode="singleInstance" />
 
-        <!-- 桌面小组件 -->
         <receiver
             android:name=".widget.TimerWidgetProvider"
             android:label="时间记录"
