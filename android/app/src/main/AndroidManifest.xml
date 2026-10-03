@@ -42,7 +42,15 @@
 
         <receiver
             android:name=".widget.TimerWidgetActionReceiver"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.yourname.timetracker2.widget.START" />
+                <action android:name="com.yourname.timetracker2.widget.PAUSE" />
+                <action android:name="com.yourname.timetracker2.widget.RESUME" />
+                <action android:name="com.yourname.timetracker2.widget.STOP" />
+                <action android:name="com.yourname.timetracker2.widget.IGNORE" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".widget.TimerWidgetProviderV3"
