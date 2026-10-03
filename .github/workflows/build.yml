@@ -29,30 +29,10 @@ jobs:
           echo "Using www/index.html as the Capacitor web entry"
 
       - name: Install deps
-
         run: npm install
 
-      - name: name: Sync Android platform
+      - name: Sync Android platform
         run: npx cap sync android
-
-      - name: Add Android notification permissions
-
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('android/app/src/main/AndroidManifest.xml')
-          s = path.read_text(encoding='utf-8')
-          perms = [
-              'android.permission.POST_NOTIFICATIONS',
-              'android.permission.SCHEDULE_EXACT_ALARM'
-          ]
-          for perm in perms:
-              line = f'    <uses-permission android:name="{perm}" />\n'
-              if perm not in s:
-                  pos = s.find('>', s.find('<manifest')) + 1
-                  s = s[:pos] + '\n' + line + s[pos:]
-          path.write_text(s, encoding='utf-8')
-          PY
 
       - name: Set 64-bit only
         run: |
@@ -102,9 +82,6 @@ jobs:
               f.write(content)
           print('signing config injected')
           PY
-
-      - name: Sync
-        run: npx cap sync android
 
       - name: Build release APK
         run: |
