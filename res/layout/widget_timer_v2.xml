@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg">
+
+    <!-- No click handler is attached to this container. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="10dp">
+
+        <Chronometer
+            android:id="@+id/chronometer_v2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-light"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/idle_text_v2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:textSize="24sp"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-light"
+            android:clickable="false"
+            android:focusable="false" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btn_start_v2"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:minWidth="88dp"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:text="开始计时"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_primary" />
+
+            <Button
+                android:id="@+id/btn_pause_v2"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:minWidth="60dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="暂停"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_secondary"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_stop_v2"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:minWidth="60dp"
+                android:layout_marginLeft="6dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:text="结束"
+                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/btn_danger"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
