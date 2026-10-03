@@ -110,7 +110,13 @@ class TimerWidgetProvider : AppWidgetProvider() {
         val state = p.getString(KEY_STATE, "idle")
         val v     = RemoteViews(context.packageName, R.layout.widget_timer)
 
-        v.setOnClickPendingIntent(R.id.widget_root, pi(context, ACTION_IGNORE))
+        // Explicitly consume clicks on every non-button region. Do not rely on parent click propagation.
+        val ignore = pi(context, ACTION_IGNORE)
+        v.setOnClickPendingIntent(R.id.widget_root, ignore)
+        v.setOnClickPendingIntent(R.id.chronometer, ignore)
+        v.setOnClickPendingIntent(R.id.idle_text, ignore)
+        v.setOnClickPendingIntent(R.id.widget_button_row, ignore)
+
         v.setOnClickPendingIntent(R.id.btn_start, pi(context, ACTION_START))
         v.setOnClickPendingIntent(R.id.btn_stop,  pi(context, ACTION_STOP))
 
