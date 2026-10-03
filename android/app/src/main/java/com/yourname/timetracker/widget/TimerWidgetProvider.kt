@@ -9,26 +9,27 @@ import android.content.Intent
 import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
+import android.widget.Toast
 import com.yourname.timetracker2.R
 
 class TimerWidgetProvider : AppWidgetProvider() {
 
     companion object {
-        const val ACTION_START = "com.yourname.timetracker2.widget.START"
-        const val ACTION_PAUSE = "com.yourname.timetracker2.widget.PAUSE"
+        const val ACTION_START  = "com.yourname.timetracker2.widget.START"
+        const val ACTION_PAUSE  = "com.yourname.timetracker2.widget.PAUSE"
         const val ACTION_RESUME = "com.yourname.timetracker2.widget.RESUME"
-        const val ACTION_STOP = "com.yourname.timetracker2.widget.STOP"
-        const val ACTION_IGNORE = "com.yourname.timetracker2.widget.IGNORE"
+        const val ACTION_STOP   = "com.yourname.timetracker2.widget.STOP"
 
-        const val PREFS = "timer_widget_prefs"
-        const val KEY_STATE = "state"
-        const val KEY_START = "start_at"
-        const val KEY_BASE = "chrono_base"
-        const val KEY_PAUSED = "paused_total"
-        const val KEY_PAUSED_AT = "paused_at"
+        const val PREFS        = "timer_widget_prefs"
+        const val KEY_STATE    = "state"          // idle / running / paused
+        const val KEY_START    = "start_at"
+        const val KEY_PAUSED   = "paused_total"
+        const val KEY_PAUSED_AT= "paused_at"
+        const val KEY_BASE     = "chrono_base"
 
-        const val CAP_PREFS = "CapacitorStorage"
-        const val CAP_KEY = "pendingTimer"
+        // Capacitor 的 Preferences 插件用的就是这个 SharedPreferences
+        const val CAP_PREFS    = "CapacitorStorage"
+        const val CAP_KEY      = "pendingTimer"
     }
 
     override fun onUpdate(ctx: Context, mgr: AppWidgetManager, ids: IntArray) {
@@ -36,8 +37,9 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        // Handle widget button broadcasts directly; delegate system lifecycle broadcasts.
         val action = intent.action
-        if (action == ACTION_IGNORE) return
+        Toast.makeText(context, "收到: $action", Toast.LENGTH_SHORT).show()   // ← 诊断用，问题解决后删
         if (action !in setOf(ACTION_START, ACTION_PAUSE, ACTION_RESUME, ACTION_STOP)) {
             super.onReceive(context, intent)
             return
@@ -45,51 +47,53 @@ class TimerWidgetProvider : AppWidgetProvider() {
 
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val state = p.getString(KEY_STATE, "idle")
-        val nowWall = System.currentTimeMillis()
-        val nowElapsed = SystemClock.elapsedRealtime()
 
         when (action) {
             ACTION_START -> {
-                if (state == "idle") {
-                    p.edit()
-                        .putString(KEY_STATE, "running")
-                        .putLong(KEY_START, nowWall)
-                        .putLong(KEY_PAUSED, 0L)
-                        .putLong(KEY_PAUSED_AT, 0L)
-                        .putLong(KEY_BASE, nowElapsed)
-                        .apply()
-                }
+                p.edit()
+                    .putString(KEY_STATE, "running")
+                    .putLong(KEY_START, System.currentTimeMillis())
+                    .putLong(KEY_PAUSED, 0L)
+                    .putLong(KEY_PAUSED_AT, 0L)
+                    .putLong(KEY_BASE, SystemClock.elapsedRealtime())
+                    .apply()
             }
             ACTION_PAUSE -> if (state == "running") {
                 p.edit()
                     .putString(KEY_STATE, "paused")
-                    .putLong(KEY_PAUSED_AT, nowElapsed)
+                    .putLong(KEY_PAUSED_AT, System.currentTimeMillis())
                     .apply()
             }
             ACTION_RESUME -> if (state == "paused") {
-                val pausedAt = p.getLong(KEY_PAUSED_AT, nowElapsed)
-                val pauseDur = (nowElapsed - pausedAt).coerceAtLeast(0L)
-                val newPaused = p.getLong(KEY_PAUSED, 0L) + pauseDur
+                val pausedAt   = p.getLong(KEY_PAUSED_AT, 0L)
+                val pauseDur   = System.currentTimeMillis() - pausedAt
+                val newPaused  = p.getLong(KEY_PAUSED, 0L) + pauseDur
+                val startedAt  = p.getLong(KEY_START, System.currentTimeMillis())
+                val elapsed    = System.currentTimeMillis() - startedAt - newPaused
                 p.edit()
                     .putString(KEY_STATE, "running")
                     .putLong(KEY_PAUSED, newPaused)
                     .putLong(KEY_PAUSED_AT, 0L)
-                    .putLong(KEY_BASE, p.getLong(KEY_BASE, nowElapsed) + pauseDur)
+                    .putLong(KEY_BASE, SystemClock.elapsedRealtime() - elapsed)
                     .apply()
             }
             ACTION_STOP -> if (state == "running" || state == "paused") {
-                val startedAt = p.getLong(KEY_START, nowWall)
-                val pausedTotal = p.getLong(KEY_PAUSED, 0L) +
-                    if (state == "paused") (nowElapsed - p.getLong(KEY_PAUSED_AT, nowElapsed)).coerceAtLeast(0L) else 0L
-                val duration = (nowElapsed - p.getLong(KEY_BASE, nowElapsed) - pausedTotal).coerceAtLeast(1000L)
-                val json = """{"start":$startedAt,"end":$nowWall,"duration":$duration,"pausedMs":$pausedTotal}"""
+                val startedAt  = p.getLong(KEY_START, 0L)
+                var pausedTot  = p.getLong(KEY_PAUSED, 0L)
+                if (state == "paused") {
+                    pausedTot += System.currentTimeMillis() - p.getLong(KEY_PAUSED_AT, 0L)
+                }
+                val endTs      = System.currentTimeMillis()
+                val duration   = (endTs - startedAt - pausedTot).coerceAtLeast(1000L)
+
+                // 交给主 App 的一条待处理记录
+                val json = """{"start":$startedAt,"end":$endTs,"duration":$duration,"pausedMs":$pausedTot}"""
                 context.getSharedPreferences(CAP_PREFS, Context.MODE_PRIVATE)
                     .edit().putString(CAP_KEY, json).apply()
 
                 p.edit()
                     .putString(KEY_STATE, "idle")
                     .putLong(KEY_START, 0L)
-                    .putLong(KEY_BASE, 0L)
                     .putLong(KEY_PAUSED, 0L)
                     .putLong(KEY_PAUSED_AT, 0L)
                     .apply()
@@ -102,69 +106,59 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     private fun updateWidget(context: Context, mgr: AppWidgetManager, id: Int) {
-        val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val p     = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val state = p.getString(KEY_STATE, "idle")
-        val v = RemoteViews(context.packageName, R.layout.widget_timer)
+        val v     = RemoteViews(context.packageName, R.layout.widget_timer)
 
-        // 根布局只接收无操作广播，避免点击空白区域启动主 App。
-        v.setOnClickPendingIntent(R.id.widget_root, pi(context, ACTION_IGNORE))
+        // 按钮跳转
         v.setOnClickPendingIntent(R.id.btn_start, pi(context, ACTION_START))
-        v.setOnClickPendingIntent(R.id.btn_stop, pi(context, ACTION_STOP))
+        v.setOnClickPendingIntent(R.id.btn_stop,  pi(context, ACTION_STOP))
+        Toast.makeText(context, "已绑按钮", Toast.LENGTH_SHORT).show()   // ← 诊断用，问题解决后删
 
         when (state) {
             "idle" -> {
                 v.setViewVisibility(R.id.chronometer, View.GONE)
-                v.setViewVisibility(R.id.idle_text, View.VISIBLE)
+                v.setViewVisibility(R.id.idle_text,   View.VISIBLE)
                 v.setTextViewText(R.id.idle_text, "00:00:00")
-                v.setViewVisibility(R.id.btn_start, View.VISIBLE)
-                v.setViewVisibility(R.id.btn_pause, View.GONE)
-                v.setViewVisibility(R.id.btn_stop, View.GONE)
+                v.setViewVisibility(R.id.btn_start,   View.VISIBLE)
+                v.setViewVisibility(R.id.btn_pause,   View.GONE)
+                v.setViewVisibility(R.id.btn_stop,    View.GONE)
             }
             "running" -> {
                 v.setViewVisibility(R.id.chronometer, View.VISIBLE)
-                v.setViewVisibility(R.id.idle_text, View.GONE)
-                v.setViewVisibility(R.id.btn_start, View.GONE)
-                v.setViewVisibility(R.id.btn_pause, View.VISIBLE)
-                v.setViewVisibility(R.id.btn_stop, View.VISIBLE)
+                v.setViewVisibility(R.id.idle_text,   View.GONE)
+                v.setViewVisibility(R.id.btn_start,   View.GONE)
+                v.setViewVisibility(R.id.btn_pause,   View.VISIBLE)
+                v.setViewVisibility(R.id.btn_stop,    View.VISIBLE)
                 v.setTextViewText(R.id.btn_pause, "暂停")
                 v.setOnClickPendingIntent(R.id.btn_pause, pi(context, ACTION_PAUSE))
+
                 val base = p.getLong(KEY_BASE, SystemClock.elapsedRealtime())
                 v.setChronometer(R.id.chronometer, base, null, true)
             }
             "paused" -> {
-                val base = p.getLong(KEY_BASE, SystemClock.elapsedRealtime())
-                val elapsed = (SystemClock.elapsedRealtime() - base -
-                    p.getLong(KEY_PAUSED, 0L) -
-                    (SystemClock.elapsedRealtime() - p.getLong(KEY_PAUSED_AT, SystemClock.elapsedRealtime()))).coerceAtLeast(0L)
+                val startedAt = p.getLong(KEY_START, 0L)
+                val pausedTot = p.getLong(KEY_PAUSED, 0L) +
+                        (System.currentTimeMillis() - p.getLong(KEY_PAUSED_AT, 0L))
+                val elapsed   = (System.currentTimeMillis() - startedAt - pausedTot).coerceAtLeast(0)
+
                 v.setViewVisibility(R.id.chronometer, View.GONE)
-                v.setViewVisibility(R.id.idle_text, View.VISIBLE)
+                v.setViewVisibility(R.id.idle_text,   View.VISIBLE)
                 v.setTextViewText(R.id.idle_text, fmt(elapsed))
-                v.setViewVisibility(R.id.btn_start, View.GONE)
-                v.setViewVisibility(R.id.btn_pause, View.VISIBLE)
-                v.setViewVisibility(R.id.btn_stop, View.VISIBLE)
+                v.setViewVisibility(R.id.btn_start,   View.GONE)
+                v.setViewVisibility(R.id.btn_pause,   View.VISIBLE)
+                v.setViewVisibility(R.id.btn_stop,    View.VISIBLE)
                 v.setTextViewText(R.id.btn_pause, "继续")
                 v.setOnClickPendingIntent(R.id.btn_pause, pi(context, ACTION_RESUME))
-            }
-            else -> {
-                v.setViewVisibility(R.id.chronometer, View.GONE)
-                v.setViewVisibility(R.id.idle_text, View.VISIBLE)
-                v.setTextViewText(R.id.idle_text, "00:00:00")
-                v.setViewVisibility(R.id.btn_start, View.VISIBLE)
-                v.setViewVisibility(R.id.btn_pause, View.GONE)
-                v.setViewVisibility(R.id.btn_stop, View.GONE)
             }
         }
         mgr.updateAppWidget(id, v)
     }
 
     private fun pi(ctx: Context, action: String): PendingIntent {
-        val intent = Intent(ctx, TimerWidgetProvider::class.java).apply {
-            this.action = action
-            // 显式限定接收包，避免被其他应用或隐式解析影响。
-            setPackage(ctx.packageName)
-        }
+        val i = Intent(ctx, TimerWidgetProvider::class.java).apply { this.action = action }
         return PendingIntent.getBroadcast(
-            ctx, action.hashCode(), intent,
+            ctx, action.hashCode(), i,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
