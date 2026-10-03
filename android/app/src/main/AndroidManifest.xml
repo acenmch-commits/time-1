@@ -39,37 +39,22 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+
         <receiver
             android:name=".widget.TimerWidgetActionReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-            </intent-filter>
-        </receiver>
+            android:exported="false" />
 
         <receiver
-            android:name=".widget.TimerWidgetProvider"
+            android:name=".widget.TimerWidgetProviderV3"
+            android:label="时间记录"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_timer_info" />
+                android:resource="@xml/widget_timer_info_v3" />
         </receiver>
-
-        <receiver
-            android:name=".widget.TimerWidgetProviderV2"
-            android:label="时间记录计时小组件"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_timer_info_v2" />
-        </receiver>
-
 
     </application>
 
