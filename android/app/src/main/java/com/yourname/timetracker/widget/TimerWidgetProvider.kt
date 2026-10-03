@@ -107,10 +107,10 @@ class TimerWidgetProvider : AppWidgetProvider() {
         val state = prefs.getString(KEY_STATE, "idle")
         val views = RemoteViews(context.packageName, R.layout.widget_timer)
 
-        // Consume the widget background with a no-op broadcast. This prevents
-        // an old widget-wide "open app" PendingIntent from remaining active.
+        // The transparent guard view consumes non-button taps.
+        // Action buttons are separate views above it and keep their own broadcasts.
         views.setOnClickPendingIntent(
-            R.id.widget_root,
+            R.id.widget_touch_guard,
             createActionPendingIntent(context, ACTION_IGNORE, id)
         )
         views.setOnClickPendingIntent(
