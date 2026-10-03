@@ -31,6 +31,32 @@ jobs:
       - name: Install deps
         run: npm install
 
+      - name: Ensure Android Gradle project
+        run: |
+          if [ ! -f android/app/build.gradle ]; then
+            echo "Android Gradle scaffold is missing; generating it with Capacitor."
+            if [ -d android/app/src/main ]; then
+              mkdir -p /tmp/time-android-custom
+              cp -a android/app/src/main/. /tmp/time-android-custom/
+            fi
+            if [ -d android/app/src/main/res ]; then
+              mkdir -p /tmp/time-android-res
+              cp -a android/app/src/main/res/. /tmp/time-android-res/
+            fi
+            rm -rf android
+            npx cap add android
+            if [ -f /tmp/time-android-custom/AndroidManifest.xml ]; then
+              cp /tmp/time-android-custom/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+            fi
+            if [ -d /tmp/time-android-custom/java ]; then
+              cp -a /tmp/time-android-custom/java/. android/app/src/main/java/
+            fi
+            if [ -d /tmp/time-android-res ]; then
+              cp -a /tmp/time-android-res/. android/app/src/main/res/
+            fi
+          fi
+          test -f android/app/build.gradle
+
       - name: Sync Android platform
         run: npx cap sync android
 
