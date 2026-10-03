@@ -38,74 +38,10 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        val action = intent.action
-        if (action == ACTION_IGNORE) return
-        if (action !in setOf(ACTION_START, ACTION_PAUSE, ACTION_RESUME, ACTION_STOP)) {
-            super.onReceive(context, intent)
-            return
-        }
-
-        val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val state = p.getString(KEY_STATE, "idle")
-
-        when (action) {
-            ACTION_START -> {
-                p.edit()
-                    .putString(KEY_STATE, "running")
-                    .putLong(KEY_START, System.currentTimeMillis())
-                    .putLong(KEY_PAUSED, 0L)
-                    .putLong(KEY_PAUSED_AT, 0L)
-                    .putLong(KEY_BASE, SystemClock.elapsedRealtime())
-                    .apply()
-            }
-            ACTION_PAUSE -> if (state == "running") {
-                p.edit()
-                    .putString(KEY_STATE, "paused")
-                    .putLong(KEY_PAUSED_AT, System.currentTimeMillis())
-                    .apply()
-            }
-            ACTION_RESUME -> if (state == "paused") {
-                val pausedAt   = p.getLong(KEY_PAUSED_AT, 0L)
-                val pauseDur   = System.currentTimeMillis() - pausedAt
-                val newPaused  = p.getLong(KEY_PAUSED, 0L) + pauseDur
-                val startedAt  = p.getLong(KEY_START, System.currentTimeMillis())
-                val elapsed    = System.currentTimeMillis() - startedAt - newPaused
-                p.edit()
-                    .putString(KEY_STATE, "running")
-                    .putLong(KEY_PAUSED, newPaused)
-                    .putLong(KEY_PAUSED_AT, 0L)
-                    .putLong(KEY_BASE, SystemClock.elapsedRealtime() - elapsed)
-                    .apply()
-            }
-            ACTION_STOP -> if (state == "running" || state == "paused") {
-                val startedAt  = p.getLong(KEY_START, 0L)
-                var pausedTot  = p.getLong(KEY_PAUSED, 0L)
-                if (state == "paused") {
-                    pausedTot += System.currentTimeMillis() - p.getLong(KEY_PAUSED_AT, 0L)
-                }
-                val endTs      = System.currentTimeMillis()
-                val duration   = (endTs - startedAt - pausedTot).coerceAtLeast(1000L)
-
-                // 交给主 App 的一条待处理记录
-                val json = """{"start":$startedAt,"end":$endTs,"duration":$duration,"pausedMs":$pausedTot}"""
-                context.getSharedPreferences(CAP_PREFS, Context.MODE_PRIVATE)
-                    .edit().putString(CAP_KEY, json).apply()
-
-                p.edit()
-                    .putString(KEY_STATE, "idle")
-                    .putLong(KEY_START, 0L)
-                    .putLong(KEY_PAUSED, 0L)
-                    .putLong(KEY_PAUSED_AT, 0L)
-                    .apply()
-            }
-        }
-
-        val mgr = AppWidgetManager.getInstance(context)
-        val ids = mgr.getAppWidgetIds(ComponentName(context, TimerWidgetProvider::class.java))
-        ids.forEach { updateWidget(context, mgr, it) }
+        super.onReceive(context, intent)
     }
 
-    private fun updateWidget(context: Context, mgr: AppWidgetManager, id: Int) {
+    fun updateWidgetPublic(context: Context, mgr: AppWidgetManager, id: Int) {
         val p     = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val state = p.getString(KEY_STATE, "idle")
         val v     = RemoteViews(context.packageName, R.layout.widget_timer)
@@ -161,7 +97,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     private fun pi(ctx: Context, action: String): PendingIntent {
-        val i = Intent(ctx, TimerWidgetProvider::class.java).apply {
+        val i = Intent(ctx, TimerWidgetActionReceiver::class.java).apply {
             this.action = action
             this.setPackage(ctx.packageName)
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
