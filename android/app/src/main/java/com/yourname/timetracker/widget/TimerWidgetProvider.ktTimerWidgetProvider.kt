@@ -36,11 +36,17 @@ class TimerWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
+        // Handle widget button broadcasts directly; delegate system lifecycle broadcasts.
+        val action = intent.action
+        if (action !in setOf(ACTION_START, ACTION_PAUSE, ACTION_RESUME, ACTION_STOP)) {
+            super.onReceive(context, intent)
+            return
+        }
+
         val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val state = p.getString(KEY_STATE, "idle")
 
-        when (intent.action) {
+        when (action) {
             ACTION_START -> {
                 p.edit()
                     .putString(KEY_STATE, "running")
