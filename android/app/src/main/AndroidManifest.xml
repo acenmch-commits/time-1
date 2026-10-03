@@ -40,10 +40,6 @@
         </provider>
 
         <receiver
-            android:name=".widget.TimerWidgetActionReceiver"
-            android:exported="false" />
-
-        <receiver
             android:name=".widget.TimerWidgetProvider"
             android:exported="true">
             <intent-filter>
