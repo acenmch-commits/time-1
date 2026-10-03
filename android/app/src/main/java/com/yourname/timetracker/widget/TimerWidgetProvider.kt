@@ -158,6 +158,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         val i = Intent(ctx, TimerWidgetProvider::class.java).apply {
             this.action = action
             this.setPackage(ctx.packageName)
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
         return PendingIntent.getBroadcast(
             ctx, action.hashCode(), i,
