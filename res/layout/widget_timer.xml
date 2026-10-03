@@ -31,36 +31,42 @@
         android:orientation="horizontal"
         android:layout_marginTop="8dp">
 
-        <Button
+        <TextView
             android:id="@+id/btn_start"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
             android:minWidth="88dp"
-            android:paddingHorizontal="12dp"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:gravity="center"
             android:text="开始计时"
             android:textSize="12sp"
             android:textColor="#FFFFFF"
             android:background="@drawable/btn_primary" />
 
-        <Button
+        <TextView
             android:id="@+id/btn_pause"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
             android:minWidth="60dp"
-            android:paddingHorizontal="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:gravity="center"
             android:text="暂停"
             android:textSize="12sp"
             android:textColor="#FFFFFF"
             android:background="@drawable/btn_secondary"
             android:visibility="gone" />
 
-        <Button
+        <TextView
             android:id="@+id/btn_stop"
             android:layout_width="wrap_content"
             android:layout_height="34dp"
             android:minWidth="60dp"
-            android:layout_marginStart="6dp"
-            android:paddingHorizontal="10dp"
+            android:layout_marginLeft="6dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:gravity="center"
             android:text="结束"
             android:textSize="12sp"
             android:textColor="#FFFFFF"
