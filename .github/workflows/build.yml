@@ -32,8 +32,8 @@ jobs:
 
         run: npm install
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: name: Sync Android platform
+        run: npx cap sync android
 
       - name: Add Android notification permissions
 
