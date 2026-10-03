@@ -41,7 +41,7 @@
 
         <receiver
             android:name=".widget.TimerWidgetProvider"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.yourname.timetracker2.widget.START" />
