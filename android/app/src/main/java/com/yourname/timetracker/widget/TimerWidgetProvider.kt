@@ -12,11 +12,73 @@ import com.yourname.timetracker2.R
 
 class TimerWidgetProvider : AppWidgetProvider() {
 
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            ACTION_START -> {
+                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                p.edit().putString(KEY_STATE, "running")
+                    .putLong(KEY_START, System.currentTimeMillis())
+                    .putLong(KEY_PAUSED, 0L)
+                    .putLong(KEY_PAUSED_AT, 0L)
+                    .putLong(KEY_BASE, SystemClock.elapsedRealtime())
+                    .apply()
+                refreshAll(context)
+                return
+            }
+            ACTION_PAUSE -> {
+                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                if (p.getString(KEY_STATE, "idle") == "running") {
+                    p.edit().putString(KEY_STATE, "paused")
+                        .putLong(KEY_PAUSED_AT, System.currentTimeMillis()).apply()
+                    refreshAll(context)
+                }
+                return
+            }
+            ACTION_RESUME -> {
+                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                if (p.getString(KEY_STATE, "idle") == "paused") {
+                    val pauseDur = (System.currentTimeMillis() -
+                        p.getLong(KEY_PAUSED_AT, 0L)).coerceAtLeast(0L)
+                    p.edit().putString(KEY_STATE, "running")
+                        .putLong(KEY_PAUSED, p.getLong(KEY_PAUSED, 0L) + pauseDur)
+                        .putLong(KEY_PAUSED_AT, 0L).apply()
+                    refreshAll(context)
+                }
+                return
+            }
+            ACTION_STOP -> {
+                val p = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                val state = p.getString(KEY_STATE, "idle")
+                if (state == "running" || state == "paused") {
+                    val startedAt = p.getLong(KEY_START, 0L)
+                    var pausedTot = p.getLong(KEY_PAUSED, 0L)
+                    if (state == "paused") {
+                        pausedTot += (System.currentTimeMillis() -
+                            p.getLong(KEY_PAUSED_AT, 0L)).coerceAtLeast(0L)
+                    }
+                    val endTs = System.currentTimeMillis()
+                    val duration = (endTs - startedAt - pausedTot).coerceAtLeast(1000L)
+                    val json = """{"start":$startedAt,"end":$endTs,"duration":$duration,"pausedMs":$pausedTot}"""
+                    context.getSharedPreferences(CAP_PREFS, Context.MODE_PRIVATE)
+                        .edit().putString(CAP_KEY, json).apply()
+                    p.edit().putString(KEY_STATE, "idle")
+                        .putLong(KEY_START, 0L).putLong(KEY_PAUSED, 0L)
+                        .putLong(KEY_PAUSED_AT, 0L).apply()
+                    refreshAll(context)
+                }
+                return
+            }
+            ACTION_IGNORE -> return
+        }
+        super.onReceive(context, intent)
+    }
+
     companion object {
         const val ACTION_START = "com.yourname.timetracker2.widget.START"
         const val ACTION_PAUSE = "com.yourname.timetracker2.widget.PAUSE"
         const val ACTION_RESUME = "com.yourname.timetracker2.widget.RESUME"
         const val ACTION_STOP = "com.yourname.timetracker2.widget.STOP"
+        const val ACTION_IGNORE = "com.yourname.timetracker2.widget.IGNORE"
 
         const val PREFS = "timer_widget_prefs"
         const val KEY_STATE = "state"
@@ -33,16 +95,35 @@ class TimerWidgetProvider : AppWidgetProvider() {
         ids.forEach { updateWidgetPublic(context, manager, it) }
     }
 
+    private fun refreshAll(context: Context) {
+        val manager = AppWidgetManager.getInstance(context)
+        val ids = manager.getAppWidgetIds(ComponentName(context, TimerWidgetProvider::class.java))
+        ids.forEach { updateWidgetPublic(context, manager, it) }
+    }
+
     fun updateWidgetPublic(context: Context, manager: AppWidgetManager, id: Int) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val state = prefs.getString(KEY_STATE, "idle")
         val views = RemoteViews(context.packageName, R.layout.widget_timer)
 
-        // IMPORTANT: no PendingIntent is assigned to the root or any non-button view.
-        // Only the visible action buttons receive click handlers.
-        views.setOnClickPendingIntent(R.id.btn_start, createActionPendingIntent(context, ACTION_START))
-        views.setOnClickPendingIntent(R.id.btn_pause, createActionPendingIntent(context, ACTION_PAUSE))
-        views.setOnClickPendingIntent(R.id.btn_stop, createActionPendingIntent(context, ACTION_STOP))
+        // Consume the widget background with a no-op broadcast. This prevents
+        // an old widget-wide "open app" PendingIntent from remaining active.
+        views.setOnClickPendingIntent(
+            R.id.widget_root,
+            createActionPendingIntent(context, ACTION_IGNORE, id)
+        )
+        views.setOnClickPendingIntent(
+            R.id.btn_start,
+            createActionPendingIntent(context, ACTION_START, id)
+        )
+        views.setOnClickPendingIntent(
+            R.id.btn_pause,
+            createActionPendingIntent(context, ACTION_PAUSE, id)
+        )
+        views.setOnClickPendingIntent(
+            R.id.btn_stop,
+            createActionPendingIntent(context, ACTION_STOP, id)
+        )
 
         when (state) {
             "running" -> {
@@ -70,7 +151,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
                 views.setViewVisibility(R.id.btn_pause, View.VISIBLE)
                 views.setViewVisibility(R.id.btn_stop, View.VISIBLE)
                 views.setTextViewText(R.id.btn_pause, "继续")
-                views.setOnClickPendingIntent(R.id.btn_pause, createActionPendingIntent(context, ACTION_RESUME))
+                views.setOnClickPendingIntent(R.id.btn_pause, createActionPendingIntent(context, ACTION_RESUME, id))
             }
             else -> {
                 views.setViewVisibility(R.id.chronometer, View.GONE)
@@ -85,15 +166,28 @@ class TimerWidgetProvider : AppWidgetProvider() {
         manager.updateAppWidget(id, views)
     }
 
-    private fun createActionPendingIntent(context: Context, action: String): PendingIntent {
-        val intent = Intent(context, TimerWidgetActionReceiver::class.java).apply {
+    private fun createActionPendingIntent(
+        context: Context,
+        action: String,
+        widgetId: Int
+    ): PendingIntent {
+        val intent = Intent(context, TimerWidgetProvider::class.java).apply {
             this.action = action
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
             setPackage(context.packageName)
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
         }
+        val actionCode = when (action) {
+            ACTION_START -> 1
+            ACTION_PAUSE -> 2
+            ACTION_RESUME -> 3
+            ACTION_STOP -> 4
+            ACTION_IGNORE -> 5
+            else -> 9
+        }
         return PendingIntent.getBroadcast(
             context,
-            action.hashCode(),
+            1000 + widgetId * 10 + actionCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
