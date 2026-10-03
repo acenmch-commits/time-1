@@ -5,6 +5,7 @@ object TimerWidgetConstants {
     const val ACTION_PAUSE = "com.yourname.timetracker2.widget.PAUSE"
     const val ACTION_RESUME = "com.yourname.timetracker2.widget.RESUME"
     const val ACTION_STOP = "com.yourname.timetracker2.widget.STOP"
+    const val ACTION_IGNORE = "com.yourname.timetracker2.widget.IGNORE"
 
     const val PREFS = "timer_widget_prefs"
     const val KEY_STATE = "state"
