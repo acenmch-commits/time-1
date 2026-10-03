@@ -54,6 +54,10 @@ jobs:
             if [ -d /tmp/time-android-res ]; then
               cp -a /tmp/time-android-res/. android/app/src/main/res/
             fi
+            # Custom widget resources are stored in the repository-level res/ directory.
+            if [ -d res ]; then
+              cp -a res/. android/app/src/main/res/
+            fi
           fi
           test -f android/app/build.gradle
 
