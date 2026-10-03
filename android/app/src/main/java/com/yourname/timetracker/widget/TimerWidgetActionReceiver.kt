@@ -114,5 +114,10 @@ class TimerWidgetActionReceiver : BroadcastReceiver() {
             ComponentName(context, TimerWidgetProvider::class.java)
         )
         ids.forEach { TimerWidgetProvider.updateWidgetPublic(context, manager, it) }
+
+        val v2Ids = manager.getAppWidgetIds(
+            ComponentName(context, TimerWidgetProviderV2::class.java)
+        )
+        v2Ids.forEach { TimerWidgetProviderV2.updateWidgetPublic(context, manager, it) }
     }
 }
