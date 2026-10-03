@@ -19,6 +19,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         const val ACTION_PAUSE  = "com.yourname.timetracker2.widget.PAUSE"
         const val ACTION_RESUME = "com.yourname.timetracker2.widget.RESUME"
         const val ACTION_STOP   = "com.yourname.timetracker2.widget.STOP"
+        const val ACTION_IGNORE = "com.yourname.timetracker2.widget.IGNORE"
 
         const val PREFS        = "timer_widget_prefs"
         const val KEY_STATE    = "state"          // idle / running / paused
@@ -38,7 +39,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-        Toast.makeText(context, "收到: $action", Toast.LENGTH_SHORT).show()   // ← 诊断用，问题解决后删
+        if (action == ACTION_IGNORE) return
         if (action !in setOf(ACTION_START, ACTION_PAUSE, ACTION_RESUME, ACTION_STOP)) {
             super.onReceive(context, intent)
             return
@@ -109,6 +110,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         val state = p.getString(KEY_STATE, "idle")
         val v     = RemoteViews(context.packageName, R.layout.widget_timer)
 
+        v.setOnClickPendingIntent(R.id.widget_root, pi(context, ACTION_IGNORE))
         v.setOnClickPendingIntent(R.id.btn_start, pi(context, ACTION_START))
         v.setOnClickPendingIntent(R.id.btn_stop,  pi(context, ACTION_STOP))
 
@@ -159,7 +161,7 @@ class TimerWidgetProvider : AppWidgetProvider() {
         }
         return PendingIntent.getBroadcast(
             ctx, action.hashCode(), i,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
