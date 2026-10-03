@@ -41,7 +41,7 @@
 
         <receiver
             android:name=".widget.TimerWidgetActionReceiver"
-            android:exported="false" />
+            android:exported="true" />
 
         <receiver
             android:name=".widget.TimerWidgetProvider"
