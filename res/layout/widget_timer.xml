@@ -21,7 +21,7 @@
         android:id="@+id/idle_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="00:00:00"
+        android:text="V2-TEST"
         android:textSize="24sp"
         android:textColor="#FFFFFF"
         android:fontFamily="sans-serif-light" />
