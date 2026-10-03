@@ -10,11 +10,6 @@ import android.os.SystemClock
 class TimerWidgetActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
-            refreshAll(context)
-            return
-        }
-
         when (intent.action) {
             TimerWidgetConstants.ACTION_START -> {
                 val p = context.getSharedPreferences(TimerWidgetConstants.PREFS, Context.MODE_PRIVATE)
@@ -95,11 +90,6 @@ class TimerWidgetActionReceiver : BroadcastReceiver() {
                         .putLong(TimerWidgetConstants.KEY_PAUSED_AT, 0L)
                         .apply()
                 }
-            }
-
-            TimerWidgetConstants.ACTION_STOP -> {
-                // Intentionally do nothing for non-button widget taps.
-                return
             }
 
             else -> return
