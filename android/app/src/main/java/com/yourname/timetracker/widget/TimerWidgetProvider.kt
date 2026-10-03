@@ -46,6 +46,12 @@ class TimerWidgetProvider : AppWidgetProvider() {
         val state = prefs.getString(KEY_STATE, "idle")
         val views = RemoteViews(context.packageName, R.layout.widget_timer)
 
+        // Explicitly replace any stale widget-wide "open app" action from older APKs.
+        // Child buttons have their own PendingIntents and override this parent action.
+        views.setOnClickPendingIntent(
+            R.id.widget_root,
+            createActionPendingIntent(context, ACTION_IGNORE, id)
+        )
         views.setOnClickPendingIntent(
             R.id.btn_start,
             createActionPendingIntent(context, ACTION_START, id)

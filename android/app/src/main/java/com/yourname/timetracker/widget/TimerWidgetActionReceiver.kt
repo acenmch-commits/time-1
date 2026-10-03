@@ -10,6 +10,11 @@ import android.os.SystemClock
 class TimerWidgetActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+            refreshAll(context)
+            return
+        }
+
         when (intent.action) {
             TimerWidgetProvider.ACTION_START -> {
                 val p = context.getSharedPreferences(TimerWidgetProvider.PREFS, Context.MODE_PRIVATE)
