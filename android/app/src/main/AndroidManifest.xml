@@ -48,6 +48,17 @@
         </receiver>
 
         <receiver
+            android:name=".widget.TimerWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_timer_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.TimerWidgetProviderV2"
             android:label="时间记录计时小组件"
             android:exported="true">
