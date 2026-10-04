@@ -4630,121 +4630,128 @@ function setupCommonChipReorder(container, inputId) {
   }
 
 function bindScheduleGesture() {
+    var wrap = document.getElementById('main-wrap');
+    if (!wrap || wrap.dataset.schedGestureBound === '1') return;
+    wrap.dataset.schedGestureBound = '1';
 
-    var card = document.querySelector('#calendar-card'); 
-    if (!card || card.dataset.gestureBound === '1') return; 
-    card.dataset.gestureBound = '1'; 
- 
-    var startY = 0; 
-    var lastY = 0; 
-    var startClipH = 0; 
-    var startRowOffset = 0; 
-    var rowH = 76; 
-    var totalRows = 5; 
-    var minH = 76; 
-    var maxH = 380; 
-    var direction = ''; 
-    var dragging = false; 
-    var decided = false; 
-    var clip = null; 
-    var grid = null; 
- 
-    function prepare() { 
-      clip = document.getElementById('calendar-clip'); 
-      grid = document.getElementById('calendar-grid'); 
-      if (!clip || !grid) return false; 
-      var firstDay = grid.querySelector('.calendar-day'); 
-      if (!firstDay) return false; 
-      rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4); 
-      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, Math.ceil(grid.children.length / 7)); 
-      var selectedRow = parseFloat(grid.dataset.selectedrow); 
-      if (!isFinite(selectedRow)) selectedRow = 0; 
-      startRowOffset = selectedRow * rowH; 
-      minH = rowH; 
-      maxH = Math.max(minH, totalRows * rowH - 4); 
-      startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH); 
-      return true; 
-    } 
- 
-    function applyDragHeight(h) { 
-      if (!clip || !grid) return; 
-      var newH = Math.max(minH, Math.min(maxH, h)); 
-      clip.style.height = newH + 'px'; 
-      var range = maxH - minH; 
-      var pct = range > 0 ? (newH - minH) / range : 0; 
-      var offset = startRowOffset * (1 - pct); 
-      grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)'; 
-    } 
- 
-    card.addEventListener('touchstart', function (e) { 
-      if (e.touches.length !== 1) { dragging = false; decided = false; return; } 
-      if (!prepare()) { dragging = false; decided = false; return; } 
-      var t = e.touches[0]; 
-      startY = t.clientY; 
-      lastY = startY; 
-      dragging = false; 
-      decided = false; 
-      direction = calendarExpanded ? 'collapse' : 'expand'; 
-      card.classList.remove('dragging'); 
-    }, { passive: false }); 
- 
-    card.addEventListener('touchmove', function (e) { 
-      if (e.touches.length !== 1) return; 
-      var curY = e.touches[0].clientY; 
-      var dy = curY - startY; 
- 
-      if (!decided) { 
-        if (Math.abs(dy) < 5) { lastY = curY; return; } 
-        if ((direction === 'expand' && dy > 0) || (direction === 'collapse' && dy < 0)) { 
-          dragging = true; 
-        } else { 
-          dragging = false; 
-        } 
-        decided = true; 
-        if (dragging) card.classList.add('dragging'); 
-      } 
- 
-      if (dragging) { 
-        // 我方方向：拖动日历 
-        applyDragHeight(startClipH + dy); 
-      } else { 
-        // 反向滑动：手动滚动主容器 
-        var wrap = document.getElementById('main-wrap'); 
-        if (wrap) { 
-          wrap.scrollTop += (lastY - curY); 
-        } 
-      } 
-      if (e.cancelable) e.preventDefault(); 
-      lastY = curY; 
-    }, { passive: false }); 
- 
-    function endDrag(e) { 
-      if (!dragging) { decided = false; return; } 
-      dragging = false; 
-      decided = false; 
-      card.classList.remove('dragging'); 
-      var touch = e.changedTouches && e.changedTouches[0]; 
-      var dy = touch ? touch.clientY - startY : 0; 
-      var finalHeight = Math.max(minH, Math.min(maxH, startClipH + dy)); 
-      var threshold = Math.max(20, (maxH - minH) * 0.18); 
-      if (calendarExpanded) { 
-        if (startClipH - finalHeight >= threshold) calendarExpanded = false; 
-      } else { 
-        if (finalHeight - startClipH >= threshold) calendarExpanded = true; 
-      } 
-      renderCalendar(); 
-    } 
- 
-    card.addEventListener('touchend', endDrag, { passive: true }); 
-    card.addEventListener('touchcancel', function () { 
-      if (dragging) { 
-        dragging = false; 
-        decided = false; 
-        card.classList.remove('dragging'); 
-        renderCalendar(); 
-      } 
-    }, { passive: true }); 
+    var startY = 0, startX = 0;
+    var startWrapTop = 0;
+    var startClipH = 0;
+    var startRowOffset = 0;
+    var rowH = 76, totalRows = 5, minH = 76, maxH = 380;
+    var decided = false, dragging = false, ignore = false;
+    var clip = null, grid = null;
+
+    function canUse() {
+      return activeTab === 'schedule' && !currentSubpage;
+    }
+
+    function prepare() {
+      if (!canUse()) return false;
+      clip = document.getElementById('calendar-clip');
+      grid = document.getElementById('calendar-grid');
+      if (!clip || !grid) return false;
+      var firstDay = grid.querySelector('.calendar-day');
+      if (!firstDay) return false;
+      rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4);
+      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, Math.ceil(grid.children.length / 7));
+      var selectedRow = parseFloat(grid.dataset.selectedrow);
+      if (!isFinite(selectedRow)) selectedRow = 0;
+      startRowOffset = selectedRow * rowH;
+      minH = rowH;
+      maxH = Math.max(minH, totalRows * rowH - 4);
+      startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH);
+      return true;
+    }
+
+    function applyDragHeight(h) {
+      if (!clip || !grid) return;
+      var newH = Math.max(minH, Math.min(maxH, h));
+      clip.style.height = newH + 'px';
+      var range = maxH - minH;
+      var pct = range > 0 ? (newH - minH) / range : 0;
+      var offset = startRowOffset * (1 - pct);
+      grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)';
+    }
+
+    wrap.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) { ignore = true; return; }
+      if (!prepare()) { ignore = true; return; }
+      var t = e.target;
+      // 输入框区域不拦截
+      if (t.closest && t.closest('input, textarea, select')) { ignore = true; return; }
+      ignore = false;
+      decided = false;
+      dragging = false;
+      var touch = e.touches[0];
+      startY = touch.clientY;
+      startX = touch.clientX;
+      startWrapTop = wrap.scrollTop;
+    }, { passive: true });
+
+    wrap.addEventListener('touchmove', function (e) {
+      if (ignore) return;
+      if (e.touches.length !== 1) return;
+      var touch = e.touches[0];
+      var dy = touch.clientY - startY;
+      var dx = touch.clientX - startX;
+
+      if (!decided) {
+        if (Math.abs(dy) < 6 && Math.abs(dx) < 6) return;
+        // 横向 → 交给 tab 切换
+        if (Math.abs(dx) > Math.abs(dy) * 1.2) { ignore = true; return; }
+
+        var isInsideCal = e.target.closest && e.target.closest('#calendar-card');
+
+        if (calendarExpanded) {
+          // 展开状态：任何地方向上滑都收起
+          dragging = (dy < 0);
+        } else {
+          // 收起状态：日历内部下拉展开；日历外需先滚动到顶部再下拉
+          if (dy > 0) {
+            dragging = isInsideCal || startWrapTop <= 2;
+          } else {
+            dragging = false;
+          }
+        }
+        decided = true;
+      }
+
+      if (dragging) {
+        applyDragHeight(startClipH + dy);
+        if (e.cancelable) e.preventDefault();
+      }
+    }, { passive: false });
+
+    function endDrag(e) {
+      if (ignore) { ignore = false; decided = false; return; }
+      if (!dragging) { decided = false; return; }
+      dragging = false;
+      decided = false;
+      var touch = e.changedTouches && e.changedTouches[0];
+      var dy = touch ? touch.clientY - startY : 0;
+      var finalHeight = Math.max(minH, Math.min(maxH, startClipH + dy));
+      var threshold = Math.max(20, (maxH - minH) * 0.18);
+      if (calendarExpanded) {
+        if (startClipH - finalHeight >= threshold) calendarExpanded = false;
+      } else {
+        if (finalHeight - startClipH >= threshold) calendarExpanded = true;
+      }
+      renderCalendar();
+    }
+
+    wrap.addEventListener('touchend', endDrag, { passive: true });
+    wrap.addEventListener('touchcancel', function () {
+      if (dragging) {
+        dragging = false;
+        decided = false;
+        ignore = false;
+        renderCalendar();
+      }
+    }, { passive: true });
 }
+
+
   function bindCalendarEvents() {
     var grid = $('#calendar-grid');
     var todayBtn = $('#calendar-today');
@@ -5353,6 +5360,9 @@ function bindScheduleGesture() {
   try { bindScheduleGesture(); } catch (e) { console.error('bindScheduleGesture failed:', e); }
   try { bindHeaderTimerGesture(); } catch (e) { console.error('bindHeaderTimerGesture failed:', e); }
   bindSwipe();
+bindBackButton(); 
+updateSuggestions();
+  refreshAllChips();
 function closeAnyOpenModal() {
     var modalIds = ['#confirm-modal','#stop-modal','#edit-record-modal','#checkin-modal','#makeup-modal','#start-modal'];
     for (var mi = 0; mi < modalIds.length; mi++) {
