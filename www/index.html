@@ -152,15 +152,19 @@
   .header-timer-stack.expanded .timer-card .timer-clock { font-size: clamp(24px, 7vw, 34px); }
 
   .schedule-dashboard {
-    display: grid; grid-template-columns: minmax(0, 7fr) minmax(150px, 3fr);
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(190px, 3fr);
     gap: 12px; align-items: stretch;
   }
-  .schedule-main-column, .schedule-side-column { min-width: 0; }
-  .schedule-main-column .progress-card { margin-bottom: 12px; }
-  .schedule-side-column { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; height: 100%; align-content: stretch; }
-  .schedule-side-column .recent-card { height: 100%; }
+  .schedule-main-column, .schedule-side-column { min-width: 0; height: 100%; }
+  .schedule-main-column { display: flex; flex-direction: column; min-height: 100%; }
+  .schedule-main-column .progress-card { margin-bottom: 12px; flex: none; }
+  .schedule-main-column .schedule-list { flex: 1; min-height: 0; }
+  .schedule-side-column { display: block; }
+  .schedule-dashboard > .recent-card { height: 100%; min-height: 100%; }
   .recent-card { padding: 13px 12px; }
-  .recent-card h3 { margin: 0 0 8px; font-size: 0.78em; font-weight: 700; color: var(--label-2); }
+  .recent-card h3 { margin: 0 0 8px; font-size: 0.78em; font-weight: 700; color: var(--label-2); min-height: 1.2em; }
+  .recent-card .recent-section + .recent-section { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--separator); }
+  .recent-card .recent-section-title { margin: 0 0 8px; font-size: 0.76em; font-weight: 700; color: var(--label-2); }
   .recent-list { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
   .recent-item { padding: 8px 9px; border-radius: 11px; background: var(--fill-secondary); min-width: 0; }
   .recent-item .name { font-size: 0.76em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -537,8 +541,13 @@
   .notify-grid .field-block { margin:0; }
   .notification-hint { font-size:.68em; color:var(--label-3); margin-top:6px; line-height:1.4; }
   @media (max-width:560px) {
-    .schedule-dashboard { grid-template-columns: 1fr; }
-    .schedule-side-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .schedule-dashboard { grid-template-columns: minmax(0, 7fr) minmax(130px, 3fr); gap: 7px; }
+    .recent-card { padding: 10px 7px; }
+    .recent-card .recent-section-title { font-size: 0.68em; }
+    .recent-card .recent-section + .recent-section { margin-top: 11px; padding-top: 10px; }
+    .recent-item { padding: 7px 6px; }
+    .recent-item .name { font-size: 0.68em; }
+    .recent-item .detail { font-size: 0.58em; }
   }
   @media (max-width:430px) {
     .header-title-block { padding-right: 148px; }
@@ -584,6 +593,9 @@
   .setting-row:last-child { border-bottom: none; padding-bottom: 14px; }
   .setting-row:first-child { padding-top: 14px; }
   .setting-row-label { font-size: 0.82em; font-weight: 500; color: var(--label); margin-bottom: 10px; }
+  .habit-pin-control { display:flex; align-items:center; gap:5px; white-space:nowrap; cursor:pointer; }
+  .habit-pin-label { font-size:0.68em; color:var(--label-2); }
+
   .font-preview { padding: 20px 16px; background: var(--fill-secondary); border-radius: var(--radius-sm); text-align: center; }
   .font-preview-label { font-size: 0.71em; font-weight: 500; color: var(--label-3); text-transform: uppercase; letter-spacing: 0.006em; margin-bottom: 10px; }
   .font-preview-text { color: var(--label); margin-bottom: 8px; line-height: 1.4; word-break: break-word; }
@@ -653,6 +665,13 @@
   .makeup-row .field { flex: 1; margin-bottom: 0; }
   #makeup-date { flex: 1.25; }
   #makeup-time { flex: 1; }
+  .habit-pin-control, .habit-dot-control, .cycle-pin-control, .cycle-dot-control {
+    display: inline-flex; align-items: center; gap: 5px;
+    white-space: nowrap; cursor: pointer;
+  }
+  .habit-pin-label, .habit-dot-label, .cycle-pin-label, .cycle-dot-label {
+    font-size: 0.68em; font-weight: 600; color: var(--label-2);
+  }
   .common-section { margin-bottom: 16px; }
   .common-label { font-size: 0.71em; font-weight: 600; color: var(--label-2); letter-spacing: 0.006em; text-transform: uppercase; margin-bottom: 8px; margin-left: 4px; }
   .common-label::after { content: ' · 长按可拖动排序'; font-size: 0.88em; font-weight: 400; color: var(--label-3); text-transform: none; letter-spacing: 0; }
@@ -841,16 +860,16 @@
             </div>
             <div class="schedule-list" id="schedule-list"></div>
           </div>
-          <aside class="schedule-side-column">
-            <div class="card recent-card">
-              <h3>最近打卡</h3>
+          <div class="card recent-card">
+            <div class="recent-section">
+              <h3 class="recent-section-title">最近打卡</h3>
               <ul class="recent-list" id="recent-checkins"></ul>
             </div>
-            <div class="card recent-card">
-              <h3>最近计时</h3>
+            <div class="recent-section">
+              <h3 class="recent-section-title">最近计时</h3>
               <ul class="recent-list" id="recent-timers"></ul>
             </div>
-          </aside>
+          </div>
         </div>
       </section>
 
@@ -1842,7 +1861,7 @@
       cycleDays: Math.max(1, days || 7),
       createdAt: today, currentCycleStart: today,
       lastCompletedDate: null, lastCompletedAt: null,
-      showDot: true
+      showDot: true, pinned: false
     });
     save();
   }
@@ -1890,6 +1909,7 @@
     if (typeof h.notifyMode !== 'string') h.notifyMode = 'none';
     if (typeof h.remindDaysBefore !== 'number') h.remindDaysBefore = 0;
     if (typeof h.showDot !== 'boolean') h.showDot = true;
+    if (typeof h.pinned !== 'boolean') h.pinned = false;
     // 生日（阴历）可选记录出生年，仅备注用
     if (h.type === 'yearly' && h.calendar === 'lunar') {
       if (typeof h.birthYear !== 'number' || !isFinite(h.birthYear)) h.birthYear = null;
@@ -1909,6 +1929,7 @@
     if (typeof c.lastCompletedDate !== 'string') c.lastCompletedDate = null;
     if (typeof c.lastCompletedAt !== 'number') c.lastCompletedAt = null;
     if (typeof c.showDot !== 'boolean') c.showDot = true;
+    if (typeof c.pinned !== 'boolean') c.pinned = false;
     return c;
   }
 
@@ -3700,6 +3721,11 @@
     return cycleTag;
   }
 
+  function nextHabitPinTime(h) {
+    var next = nextHabitOccurrences(h, todayStr(), 1);
+    return next.length ? next[0] : Number.MAX_SAFE_INTEGER;
+  }
+
   function renderHabitManage() {
     var el = $('#habit-manage-list');
     if (!state.habits.length) {
@@ -3707,8 +3733,14 @@
       return;
     }
     var sorted = state.habits.slice().sort(function (a, b) {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (a.pinned && b.pinned) {
+        var at = nextHabitPinTime(a), bt = nextHabitPinTime(b);
+        if (at !== bt) return at - bt;
+      }
       if (CYCLE_ORDER[a.type] !== CYCLE_ORDER[b.type]) return CYCLE_ORDER[a.type] - CYCLE_ORDER[b.type];
-      return a.createdAt < b.createdAt ? -1 : 1;
+      if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? -1 : 1;
+      return a.id < b.id ? -1 : 1;
     });
     el.innerHTML = sorted.map(function (h) {
       var checked = h.showDot !== false ? ' checked' : '';
@@ -3718,9 +3750,19 @@
           '<div class="meta">' + habitTagHTML(h) + '</div>' +
         '</div>' +
         '<div class="actions" style="opacity:1;">' +
-          '<label class="switch mini" title="日历显示圆点">' +
-            '<input type="checkbox" data-habit-dot="' + h.id + '"' + checked + '>' +
-            '<span class="slider"></span>' +
+          '<label class="habit-pin-control" title="是否置顶">' +
+            '<span class="habit-pin-label">置顶</span>' +
+            '<span class="switch mini">' +
+              '<input type="checkbox" data-habit-pin="' + h.id + '"' + (h.pinned ? ' checked' : '') + '>' +
+              '<span class="slider"></span>' +
+            '</span>' +
+          '</label>' +
+          '<label class="habit-dot-control" title="是否显示日历圆点">' +
+            '<span class="habit-dot-label">圆点</span>' +
+            '<span class="switch mini">' +
+              '<input type="checkbox" data-habit-dot="' + h.id + '"' + checked + '>' +
+              '<span class="slider"></span>' +
+            '</span>' +
           '</label>' +
           '<button class="icon del" type="button" title="删除">✕</button>' +
         '</div>' +
@@ -3736,7 +3778,20 @@
     }
     advanceCyclesTo(todayStr());
     var today = todayStr();
-    el.innerHTML = state.cycles.map(function (c) {
+    var sorted = state.cycles.slice().sort(function (a, b) {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      if (a.pinned && b.pinned) {
+        var at = parseDate(a.currentCycleStart).getTime();
+        var bt = parseDate(b.currentCycleStart).getTime();
+        if (at !== bt) return at - bt;
+      }
+      var ae = parseDate(a.currentCycleStart).getTime() + Math.max(1, a.cycleDays || 1) * 86400000;
+      var be = parseDate(b.currentCycleStart).getTime() + Math.max(1, b.cycleDays || 1) * 86400000;
+      if (ae !== be) return ae - be;
+      if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? -1 : 1;
+      return a.id < b.id ? -1 : 1;
+    });
+    el.innerHTML = sorted.map(function (c) {
       var info = getCycleInfo(c, today);
       var cycleTag = '<span class="tag cycle">' + c.cycleDays + ' 天</span>';
       var statusTag = info.completed
@@ -3749,9 +3804,19 @@
           '<div class="meta">' + cycleTag + statusTag + '</div>' +
         '</div>' +
         '<div class="actions" style="opacity:1;">' +
-          '<label class="switch mini" title="日历显示圆点">' +
-            '<input type="checkbox" data-cycle-dot="' + c.id + '"' + checked + '>' +
-            '<span class="slider"></span>' +
+          '<label class="cycle-pin-control" title="是否置顶">' +
+            '<span class="cycle-pin-label">置顶</span>' +
+            '<span class="switch mini">' +
+              '<input type="checkbox" data-cycle-pin="' + c.id + '"' + (c.pinned ? ' checked' : '') + '>' +
+              '<span class="slider"></span>' +
+            '</span>' +
+          '</label>' +
+          '<label class="cycle-dot-control" title="是否显示日历圆点">' +
+            '<span class="cycle-dot-label">圆点</span>' +
+            '<span class="switch mini">' +
+              '<input type="checkbox" data-cycle-dot="' + c.id + '"' + checked + '>' +
+              '<span class="slider"></span>' +
+            '</span>' +
           '</label>' +
           '<button class="icon del" type="button" title="删除">✕</button>' +
         '</div>' +
@@ -3773,7 +3838,8 @@
       reminderTime: opts.reminderTime || '23:59',
       remindDaysBefore: opts.remindDaysBefore || 0,
       notifyMode: opts.notifyMode || 'none',
-      showDot: true
+      showDot: true,
+      pinned: false
     });
     state.habits.push(h); save(); syncNotifications();
   }
@@ -4283,77 +4349,109 @@
   }
 
   function bindScheduleGesture() {
-    var card = document.querySelector('#calendar-card');
-    if (!card || card.dataset.gestureBound === '1') return;
-    card.dataset.gestureBound = '1';
+    var view = document.querySelector('#view-schedule');
+    if (!view || view.dataset.gestureBound === '1') return;
+    view.dataset.gestureBound = '1';
     var startY = 0;
     var startClipH = 0;
     var startRowOffset = 0;
     var rowH = 76;
     var totalRows = 5;
-    var rowIndex = 0;
     var minH = 76;
     var maxH = 380;
     var ignore = false;
     var dragging = false;
-    var clip = null, grid = null;
+    var raf = 0;
+    var lastHeight = 0;
+    var mode = '';
+    var card = null, clip = null, grid = null;
 
-    card.addEventListener('touchstart', function (e) {
+    function applyDragHeight(h) {
+      if (!clip || !grid) return;
+      var newH = Math.max(minH, Math.min(maxH, h));
+      lastHeight = newH;
+      if (raf) return;
+      raf = requestAnimationFrame(function () {
+        raf = 0;
+        clip.style.height = lastHeight + 'px';
+        var range = maxH - minH;
+        var pct = range > 0 ? (lastHeight - minH) / range : 0;
+        var offset = startRowOffset * (1 - pct);
+        grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)';
+      });
+    }
+
+    view.addEventListener('touchstart', function (e) {
       if (!e.touches || e.touches.length !== 1) { ignore = true; return; }
       var t = e.target;
       if (t.closest && t.closest('button, a, input, textarea, select')) { ignore = true; return; }
-      ignore = false; dragging = false;
+      card = document.getElementById('calendar-card');
       clip = document.getElementById('calendar-clip');
       grid = document.getElementById('calendar-grid');
-      card = document.getElementById('calendar-card');
-      if (!clip || !grid || !card) { ignore = true; return; }
+      var wrap = document.getElementById('main-wrap');
+      if (!card || !clip || !grid) { ignore = true; return; }
       var firstDay = grid.querySelector('.calendar-day');
       if (!firstDay) { ignore = true; return; }
       rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4);
-      totalRows = parseFloat(grid.dataset.totalrows) || (grid.children.length / 7);
-      rowIndex = parseFloat(grid.dataset.selectedrow) || 0;
-      startClipH = clip.offsetHeight;
+      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, grid.children.length / 7);
+      var selectedRow = parseFloat(grid.dataset.selectedrow) || 0;
+      startRowOffset = selectedRow * rowH;
       minH = rowH;
-      maxH = totalRows * rowH - 4;
-      startRowOffset = rowIndex * rowH;
+      maxH = Math.max(minH, totalRows * rowH - 4);
+      startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH);
       startY = e.touches[0].clientY;
+      var atTop = !wrap || wrap.scrollTop <= 2;
+      mode = '';
+      ignore = true;
+      dragging = false;
+      if (atTop) {
+        if (!calendarExpanded) mode = 'expand';
+        else mode = 'collapse';
+      }
+      if (mode) ignore = false;
     }, { passive: true });
 
-    card.addEventListener('touchmove', function (e) {
+    view.addEventListener('touchmove', function (e) {
       if (ignore) return;
       var t = e.touches[0];
       var dy = t.clientY - startY;
       if (!dragging) {
-        if (Math.abs(dy) < 6) return;
+        if (Math.abs(dy) < 3) return;
+        if ((mode === 'expand' && dy <= 0) || (mode === 'collapse' && dy >= 0)) {
+          ignore = true;
+          return;
+        }
         dragging = true;
-        card.classList.add('dragging');
+        if (card) card.classList.add('dragging');
       }
-      var newH = Math.max(minH, Math.min(maxH, startClipH + dy));
-      clip.style.height = newH + 'px';
-      var range = maxH - minH;
-      var pct = range > 0 ? (newH - minH) / range : 0;
-      var offset = startRowOffset * (1 - pct);
-      grid.style.transform = 'translateY(-' + offset + 'px)';
+      applyDragHeight(startClipH + dy);
       e.preventDefault();
     }, { passive: false });
 
-    card.addEventListener('touchend', function (e) {
-      if (ignore) { ignore = false; dragging = false; return; }
-      if (!dragging) return;
+    view.addEventListener('touchend', function (e) {
+      if (ignore) { ignore = false; dragging = false; mode = ''; return; }
+      if (!dragging) { ignore = false; mode = ''; return; }
       dragging = false;
       if (card) card.classList.remove('dragging');
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
       var t = e.changedTouches[0];
       var dy = t.clientY - startY;
-      var newH = Math.max(minH, Math.min(maxH, startClipH + dy));
-      var mid = (minH + maxH) / 2;
-      var shouldExpand = newH > mid;
-      if (shouldExpand !== calendarExpanded) {
-        calendarExpanded = shouldExpand;
-      }
+      var finalHeight = Math.max(minH, Math.min(maxH, startClipH + dy));
+      var midpoint = (minH + maxH) / 2;
+      calendarExpanded = finalHeight > midpoint;
+      mode = '';
       renderCalendar();
+      ignore = false;
+    }, { passive: true });
+
+    view.addEventListener('touchcancel', function () {
+      if (card) card.classList.remove('dragging');
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      ignore = false;
+      dragging = false;
+      mode = '';
     }, { passive: true });
   }
-
   function bindBackButton() {
     try {
       if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
@@ -4769,6 +4867,16 @@
     })();
 
     $('#habit-manage-list').addEventListener('change', function (e) {
+      var pin = e.target.closest('input[data-habit-pin]');
+      if (pin) {
+        var pinId = pin.dataset.habitPin;
+        var pinHabit = state.habits.filter(function (x) { return x.id === pinId; })[0];
+        if (!pinHabit) return;
+        pinHabit.pinned = pin.checked;
+        save();
+        renderHabitManage();
+        return;
+      }
       var inp = e.target.closest('input[data-habit-dot]');
       if (!inp) return;
       var id = inp.dataset.habitDot;
@@ -4806,6 +4914,16 @@
     });
 
     $('#cycle-manage-list').addEventListener('change', function (e) {
+      var pin = e.target.closest('input[data-cycle-pin]');
+      if (pin) {
+        var pinId = pin.dataset.cyclePin;
+        var pinCycle = state.cycles.filter(function (x) { return x.id === pinId; })[0];
+        if (!pinCycle) return;
+        pinCycle.pinned = pin.checked;
+        save();
+        renderCycleManage();
+        return;
+      }
       var inp = e.target.closest('input[data-cycle-dot]');
       if (!inp) return;
       var id = inp.dataset.cycleDot;
