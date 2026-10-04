@@ -161,14 +161,14 @@
   .schedule-main-column .schedule-list { flex: 1; min-height: 0; }
   .schedule-side-column { display: block; }
   .schedule-dashboard > .recent-card { height: 100%; min-height: 100%; }
-  .recent-card { padding: 13px 12px; }
-  .recent-card h3 { margin: 0 0 8px; font-size: 0.78em; font-weight: 700; color: var(--label-2); min-height: 1.2em; }
-  .recent-card .recent-section + .recent-section { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--separator); }
-  .recent-card .recent-section-title { margin: 0 0 8px; font-size: 0.76em; font-weight: 700; color: var(--label-2); }
-  .recent-list { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
-  .recent-item { padding: 8px 9px; border-radius: 11px; background: var(--fill-secondary); min-width: 0; }
-  .recent-item .name { font-size: 0.76em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .recent-item .detail { margin-top: 2px; font-size: 0.66em; color: var(--label-2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-card { padding: 13px 12px; display: flex; flex-direction: column; min-height: 100%; }
+  .recent-card-title { margin: 0 0 9px; font-size: 0.78em; font-weight: 700; color: var(--label-2); }
+  .recent-list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; min-height: 0; overflow: hidden; }
+  .recent-item { padding: 8px 1px; min-width: 0; border-bottom: 1px solid var(--separator); }
+  .recent-item:last-child { border-bottom: none; }
+  .recent-item .recent-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
+  .recent-item .name { flex: 1; min-width: 0; font-size: 0.76em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-item .detail { flex: none; max-width: 58%; font-size: 0.65em; color: var(--label-2); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
   .recent-empty { padding: 12px 6px; text-align: center; color: var(--label-3); font-size: 0.7em; }
   .tabs {
     display: flex; gap: 0; background: var(--fill-primary);
@@ -521,6 +521,21 @@
   .calendar-selected-info strong { color:var(--label); }
   .schedule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
   .schedule-list .item { padding: 12px 12px; margin: 0; min-width: 0; }
+  .schedule-list .schedule-entry {
+    min-height: 78px; align-items: flex-start; gap: 9px;
+    padding: 11px 11px; border-radius: 15px;
+  }
+  .schedule-list .schedule-entry .check-circle { width: 23px; height: 23px; margin-top: 1px; }
+  .schedule-list .schedule-entry .content { min-width: 0; gap: 0; }
+  .schedule-list .schedule-entry .schedule-item-top { gap: 6px; align-items: flex-start; }
+  .schedule-list .schedule-entry .schedule-item-top .text {
+    flex: 1; min-width: 0; font-size: 0.9em; font-weight: 600; line-height: 1.28;
+  }
+  .schedule-list .schedule-entry .schedule-kind { flex: none; margin-top: 1px; }
+  .schedule-list .schedule-entry .schedule-item-time { margin-top: 5px; font-size: 0.68em; }
+  .schedule-list .schedule-entry .schedule-countdown { margin-top: 3px; font-size: 0.64em; line-height: 1.25; }
+  .schedule-list .schedule-entry .rec-note { margin-top: 4px; font-size: 0.7em; line-height: 1.3; }
+
   .schedule-list .item:last-child { margin-bottom: 0; }
   .schedule-date-group { grid-column: 1 / -1; margin: 8px 4px 0; font-size:.72em; font-weight:700; color:var(--label-2); }
   .schedule-date-group:first-child { margin-top:4px; }
@@ -543,8 +558,7 @@
   @media (max-width:560px) {
     .schedule-dashboard { grid-template-columns: minmax(0, 7fr) minmax(130px, 3fr); gap: 7px; }
     .recent-card { padding: 10px 7px; }
-    .recent-card .recent-section-title { font-size: 0.68em; }
-    .recent-card .recent-section + .recent-section { margin-top: 11px; padding-top: 10px; }
+    .recent-card-title { font-size: 0.68em; }
     .recent-item { padding: 7px 6px; }
     .recent-item .name { font-size: 0.68em; }
     .recent-item .detail { font-size: 0.58em; }
@@ -652,6 +666,11 @@
     max-height: 90vh; overflow-y: auto;
   }
   .modal-backdrop.show .modal { transform: scale(1) translateY(0); opacity: 1; }
+  /* 三个主入口弹窗：居中并略微上移，避免贴着底部 */
+  #checkin-modal, #makeup-modal, #start-modal { align-items: center; }
+  #checkin-modal .modal, #makeup-modal .modal, #start-modal .modal { transform: scale(0.9) translateY(18px); }
+  #checkin-modal.show .modal, #makeup-modal.show .modal, #start-modal.show .modal { transform: scale(1) translateY(-4vh); }
+
   .modal h3 { margin: 0 0 6px; font-size: 1.2em; font-weight: 700; letter-spacing: -0.028em; }
   .modal-sub { margin: 0 0 18px; font-size: 0.82em; color: var(--label-2); word-break: break-word; line-height: 1.5; }
   .modal p { margin: 0 0 20px; font-size: 0.94em; line-height: 1.55; white-space: pre-line; }
@@ -692,6 +711,16 @@
   .chip-item:active { transform: scale(0.96); }
   .chip-item.used { background: rgba(52,199,89,0.18); color: var(--green); }
   .chip-item.reordering { opacity: 0.72; transform: scale(1.04); box-shadow: 0 5px 14px rgba(0,0,0,0.14); }
+  .chip-item.reorder-placeholder {
+    visibility: hidden; border: 0; background: transparent; box-shadow: none;
+  }
+  .chip-item.reorder-ghost {
+    position: fixed !important; z-index: 1000; margin: 0 !important; pointer-events: none;
+    opacity: 1 !important; transform: scale(1.12) !important;
+    background: rgba(0,122,255,0.22) !important; color: var(--blue) !important;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.22), 0 2px 8px rgba(0,122,255,0.18);
+    transition: transform 140ms var(--ease-spring), box-shadow 180ms var(--ease-out), background-color 180ms var(--ease-out);
+  }
   .common-chips.reordering { touch-action: none; overflow: hidden; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
   .modal-actions button { font: inherit; font-size: 0.94em; font-weight: 500; border-radius: var(--radius-sm); padding: 11px 22px; cursor: pointer; border: none; background: var(--fill-primary); color: var(--blue); }
@@ -861,14 +890,8 @@
             <div class="schedule-list" id="schedule-list"></div>
           </div>
           <div class="card recent-card">
-            <div class="recent-section">
-              <h3 class="recent-section-title">最近打卡</h3>
-              <ul class="recent-list" id="recent-checkins"></ul>
-            </div>
-            <div class="recent-section">
-              <h3 class="recent-section-title">最近计时</h3>
-              <ul class="recent-list" id="recent-timers"></ul>
-            </div>
+            <div class="recent-card-title">最近记录</div>
+            <ul class="recent-list" id="recent-mixed"></ul>
           </div>
         </div>
       </section>
@@ -2226,45 +2249,108 @@
     container.dataset.reorderBound = '1';
     var pressTimer = null;
     var dragging = null;
+    var ghost = null;
+    var placeholder = null;
     var pointerId = null;
     var startX = 0, startY = 0;
     var movedBeforeLongPress = false;
     var suppressClick = false;
+    var dragWidth = 0, dragHeight = 0;
 
     function clearPressTimer() {
       if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
     }
+    function cleanupGhost() {
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      ghost = null;
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.removeChild(placeholder);
+      placeholder = null;
+    }
     function finishDrag() {
       clearPressTimer();
       if (!dragging) return;
+      if (placeholder && placeholder.parentNode === container) {
+        placeholder.parentNode.replaceChild(dragging, placeholder);
+      }
+      dragging.style.visibility = '';
       dragging.classList.remove('reordering');
       container.classList.remove('reordering');
-      var names = Array.prototype.map.call(container.querySelectorAll('.chip-item'), function (el) { return el.dataset.name; });
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      ghost = null;
+      placeholder = null;
+      var names = Array.prototype.map.call(container.querySelectorAll('.chip-item:not(.reorder-ghost)'), function (el) { return el.dataset.name; });
       persistCommonNameOrder(names);
       suppressClick = true;
-      setTimeout(function () { suppressClick = false; }, 120);
+      setTimeout(function () { suppressClick = false; }, 150);
       dragging = null; pointerId = null;
     }
     function cancelDrag() {
       clearPressTimer();
-      if (dragging) {
-        dragging.classList.remove('reordering');
-        container.classList.remove('reordering');
+      if (dragging && placeholder && placeholder.parentNode === container) {
+        placeholder.parentNode.replaceChild(dragging, placeholder);
       }
+      if (dragging) dragging.style.visibility = '';
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      ghost = null; placeholder = null;
+      if (dragging) dragging.classList.remove('reordering');
+      container.classList.remove('reordering');
       dragging = null; pointerId = null;
+    }
+    function moveGhost(x, y) {
+      if (!ghost) return;
+      ghost.style.left = x + 'px';
+      ghost.style.top = y + 'px';
+    }
+    function repositionPlaceholder(e) {
+      if (!placeholder || !dragging) return;
+      var target = document.elementFromPoint(e.clientX, e.clientY);
+      var chip = target && target.closest ? target.closest('.chip-item') : null;
+      if (!chip || chip === dragging || chip === ghost || chip.parentNode !== container) {
+        var chips = container.querySelectorAll('.chip-item:not(.reorder-placeholder)');
+        if (!chips.length) return;
+        var last = chips[chips.length - 1];
+        var rr = last.getBoundingClientRect();
+        if (e.clientY > rr.bottom || e.clientX > rr.right) container.appendChild(placeholder);
+        return;
+      }
+      var rect = chip.getBoundingClientRect();
+      var verticalMid = rect.top + rect.height / 2;
+      var horizontalMid = rect.left + rect.width / 2;
+      var before = e.clientY < verticalMid || (Math.abs(e.clientY - verticalMid) < rect.height * 0.45 && e.clientX < horizontalMid);
+      if (before) container.insertBefore(placeholder, chip);
+      else container.insertBefore(placeholder, chip.nextSibling);
     }
 
     container.addEventListener('pointerdown', function (e) {
       var chip = e.target.closest('.chip-item');
-      if (!chip || e.button !== 0) return;
+      if (!chip || chip.classList.contains('reorder-placeholder') || e.button !== 0) return;
       clearPressTimer();
       dragging = null; pointerId = e.pointerId;
       startX = e.clientX; startY = e.clientY; movedBeforeLongPress = false;
       pressTimer = setTimeout(function () {
+        if (movedBeforeLongPress) return;
         dragging = chip;
-        dragging.classList.add('reordering');
+        var rect = chip.getBoundingClientRect();
+        dragWidth = rect.width; dragHeight = rect.height;
+        placeholder = document.createElement('button');
+        placeholder.type = 'button';
+        placeholder.className = 'chip-item reorder-placeholder';
+        placeholder.style.width = rect.width + 'px';
+        placeholder.style.height = rect.height + 'px';
+        placeholder.setAttribute('aria-hidden', 'true');
+        chip.parentNode.replaceChild(placeholder, chip);
+        chip.classList.add('reordering');
+        chip.style.visibility = 'hidden';
+        ghost = chip.cloneNode(true);
+        ghost.classList.remove('reordering');
+        ghost.classList.add('reorder-ghost');
+        ghost.style.width = rect.width + 'px';
+        ghost.style.height = rect.height + 'px';
+        ghost.style.left = rect.left + 'px';
+        ghost.style.top = rect.top + 'px';
+        document.body.appendChild(ghost);
         container.classList.add('reordering');
-        try { dragging.setPointerCapture(pointerId); } catch (err) {}
+        try { container.setPointerCapture(pointerId); } catch (err) {}
       }, 450);
     });
 
@@ -2277,15 +2363,9 @@
         return;
       }
       e.preventDefault();
-      var target = document.elementFromPoint(e.clientX, e.clientY);
-      if (!target || !target.closest) return;
-      var chip = target.closest('.chip-item');
-      if (!chip || chip === dragging || chip.parentNode !== container) return;
-      var rect = chip.getBoundingClientRect();
-      var before = (e.clientY < rect.top + rect.height / 2) ||
-                   (Math.abs(e.clientY - (rect.top + rect.height / 2)) < rect.height / 2 && e.clientX < rect.left + rect.width / 2);
-      if (before) container.insertBefore(dragging, chip);
-      else container.insertBefore(dragging, chip.nextSibling);
+      var rect = dragging.getBoundingClientRect();
+      moveGhost(e.clientX - rect.width / 2, e.clientY - rect.height / 2);
+      repositionPlaceholder(e);
     }, { passive: false });
 
     container.addEventListener('pointerup', function (e) {
@@ -2301,7 +2381,7 @@
     container.addEventListener('click', function (e) {
       if (suppressClick) { e.preventDefault(); e.stopPropagation(); return; }
       var chip = e.target.closest('.chip-item');
-      if (!chip) return;
+      if (!chip || chip.classList.contains('reorder-placeholder') || chip.classList.contains('reorder-ghost')) return;
       var input = $('#' + inputId);
       if (!input) return;
       input.value = chip.dataset.name;
@@ -2862,24 +2942,21 @@
     });
     return out;
   }
-  function renderRecentCheckins() {
-    var el = $('#recent-checkins');
+  function renderRecentMixed() {
+    var el = $('#recent-mixed');
     if (!el) return;
-    var list = state.checkins.slice().sort(function (a, b) { return (b.time || 0) - (a.time || 0); }).slice(0, 5);
-    if (!list.length) { el.innerHTML = '<li class="recent-empty">暂无打卡</li>'; return; }
-    el.innerHTML = list.map(function (c) {
-      var detail = fmtDateTime(c.time) + (c.makeup ? ' · 补卡' : '');
-      return '<li class="recent-item"><div class="name">' + esc(c.name) + '</div><div class="detail">' + esc(detail) + '</div></li>';
-    }).join('');
-  }
-  function renderRecentTimers() {
-    var el = $('#recent-timers');
-    if (!el) return;
-    var list = state.records.slice().sort(function (a, b) { return (b.end || b.start || 0) - (a.end || a.start || 0); }).slice(0, 5);
-    if (!list.length) { el.innerHTML = '<li class="recent-empty">暂无计时记录</li>'; return; }
-    el.innerHTML = list.map(function (r) {
-      var detail = fmtDurExact(r.duration) + ' · ' + fmtDateTime(r.start);
-      return '<li class="recent-item"><div class="name">' + esc(r.name) + '</div><div class="detail">' + esc(detail) + '</div></li>';
+    var list = [];
+    state.checkins.forEach(function (c) {
+      list.push({ name: c.name, time: c.time || 0, detail: fmtDateTime(c.time) });
+    });
+    state.records.forEach(function (r) {
+      list.push({ name: r.name, time: r.end || r.start || 0, detail: fmtDurExact(r.duration) + ' · ' + fmtDateTime(r.start) });
+    });
+    list.sort(function (a, b) { return b.time - a.time; });
+    list = list.slice(0, 10);
+    if (!list.length) { el.innerHTML = '<li class="recent-empty">暂无最近记录</li>'; return; }
+    el.innerHTML = list.map(function (x) {
+      return '<li class="recent-item"><div class="recent-row"><span class="name">' + esc(x.name) + '</span><span class="detail">' + esc(x.detail) + '</span></div></li>';
     }).join('');
   }
 
@@ -2964,7 +3041,7 @@
     $('#sch-bar').style.width = pct + '%';
     try { renderCalendar(); } catch (e) { console.error('renderCalendar failed:', e); }
     try { renderScheduleList(); } catch (e) { console.error('renderScheduleList failed:', e); }
-    try { renderRecentCheckins(); renderRecentTimers(); } catch (e) { console.error('render recent panels failed:', e); }
+    try { renderRecentMixed(); } catch (e) { console.error('render recent panel failed:', e); }
   }
 
   async function toggleTaskDoneByDate(taskId, date) {
@@ -4352,48 +4429,35 @@
     var view = document.querySelector('#view-schedule');
     if (!view || view.dataset.gestureBound === '1') return;
     view.dataset.gestureBound = '1';
-    var startY = 0;
-    var startClipH = 0;
-    var startRowOffset = 0;
-    var rowH = 76;
-    var totalRows = 5;
-    var minH = 76;
-    var maxH = 380;
-    var ignore = false;
-    var dragging = false;
-    var raf = 0;
-    var lastHeight = 0;
-    var mode = '';
+    var startY = 0, startClipH = 0, startRowOffset = 0;
+    var rowH = 76, totalRows = 5, minH = 76, maxH = 380;
+    var ignore = true, dragging = false, mode = '';
     var card = null, clip = null, grid = null;
 
     function applyDragHeight(h) {
       if (!clip || !grid) return;
       var newH = Math.max(minH, Math.min(maxH, h));
-      lastHeight = newH;
-      if (raf) return;
-      raf = requestAnimationFrame(function () {
-        raf = 0;
-        clip.style.height = lastHeight + 'px';
-        var range = maxH - minH;
-        var pct = range > 0 ? (lastHeight - minH) / range : 0;
-        var offset = startRowOffset * (1 - pct);
-        grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)';
-      });
+      clip.style.height = newH + 'px';
+      var range = maxH - minH;
+      var pct = range > 0 ? (newH - minH) / range : 0;
+      var offset = startRowOffset * (1 - pct);
+      grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)';
     }
 
     view.addEventListener('touchstart', function (e) {
-      if (!e.touches || e.touches.length !== 1) { ignore = true; return; }
+      ignore = true; dragging = false; mode = '';
+      if (!e.touches || e.touches.length !== 1) return;
       var t = e.target;
-      if (t.closest && t.closest('button, a, input, textarea, select')) { ignore = true; return; }
+      if (t.closest && t.closest('button, a, input, textarea, select')) return;
       card = document.getElementById('calendar-card');
       clip = document.getElementById('calendar-clip');
       grid = document.getElementById('calendar-grid');
       var wrap = document.getElementById('main-wrap');
-      if (!card || !clip || !grid) { ignore = true; return; }
+      if (!card || !clip || !grid) return;
       var firstDay = grid.querySelector('.calendar-day');
-      if (!firstDay) { ignore = true; return; }
+      if (!firstDay) return;
       rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4);
-      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, grid.children.length / 7);
+      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, Math.ceil(grid.children.length / 7));
       var selectedRow = parseFloat(grid.dataset.selectedrow) || 0;
       startRowOffset = selectedRow * rowH;
       minH = rowH;
@@ -4401,20 +4465,18 @@
       startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH);
       startY = e.touches[0].clientY;
       var atTop = !wrap || wrap.scrollTop <= 2;
-      mode = '';
-      ignore = true;
-      dragging = false;
-      if (atTop) {
-        if (!calendarExpanded) mode = 'expand';
-        else mode = 'collapse';
+      if (!atTop) return;
+      if (!calendarExpanded) {
+        mode = 'expand';
+      } else {
+        mode = 'collapse';
       }
-      if (mode) ignore = false;
+      ignore = false;
     }, { passive: true });
 
     view.addEventListener('touchmove', function (e) {
-      if (ignore) return;
-      var t = e.touches[0];
-      var dy = t.clientY - startY;
+      if (ignore || !e.touches || !e.touches[0]) return;
+      var dy = e.touches[0].clientY - startY;
       if (!dragging) {
         if (Math.abs(dy) < 3) return;
         if ((mode === 'expand' && dy <= 0) || (mode === 'collapse' && dy >= 0)) {
@@ -4428,34 +4490,43 @@
       e.preventDefault();
     }, { passive: false });
 
-    view.addEventListener('touchend', function (e) {
-      if (ignore) { ignore = false; dragging = false; mode = ''; return; }
-      if (!dragging) { ignore = false; mode = ''; return; }
+    function endDrag(e) {
+      if (ignore) { ignore = true; dragging = false; mode = ''; return; }
+      if (!dragging) { ignore = true; mode = ''; return; }
       dragging = false;
       if (card) card.classList.remove('dragging');
-      if (raf) { cancelAnimationFrame(raf); raf = 0; }
-      var t = e.changedTouches[0];
-      var dy = t.clientY - startY;
+      var touch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+      var dy = touch ? touch.clientY - startY : 0;
       var finalHeight = Math.max(minH, Math.min(maxH, startClipH + dy));
       var midpoint = (minH + maxH) / 2;
       calendarExpanded = finalHeight > midpoint;
       mode = '';
       renderCalendar();
-      ignore = false;
-    }, { passive: true });
-
+      ignore = true;
+    }
+    view.addEventListener('touchend', endDrag, { passive: true });
     view.addEventListener('touchcancel', function () {
       if (card) card.classList.remove('dragging');
-      if (raf) { cancelAnimationFrame(raf); raf = 0; }
-      ignore = false;
-      dragging = false;
-      mode = '';
+      ignore = true; dragging = false; mode = '';
+      renderCalendar();
     }, { passive: true });
   }
   function bindBackButton() {
     try {
       if (window.Capacitor && Capacitor.Plugins && Capacitor.Plugins.App) {
         Capacitor.Plugins.App.addListener('backButton', function () {
+          var modalIds = ['#confirm-modal','#stop-modal','#edit-record-modal','#checkin-modal','#makeup-modal','#start-modal'];
+          for (var mi = 0; mi < modalIds.length; mi++) {
+            var mm = $(modalIds[mi]);
+            if (mm && !mm.hidden) {
+              if (modalIds[mi] === '#confirm-modal') { resolveConfirm(false); }
+              else if (modalIds[mi] === '#stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); }
+              else if (modalIds[mi] === '#edit-record-modal') { cancelEditRecord(); }
+              else if (modalIds[mi] === '#checkin-modal') { pendingCheckin = null; hideModal('#checkin-modal'); }
+              else { hideModal(modalIds[mi]); }
+              return;
+            }
+          }
           if (currentSubpage) { closeSubpage(false, false); return; }
           if (activeTab !== 'schedule') { switchTab('schedule', -1); return; }
           if (Capacitor.Plugins.App.exitApp) Capacitor.Plugins.App.exitApp();
