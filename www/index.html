@@ -683,6 +683,53 @@
   .setting-desc { font-size: 0.75em; color: var(--label-2); margin-top: 2px; }
   .setting-chevron { color: var(--label-3); font-size: 1.2em; font-weight: 300; line-height: 1; }
 
+  .common-order-preview-card { padding: 14px 16px 16px; margin-bottom: 10px; }
+  .common-order-section-title { font-size: 0.72em; font-weight: 600; color: var(--label-2); margin: 0 0 10px 2px; }
+  .common-order-preview { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; }
+  .common-order-preview-empty { font-size: 0.78em; color: var(--label-3); padding: 6px 2px; }
+  .common-order-preview-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 11px; border-radius: 999px;
+    background: var(--fill-primary); color: var(--label-2);
+    font-size: 0.78em; line-height: 1.2;
+  }
+  .common-order-preview-chip .num {
+    min-width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: var(--blue); color: #fff; font-size: 0.74em; font-weight: 700;
+  }
+  .common-order-hint { font-size: 0.76em; color: var(--label-3); margin: 4px 4px 10px; }
+  .common-order-list { position: relative; margin: 0; padding: 0; list-style: none; }
+  .common-order-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    min-height: 54px; padding: 10px 14px 10px 16px; margin-bottom: 8px;
+    border-radius: 15px;
+    background: var(--glass-1); border: 1px solid rgba(128,128,148,0.10);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.045);
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; touch-action: pan-y;
+    position: relative; z-index: 1;
+    transition: background-color 120ms var(--ease-out), transform 120ms var(--ease-out), opacity 120ms var(--ease-out);
+  }
+  .common-order-item.long-pressing { background: var(--fill-primary); transform: scale(0.99); }
+  .common-order-item .order-name { min-width: 0; flex: 1; font-size: 0.9em; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .common-order-item .order-handle {
+    flex: none; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 9px; background: var(--fill-primary); color: var(--label-3);
+    font-size: 15px; line-height: 1; font-weight: 700; pointer-events: none;
+  }
+  .common-order-item.dragging-source { visibility: hidden; }
+  .common-order-placeholder {
+    list-style: none; margin-bottom: 8px; min-height: 54px; border-radius: 15px;
+    border: 1.5px dashed rgba(0,122,255,0.38); background: rgba(0,122,255,0.055);
+  }
+  .common-order-ghost {
+    position: absolute !important; margin: 0 !important; pointer-events: none !important; z-index: 30 !important;
+    box-sizing: border-box; width: calc(100% - 0px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.14), 0 0 0 2px rgba(0,122,255,0.16);
+    background: var(--glass-2);
+    transform: none !important;
+  }
+
   .switch { position: relative; display: inline-block; width: 51px; height: 31px; flex: none; }
   .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
   .slider { position: absolute; inset: 0; background: var(--fill-primary); border-radius: 999px; cursor: pointer; transition: background-color var(--dur-2) var(--ease-out); }
@@ -750,7 +797,7 @@
   }
   .common-section { margin-bottom: 16px; }
   .common-label { font-size: 0.71em; font-weight: 600; color: var(--label-2); letter-spacing: 0.006em; text-transform: uppercase; margin-bottom: 8px; margin-left: 4px; }
-  .common-label::after { content: ' · 长按可拖动排序'; font-size: 0.88em; font-weight: 400; color: var(--label-3); text-transform: none; letter-spacing: 0; }
+  .common-label::after { content: ' · 可在设置中调整顺序'; font-size: 0.88em; font-weight: 400; color: var(--label-3); text-transform: none; letter-spacing: 0; }
 
 
 
@@ -1082,6 +1129,15 @@
           <span class="setting-chevron">›</span>
         </div>
 
+        <h3 class="section-title">常用事项</h3>
+        <div class="card setting-item clickable" id="open-common-order-page">
+          <div>
+            <div class="setting-title">调整常用事项顺序</div>
+            <div class="setting-desc">单独调整常用事项的显示顺序，应用于打卡、补卡和开始计时</div>
+          </div>
+          <span class="setting-chevron">›</span>
+        </div>
+
         <h3 class="section-title">外观</h3>
         <div class="card setting-item clickable" id="open-font-page">
           <div>
@@ -1349,6 +1405,23 @@
 
         <h3 class="section-title">已添加</h3>
         <ul class="list" id="cycle-manage-list"></ul>
+      </section>
+
+      <section id="view-common-order" class="main-section" hidden>
+        <div class="subpage-header">
+          <button class="subpage-back" id="common-order-back" type="button">
+            <span class="back-chevron">‹</span>设置
+          </button>
+          <h2 class="subpage-title">常用事项顺序</h2>
+        </div>
+
+        <div class="card common-order-preview-card">
+          <div class="common-order-section-title">排序预览</div>
+          <div class="common-order-preview" id="common-order-preview"></div>
+        </div>
+
+        <div class="common-order-hint">长按右侧标识拖动排序；松手后自动保存。</div>
+        <ul class="list common-order-list" id="common-order-list"></ul>
       </section>
 
       <section id="view-tasks" class="main-section" hidden>
@@ -1790,7 +1863,7 @@
 
   var TAB_ORDER = ['schedule', 'stats', 'settings'];
   var MAIN_TABS = ['schedule', 'stats', 'settings'];
-  var SUBPAGES = ['font', 'habit', 'backup', 'records', 'tasks', 'cycle'];
+  var SUBPAGES = ['font', 'habit', 'backup', 'records', 'tasks', 'cycle', 'common-order'];
 
   function pad(n) { return String(n).padStart(2, '0'); }
   function $(s) { return document.querySelector(s); }
@@ -2341,231 +2414,16 @@
 function setupCommonChipReorder(container, inputId) {
     if (!container || container.dataset.reorderBound === '1') return;
     container.dataset.reorderBound = '1';
-
-    var pressTimer = null;
-    var dragging = null;
-    var placeholder = null;
-    var pointerId = null;
-    var startX = 0, startY = 0;
-    var originLeft = 0, originTop = 0;
-    var movedBeforeLongPress = false;
-    var suppressClick = false;
-    var LONG_PRESS_MS = 280;
-
-    function clearPressTimer() {
-      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
-    }
-
-    function resetDragging() {
-      if (dragging) {
-        dragging.classList.remove('reordering', 'dragging');
-        dragging.style.position = '';
-        dragging.style.left = '';
-        dragging.style.top = '';
-        dragging.style.width = '';
-        dragging.style.height = '';
-        dragging.style.margin = '';
-        dragging.style.zIndex = '';
-        dragging.style.transform = '';
-        dragging.style.transition = '';
-      }
-      container.classList.remove('reordering');
-      dragging = null;
-      pointerId = null;
-    }
-
-    function persistOrderAndSuppressClick() {
-      var names = Array.prototype.map.call(
-        container.querySelectorAll('.chip-item:not(.reorder-placeholder)'),
-        function (el) { return el.dataset.name; }
-      );
-      persistCommonNameOrder(names);
-      suppressClick = true;
-      setTimeout(function () { suppressClick = false; }, 150);
-    }
-
-    function beginDrag(chip) {
-      var rect = chip.getBoundingClientRect();
-      var containerRect = container.getBoundingClientRect();
-
-      // 占位块保留原来的 flex 位置，真正拖动的事项改成 absolute。
-      // 不能使用 fixed：弹窗本身有 transform，fixed 会产生坐标系偏移，手机上会直接看不见。
-      placeholder = document.createElement('button');
-      placeholder.type = 'button';
-      placeholder.className = 'chip-item reorder-placeholder';
-      placeholder.style.width = rect.width + 'px';
-      placeholder.style.height = rect.height + 'px';
-      placeholder.setAttribute('aria-hidden', 'true');
-      chip.parentNode.insertBefore(placeholder, chip);
-
-      originLeft = rect.left - containerRect.left + container.scrollLeft;
-      originTop = rect.top - containerRect.top + container.scrollTop;
-
-      chip.classList.add('reordering');
-      chip.style.position = 'absolute';
-      chip.style.left = originLeft + 'px';
-      chip.style.top = originTop + 'px';
-      chip.style.width = rect.width + 'px';
-      chip.style.height = rect.height + 'px';
-      chip.style.margin = '0';
-      chip.style.zIndex = '1000';
-      chip.style.transform = 'translate(0, 0) scale(1.08)';
-
-      container.classList.add('reordering');
-      dragging = chip;
-      try { container.setPointerCapture(pointerId); } catch (err) {}
-    }
-
-    function moveGhost(clientX, clientY) {
-      if (!dragging) return;
-      var dx = clientX - startX;
-      var dy = clientY - startY;
-
-      // 绝对定位在 .common-chips 内，拖动范围严格限制在当前二级页面里的常用事项区域。
-      var rect = dragging.getBoundingClientRect();
-      var containerRect = container.getBoundingClientRect();
-      var chipWidth = dragging.offsetWidth || rect.width || 0;
-      var chipHeight = dragging.offsetHeight || rect.height || 0;
-      var currentLeft = originLeft + dx;
-      var currentTop = originTop + dy;
-      var maxLeft = Math.max(0, container.clientWidth - chipWidth);
-      var maxTop = Math.max(0, container.clientHeight - chipHeight);
-
-      // containerRect 只用于防止极端情况下因滚动导致坐标越界。
-      if (containerRect.width <= 0 || containerRect.height <= 0) return;
-      currentLeft = Math.max(0, Math.min(maxLeft, currentLeft));
-      currentTop = Math.max(0, Math.min(maxTop, currentTop));
-
-      dx = currentLeft - originLeft;
-      dy = currentTop - originTop;
-      dragging.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(1.08)';
-    }
-
-    function repositionPlaceholder(clientX, clientY) {
-      if (!placeholder || !dragging) return;
-      var target = document.elementFromPoint(clientX, clientY);
-      var chip = target && target.closest ? target.closest('.chip-item') : null;
-
-      if (!chip || chip === dragging || chip === placeholder ||
-          chip.classList.contains('reorder-placeholder') ||
-          chip.parentNode !== container) {
-        var chips = container.querySelectorAll('.chip-item:not(.reorder-placeholder)');
-        if (!chips.length) return;
-        var lastChip = chips[chips.length - 1];
-        var lastRect = lastChip.getBoundingClientRect();
-        if (clientY > lastRect.bottom && clientX > lastRect.left - lastRect.width / 2) {
-          if (placeholder.parentNode !== container || placeholder.nextSibling) {
-            container.appendChild(placeholder);
-          }
-        }
-        return;
-      }
-
-      var rect = chip.getBoundingClientRect();
-      var verticalMid = rect.top + rect.height / 2;
-      var horizontalMid = rect.left + rect.width / 2;
-      var before = clientY < verticalMid ||
-                   (Math.abs(clientY - verticalMid) < rect.height * 0.45 && clientX < horizontalMid);
-      if (before) container.insertBefore(placeholder, chip);
-      else container.insertBefore(placeholder, chip.nextSibling);
-    }
-
-    function finishDrag(commit) {
-      clearPressTimer();
-      if (!dragging) return;
-      var chip = dragging;
-      var ph = placeholder;
-
-      if (!commit || !ph || ph.parentNode !== container) {
-        if (ph && ph.parentNode === container) ph.parentNode.replaceChild(chip, ph);
-        placeholder = null;
-        resetDragging();
-        persistOrderAndSuppressClick();
-        return;
-      }
-
-      var containerRect = container.getBoundingClientRect();
-      var phRect = ph.getBoundingClientRect();
-      var targetLeft = phRect.left - containerRect.left + container.scrollLeft;
-      var targetTop = phRect.top - containerRect.top + container.scrollTop;
-      var targetDx = targetLeft - originLeft;
-      var targetDy = targetTop - originTop;
-
-      chip.classList.remove('dragging');
-      chip.style.transition =
-        'transform 220ms cubic-bezier(0.32, 0.72, 0, 1),' +
-        'box-shadow 200ms ease, background-color 200ms ease, color 200ms ease';
-      chip.style.transform = 'translate(' + targetDx + 'px, ' + targetDy + 'px) scale(1)';
-
-      var done = false;
-      var finalize = function () {
-        if (done) return;
-        done = true;
-        if (ph && ph.parentNode === container) ph.parentNode.replaceChild(chip, ph);
-        placeholder = null;
-        resetDragging();
-        persistOrderAndSuppressClick();
-      };
-      chip.addEventListener('transitionend', finalize, { once: true });
-      setTimeout(finalize, 280);
-    }
-
-    container.addEventListener('pointerdown', function (e) {
-      var chip = e.target.closest('.chip-item');
-      if (!chip || chip.classList.contains('reorder-placeholder') || e.button !== 0) return;
-      clearPressTimer();
-      dragging = null;
-      pointerId = e.pointerId;
-      startX = e.clientX;
-      startY = e.clientY;
-      movedBeforeLongPress = false;
-      var pressTarget = chip;
-      pressTimer = setTimeout(function () {
-        if (movedBeforeLongPress) return;
-        if (!pressTarget.isConnected) return;
-        beginDrag(pressTarget);
-      }, LONG_PRESS_MS);
-    });
-
-    container.addEventListener('pointermove', function (e) {
-      if (pointerId !== e.pointerId) return;
-      var dx = e.clientX - startX;
-      var dy = e.clientY - startY;
-      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) movedBeforeLongPress = true;
-      if (!dragging) {
-        if (movedBeforeLongPress) clearPressTimer();
-        return;
-      }
-      e.preventDefault();
-      if (!dragging.classList.contains('dragging')) {
-        dragging.classList.add('dragging');
-      }
-      moveGhost(e.clientX, e.clientY);
-      repositionPlaceholder(e.clientX, e.clientY);
-    }, { passive: false });
-
-    container.addEventListener('pointerup', function (e) {
-      if (pointerId !== e.pointerId) return;
-      if (dragging) finishDrag(true);
-      else clearPressTimer();
-    });
-    container.addEventListener('pointercancel', function (e) {
-      if (pointerId !== e.pointerId) return;
-      if (dragging) finishDrag(false);
-      else clearPressTimer();
-    });
-
     container.addEventListener('click', function (e) {
-      if (suppressClick) { e.preventDefault(); e.stopPropagation(); return; }
       var chip = e.target.closest('.chip-item');
-      if (!chip || chip.classList.contains('reorder-placeholder')) return;
+      if (!chip) return;
       var input = $('#' + inputId);
       if (!input) return;
       input.value = chip.dataset.name;
       chip.classList.add('used');
       setTimeout(function () { chip.classList.remove('used'); }, 420);
     });
-  }
+}
   function renderChips(containerId, inputId) {
     var container = $('#' + containerId);
     if (!container) return;
@@ -3191,12 +3049,11 @@ function setupCommonChipReorder(container, inputId) {
       });
     }
     items.sort(function (a, b) {
-      // 同一日期内，置顶项优先
-      if (a.date === b.date) {
-        var ap = (a.data && a.data.pinned) ? 1 : 0;
-        var bp = (b.data && b.data.pinned) ? 1 : 0;
-        if (ap !== bp) return bp - ap;
-      }
+      // 置顶只作用于日程页：所有置顶事项统一排在未置顶事项之前。
+      var ap = (a.data && a.data.pinned === true) ? 1 : 0;
+      var bp = (b.data && b.data.pinned === true) ? 1 : 0;
+      if (ap !== bp) return bp - ap;
+
       var at = typeof a.startAt === 'number' ? a.startAt : parseDate(a.date).getTime();
       var bt = typeof b.startAt === 'number' ? b.startAt : parseDate(b.date).getTime();
       if (at !== bt) return at - bt;
@@ -3219,10 +3076,7 @@ function setupCommonChipReorder(container, inputId) {
       var kindLabel = it.kind === 'cycle' ? '循环' : (it.kind === 'task' ? '待办' : CYCLE_LABEL[it.kind] || '日程');
       var timeText = '';
       var countdown = '';
-      var isPinnedScheduleItem = !!(it.kind !== 'task' && it.data && it.data.pinned === true);
-      if (isPinnedScheduleItem) {
-        timeText = '置顶';
-      } else if (it.kind === 'cycle' && it.cycleInfo) {
+      if (it.kind === 'cycle' && it.cycleInfo) {
         var ci = it.cycleInfo;
         if (ci.completed) countdown = '本周期已完成 · 新周期 ' + it.data.currentCycleStart + ' 开始';
         else countdown = ci.dayInCycle + '/' + it.data.cycleDays + ' D ';
@@ -4036,11 +3890,7 @@ function setupCommonChipReorder(container, inputId) {
       return;
     }
     var sorted = state.habits.slice().sort(function (a, b) {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-      if (a.pinned && b.pinned) {
-        var at = nextHabitPinTime(a), bt = nextHabitPinTime(b);
-        if (at !== bt) return at - bt;
-      }
+      // 设置页保持原有事项顺序；置顶只在日程页生效。
       if (CYCLE_ORDER[a.type] !== CYCLE_ORDER[b.type]) return CYCLE_ORDER[a.type] - CYCLE_ORDER[b.type];
       if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? -1 : 1;
       return a.id < b.id ? -1 : 1;
@@ -4082,12 +3932,7 @@ function setupCommonChipReorder(container, inputId) {
     advanceCyclesTo(todayStr());
     var today = todayStr();
     var sorted = state.cycles.slice().sort(function (a, b) {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-      if (a.pinned && b.pinned) {
-        var at = parseDate(a.currentCycleStart).getTime();
-        var bt = parseDate(b.currentCycleStart).getTime();
-        if (at !== bt) return at - bt;
-      }
+      // 设置页保持原有循环事项顺序；置顶只在日程页生效。
       var ae = parseDate(a.currentCycleStart).getTime() + Math.max(1, a.cycleDays || 1) * 86400000;
       var be = parseDate(b.currentCycleStart).getTime() + Math.max(1, b.cycleDays || 1) * 86400000;
       if (ae !== be) return ae - be;
@@ -4323,6 +4168,209 @@ function setupCommonChipReorder(container, inputId) {
     if (wrap) wrap.scrollTop = 0;
   }
 
+  function renderCommonOrderPage() {
+    var preview = $('#common-order-preview');
+    var list = $('#common-order-list');
+    if (!preview || !list) return;
+    var names = getAllKnownNames();
+    if (!names.length) {
+      preview.innerHTML = '<div class="common-order-preview-empty">还没有常用事项，完成一次打卡或计时后会出现在这里</div>';
+      list.innerHTML = '<li class="empty"><span class="emoji">↕</span>还没有可调整的常用事项</li>';
+      return;
+    }
+    preview.innerHTML = names.map(function (n, i) {
+      return '<span class="common-order-preview-chip"><span class="num">' + (i + 1) + '</span>' + esc(n) + '</span>';
+    }).join('');
+    list.innerHTML = names.map(function (n) {
+      return '<li class="common-order-item" data-common-order-name="' + esc(n) + '">' +
+        '<span class="order-name">' + esc(n) + '</span>' +
+        '<span class="order-handle" aria-hidden="true">☷</span>' +
+      '</li>';
+    }).join('');
+    setupCommonOrderDrag(list);
+  }
+
+  function updateCommonOrderPreview() {
+    var preview = $('#common-order-preview');
+    if (!preview) return;
+    var items = $$('#common-order-list .common-order-item:not(.common-order-ghost)');
+    if (!items.length) {
+      preview.innerHTML = '<div class="common-order-preview-empty">还没有可调整的常用事项</div>';
+      return;
+    }
+    preview.innerHTML = items.map(function (el, i) {
+      return '<span class="common-order-preview-chip"><span class="num">' + (i + 1) + '</span>' + esc(el.dataset.commonOrderName || '') + '</span>';
+    }).join('');
+  }
+
+  function setupCommonOrderDrag(list) {
+    if (!list || list.dataset.orderDragBound === '1') return;
+    list.dataset.orderDragBound = '1';
+
+    var pressTimer = null;
+    var pointerId = null;
+    var dragging = null;
+    var placeholder = null;
+    var ghost = null;
+    var startX = 0, startY = 0;
+    var originTop = 0;
+    var movedBeforeLongPress = false;
+    var suppressClick = false;
+    var LONG_PRESS_MS = 300;
+
+    function clearPress() {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+
+    function cleanup() {
+      clearPress();
+      if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+      if (placeholder && placeholder.parentNode) placeholder.parentNode.replaceChild(dragging, placeholder);
+      if (dragging) {
+        dragging.classList.remove('dragging-source', 'long-pressing');
+        dragging.style.visibility = '';
+        dragging.style.display = '';
+      }
+      list.classList.remove('reordering');
+      ghost = null;
+      placeholder = null;
+      dragging = null;
+      pointerId = null;
+    }
+
+    function beginDrag(item) {
+      if (!item || !item.isConnected) return;
+      var rect = item.getBoundingClientRect();
+      var listRect = list.getBoundingClientRect();
+      var scrollTop = list.scrollTop;
+      originTop = rect.top - listRect.top + scrollTop;
+
+      placeholder = document.createElement('li');
+      placeholder.className = 'common-order-placeholder';
+      placeholder.style.height = rect.height + 'px';
+      item.parentNode.insertBefore(placeholder, item);
+
+      ghost = item.cloneNode(true);
+      ghost.classList.add('common-order-ghost');
+      ghost.style.height = rect.height + 'px';
+      ghost.style.left = '0px';
+      ghost.style.top = originTop + 'px';
+      list.appendChild(ghost);
+
+      item.classList.add('dragging-source');
+      item.style.display = 'none';
+      list.classList.add('reordering');
+      dragging = item;
+      try { list.setPointerCapture(pointerId); } catch (e) {}
+    }
+
+    function moveGhost(clientX, clientY) {
+      if (!ghost) return;
+      var listRect = list.getBoundingClientRect();
+      var maxTop = Math.max(0, list.scrollHeight - ghost.offsetHeight);
+      var top = list.scrollTop + (clientY - listRect.top) - (ghost.offsetHeight / 2);
+      top = Math.max(0, Math.min(maxTop, top));
+      ghost.style.top = top + 'px';
+    }
+
+    function movePlaceholder(clientX, clientY) {
+      if (!placeholder || !dragging) return;
+      var target = document.elementFromPoint(clientX, clientY);
+      var item = target && target.closest ? target.closest('.common-order-item') : null;
+      if (!item || item === dragging || item.parentNode !== list) return;
+      var r = item.getBoundingClientRect();
+      if (clientY < r.top + r.height / 2) list.insertBefore(placeholder, item);
+      else list.insertBefore(placeholder, item.nextSibling);
+    }
+
+    function finish(commit) {
+      clearPress();
+      if (!dragging) return;
+      var item = dragging;
+      var ph = placeholder;
+      var names;
+      if (!commit || !ph || ph.parentNode !== list) {
+        cleanup();
+        return;
+      }
+      ph.parentNode.replaceChild(item, ph);
+      placeholder = null;
+      item.classList.remove('dragging-source', 'long-pressing');
+      item.style.visibility = '';
+      item.style.display = '';
+      names = Array.prototype.map.call(list.querySelectorAll('.common-order-item'), function (el) {
+        return el.dataset.commonOrderName;
+      });
+      persistCommonNameOrder(names);
+      updateCommonOrderPreview();
+      suppressClick = true;
+      setTimeout(function () { suppressClick = false; }, 180);
+      cleanup();
+    }
+
+    list.addEventListener('pointerdown', function (e) {
+      var item = e.target.closest('.common-order-item');
+      if (!item || e.button !== 0 || pointerId !== null) return;
+      pointerId = e.pointerId;
+      startX = e.clientX;
+      startY = e.clientY;
+      movedBeforeLongPress = false;
+      dragging = null;
+      clearPress();
+      item.classList.add('long-pressing');
+      pressTimer = setTimeout(function () {
+        pressTimer = null;
+        if (movedBeforeLongPress) return;
+        item.classList.remove('long-pressing');
+        beginDrag(item);
+      }, LONG_PRESS_MS);
+    });
+
+    list.addEventListener('pointermove', function (e) {
+      if (pointerId !== e.pointerId) return;
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      if (!dragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+        movedBeforeLongPress = true;
+        clearPress();
+        var item = e.target.closest('.common-order-item');
+        if (item) item.classList.remove('long-pressing');
+        return;
+      }
+      if (!dragging) return;
+      if (e.cancelable) e.preventDefault();
+      moveGhost(e.clientX, e.clientY);
+      movePlaceholder(e.clientX, e.clientY);
+    }, { passive: false });
+
+    list.addEventListener('pointerup', function (e) {
+      if (pointerId !== e.pointerId) return;
+      if (dragging) finish(true);
+      else {
+        clearPress();
+        var item = e.target.closest('.common-order-item');
+        if (item) item.classList.remove('long-pressing');
+        pointerId = null;
+      }
+    });
+    list.addEventListener('pointercancel', function (e) {
+      if (pointerId !== e.pointerId) return;
+      if (dragging) finish(false);
+      else {
+        clearPress();
+        var item = e.target.closest('.common-order-item');
+        if (item) item.classList.remove('long-pressing');
+        pointerId = null;
+      }
+    });
+    list.addEventListener('contextmenu', function (e) {
+      if (e.target.closest('.common-order-item')) e.preventDefault();
+    });
+    list.addEventListener('click', function (e) {
+      if (suppressClick) { e.preventDefault(); e.stopPropagation(); }
+    });
+  }
+
   function openSubpage(name) {
     if (currentSubpage === name) return;
     if (currentSubpage) closeSubpage(true, true);
@@ -4362,6 +4410,8 @@ function setupCommonChipReorder(container, inputId) {
       $('#newcycle-name').value = '';
       $('#newcycle-days').value = 7;
       renderCycleManage();
+    } else if (name === 'common-order') {
+      renderCommonOrderPage();
     }
   }
 
@@ -4984,12 +5034,14 @@ function bindScheduleGesture() {
     $('#open-habit-page').addEventListener('click', function () { openSubpage('habit'); });
     $('#open-records-page').addEventListener('click', function () { openSubpage('records'); });
     $('#open-cycle-page').addEventListener('click', function () { openSubpage('cycle'); });
+    $('#open-common-order-page').addEventListener('click', function () { openSubpage('common-order'); });
 
     $('#font-back').addEventListener('click', function () { closeSubpage(); });
     $('#backup-back').addEventListener('click', function () { closeSubpage(); });
     $('#habit-back').addEventListener('click', function () { closeSubpage(); });
     $('#records-back').addEventListener('click', function () { closeSubpage(); });
     $('#cycle-back').addEventListener('click', function () { closeSubpage(); });
+    $('#common-order-back').addEventListener('click', function () { closeSubpage(); });
 
     $('#btn-checkin').addEventListener('click', openCheckinModal);
     $('#checkin-ok').addEventListener('click', saveCheckin);
@@ -5173,7 +5225,7 @@ function bindScheduleGesture() {
         if (!pinHabit) return;
         pinHabit.pinned = pin.checked;
         save();
-        renderHabitManage();
+        if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
         return;
       }
       var inp = e.target.closest('input[data-habit-dot]');
@@ -5220,7 +5272,7 @@ function bindScheduleGesture() {
         if (!pinCycle) return;
         pinCycle.pinned = pin.checked;
         save();
-        renderCycleManage();
+        if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
         return;
       }
       var inp = e.target.closest('input[data-cycle-dot]');
