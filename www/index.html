@@ -18,9 +18,7 @@
     --num-weight: 300;
     --blue: #007AFF; --green: #34C759; --red: #FF3B30;
     --orange: #FF9500; --indigo: #5856D6; --teal: #5AC8FA; --gray: #8E8E93;
-    --system-bg: #F2F2F7;
-    --system-bg-elev: #FFFFFF;
-    --system-gray-4: #D1D1D6;
+    --system-bg: #F2F2F7; --system-bg-elev: #FFFFFF; --system-gray-4: #D1D1D6;
     --label: #000000;
     --label-2: rgba(60, 60, 67, 0.6);
     --label-3: rgba(60, 60, 67, 0.3);
@@ -99,9 +97,75 @@
     padding: max(20px, env(safe-area-inset-top)) 16px 0;
     box-sizing: border-box;
   }
-  .header { padding: 4px 4px 0; margin-bottom: 16px; flex: none; }
+  .header { padding: 4px 4px 0; margin-bottom: 16px; flex: none; position: relative; z-index: 70; }
+  .header-row { position: relative; min-height: 56px; display: flex; align-items: flex-start; }
+  .header-title-block { min-width: 0; padding-right: 188px; }
   .header h1 { margin: 0; font-size: 1.55em; font-weight: 700; letter-spacing: -0.028em; }
   .header .sub { margin: 4px 0 0; font-size: 0.8em; color: var(--label-2); }
+  .header-timer-stack {
+    position: absolute; top: 0; right: 0; width: min(286px, calc(100vw - 190px));
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 75;
+    overflow: visible;
+    max-height: 48px;
+    transition: max-height 320ms var(--ease-out);
+    touch-action: pan-y;
+  }
+  .header-timer-stack.expanded { max-height: min(62vh, 520px); overflow-y: auto; scrollbar-width: none; }
+  .header-timer-stack.expanded::-webkit-scrollbar { display: none; }
+  .header-timer-stack:not(.expanded) { height: 46px; max-height: 46px; }
+  .header-timer-stack:not(.expanded) .timer-card {
+    position: absolute; left: 0; right: 0; top: 0; margin: 0;
+    transform: scale(0.97); opacity: 0.72;
+  }
+  .header-timer-stack:not(.expanded) .timer-card:first-child { transform: none; opacity: 1; }
+  .header-timer-stack:not(.expanded) .timer-card:nth-child(2) { top: 5px; opacity: 0.58; }
+  .header-timer-stack:not(.expanded) .timer-card:nth-child(3) { top: 9px; opacity: 0.46; }
+  .header-timer-stack:not(.expanded) .timer-card:nth-child(4) { top: 12px; opacity: 0.36; }
+  .header-timer-stack:not(.expanded) .timer-card:nth-child(n+5) { top: 15px; opacity: 0.28; }
+  .header-timer-stack:not(.expanded) .timer-card .timer-note,
+  .header-timer-stack:not(.expanded) .timer-card .timer-state,
+  .header-timer-stack:not(.expanded) .timer-card .timer-hint,
+  .header-timer-stack:not(.expanded) .timer-card .timer-card-actions { display: none; }
+  .header-timer-stack:not(.expanded) .timer-card .timer-name {
+    margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 0.78em; text-align: left;
+  }
+  .header-timer-stack:not(.expanded) .timer-card .timer-clock {
+    margin: 0; font-size: 1.02em; white-space: nowrap;
+  }
+  .header-timer-stack:not(.expanded) .timer-card .timer-actions {
+    display: flex; flex: none; gap: 5px; margin: 0 0 0 6px;
+  }
+  .header-timer-stack:not(.expanded) .timer-card .timer-actions .btn {
+    min-height: 32px; padding: 5px 9px; border-radius: 10px; font-size: 0.68em;
+    line-height: 1.1;
+  }
+  .header-timer-stack:not(.expanded) .timer-card {
+    display: grid; grid-template-columns: minmax(0,1fr) auto;
+    align-items: center; column-gap: 6px;
+  }
+  .header-timer-stack:not(.expanded) .timer-card .timer-name { grid-column: 1; grid-row: 1; }
+  .header-timer-stack:not(.expanded) .timer-card .timer-clock { grid-column: 1; grid-row: 2; }
+  .header-timer-stack:not(.expanded) .timer-card .timer-actions { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+  .header-timer-stack.expanded .timer-card { min-height: 0; }
+  .header-timer-stack.expanded .timer-card .timer-clock { font-size: clamp(24px, 7vw, 34px); }
+
+  .schedule-dashboard {
+    display: grid; grid-template-columns: minmax(0, 7fr) minmax(150px, 3fr);
+    gap: 12px; align-items: stretch;
+  }
+  .schedule-main-column, .schedule-side-column { min-width: 0; }
+  .schedule-main-column .progress-card { margin-bottom: 12px; }
+  .schedule-side-column { display: grid; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; height: 100%; align-content: stretch; }
+  .schedule-side-column .recent-card { height: 100%; }
+  .recent-card { padding: 13px 12px; }
+  .recent-card h3 { margin: 0 0 8px; font-size: 0.78em; font-weight: 700; color: var(--label-2); }
+  .recent-list { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
+  .recent-item { padding: 8px 9px; border-radius: 11px; background: var(--fill-secondary); min-width: 0; }
+  .recent-item .name { font-size: 0.76em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-item .detail { margin-top: 2px; font-size: 0.66em; color: var(--label-2); line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-empty { padding: 12px 6px; text-align: center; color: var(--label-3); font-size: 0.7em; }
   .tabs {
     display: flex; gap: 0; background: var(--fill-primary);
     border-radius: 11px; padding: 2px; margin-bottom: 18px; flex: none;
@@ -203,10 +267,7 @@
     background-repeat: no-repeat; background-position: right 14px center;
     padding-right: 36px;
   }
-  textarea.field {
-    min-height: 68px; padding: 12px 14px;
-    resize: vertical; font-family: inherit; line-height: 1.4;
-  }
+  textarea.field { min-height: 68px; padding: 12px 14px; resize: vertical; font-family: inherit; line-height: 1.4; }
   input[type="datetime-local"].field,
   input[type="date"].field,
   input[type="time"].field { font-size: 0.9em; }
@@ -244,15 +305,8 @@
   }
   .icon-btn:active:not(:disabled) { transform: scale(0.92); }
   .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .link-btn {
-    font: inherit; font-size: 0.82em;
-    background: none; border: none;
-    color: var(--blue); cursor: pointer; padding: 0;
-  }
-  .empty {
-    text-align: center; padding: 32px 20px;
-    color: var(--label-2); font-size: 0.86em; list-style: none;
-  }
+  .link-btn { font: inherit; font-size: 0.82em; background: none; border: none; color: var(--blue); cursor: pointer; padding: 0; }
+  .empty { text-align: center; padding: 32px 20px; color: var(--label-2); font-size: 0.86em; list-style: none; }
   .empty .emoji { display: block; font-size: 34px; margin-bottom: 10px; opacity: 0.85; }
 
   .fab-group {
@@ -263,17 +317,7 @@
     max-width: calc(100vw - 32px);
   }
   .fab-group > * { pointer-events: auto; }
-  .fab-timers {
-    display: flex; flex-direction: column; gap: 8px;
-    width: min(320px, calc(100vw - 32px));
-    max-height: 55vh; overflow-y: auto;
-    scrollbar-width: none; margin-bottom: 4px;
-  }
-  .fab-timers::-webkit-scrollbar { display: none; }
-  .fab-timers:empty { display: none; }
-  .fab-buttons {
-    display: flex; flex-direction: column; gap: 10px; align-items: flex-end;
-  }
+  .fab-buttons { display: flex; flex-direction: column-reverse; gap: 10px; align-items: flex-end; }
   .fab-btn {
     font: inherit; font-size: 0.92em; font-weight: 600;
     color: #fff; background: var(--blue);
@@ -288,23 +332,28 @@
   .fab-btn.checkin { background: var(--green); box-shadow: 0 6px 16px rgba(52,199,89,0.32), 0 2px 6px rgba(0,0,0,0.12); }
   .fab-btn.makeup { background: var(--orange); box-shadow: 0 6px 16px rgba(255,149,0,0.32), 0 2px 6px rgba(0,0,0,0.12); }
 
-  .fab-timers .timer-card {
-    padding: 14px 16px 12px; text-align: center;
-    border-radius: 18px;
-    animation: cardIn var(--dur-3) var(--ease-spring);
+  .header-timer-stack .timer-card {
+    display: block; background: var(--glass-2); padding: 10px 12px; border-radius: 15px;
+    box-shadow: var(--shadow-md); text-align: left;
+    border: 1px solid var(--glass-stroke);
+    animation: none; min-width: 0;
   }
+  .header-timer-stack.expanded .timer-card { padding: 12px 14px; }
+  .header-timer-stack.expanded .timer-card .timer-name { font-size: 0.88em; }
+  .header-timer-stack.expanded .timer-card .timer-note { font-size: 0.72em; }
+  .header-timer-stack.expanded .timer-card .timer-state { font-size: 0.66em; }
+  .header-timer-stack.expanded .timer-card .timer-hint { font-size: 0.68em; }
+  .header-timer-stack .timer-actions { gap: 7px; }
+  .header-timer-stack .timer-actions .btn { min-height: 36px; padding: 7px 8px; }
+  .header-timer-stack .timer-card-actions { margin-top: 7px; }
+  .header-timer-stack .timer-card-actions .link-btn { font-size: 0.72em; }
+
   @keyframes cardIn {
     from { opacity: 0; transform: translateY(8px) scale(0.96); }
     to   { opacity: 1; transform: none; }
   }
-  .timer-name {
-    font-size: 0.92em; font-weight: 600; letter-spacing: -0.02em;
-    margin-bottom: 2px; word-break: break-word; padding: 0 6px;
-  }
-  .timer-note {
-    font-size: 0.76em; color: var(--label-2);
-    margin-bottom: 8px; word-break: break-word; padding: 0 6px;
-  }
+  .timer-name { font-size: 0.92em; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 2px; word-break: break-word; padding: 0 6px; }
+  .timer-note { font-size: 0.76em; color: var(--label-2); margin-bottom: 8px; word-break: break-word; padding: 0 6px; }
   .timer-state {
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 0.7em; font-weight: 600;
@@ -323,22 +372,10 @@
     50% { opacity: 0.4; transform: scale(0.8); }
   }
   .timer-state.paused::before { animation: none; }
-  .timer-clock {
-    font-size: calc(clamp(28px, 8.5vw, 38px) * var(--num-scale));
-    font-weight: var(--num-weight);
-    line-height: 1.15; letter-spacing: -0.02em;
-    margin: 6px 0 4px; font-variant-numeric: tabular-nums;
-  }
-  .timer-hint {
-    font-size: 0.7em; color: var(--label-2);
-    min-height: 16px; margin-bottom: 10px; word-break: break-word;
-  }
+  .timer-clock { font-size: calc(clamp(28px, 8.5vw, 38px) * var(--num-scale)); font-weight: var(--num-weight); line-height: 1.15; letter-spacing: -0.02em; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+  .timer-hint { font-size: 0.7em; color: var(--label-2); min-height: 16px; margin-bottom: 10px; word-break: break-word; }
   .timer-actions { display: flex; gap: 8px; }
-  .timer-actions .btn {
-    flex: 1; min-width: 0;
-    padding: 8px 8px; min-height: 38px;
-    font-size: 0.82em; border-radius: 12px;
-  }
+  .timer-actions .btn { flex: 1; min-width: 0; padding: 8px 8px; min-height: 38px; font-size: 0.82em; border-radius: 12px; }
   .timer-card-actions { text-align: center; margin-top: 8px; }
   .timer-card-actions .link-btn { font-size: 0.76em; }
 
@@ -361,18 +398,10 @@
   .content { flex: 1; min-width: 0; }
   .content .text { font-size: 0.94em; font-weight: 500; line-height: 1.4; word-break: break-word; }
   .rec-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
-  .rec-dur {
-    font-size: 0.88em; font-weight: 600; color: var(--blue);
-    white-space: nowrap; flex: none; font-variant-numeric: tabular-nums;
-  }
+  .rec-dur { font-size: 0.88em; font-weight: 600; color: var(--blue); white-space: nowrap; flex: none; font-variant-numeric: tabular-nums; }
   .rec-dur.checkin-time { color: var(--green); }
   .meta { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
-  .tag {
-    font-size: 0.71em; font-weight: 500;
-    padding: 2px 8px; border-radius: 6px;
-    background: var(--fill-primary); color: var(--label-2);
-    white-space: nowrap;
-  }
+  .tag { font-size: 0.71em; font-weight: 500; padding: 2px 8px; border-radius: 6px; background: var(--fill-primary); color: var(--label-2); white-space: nowrap; }
   .tag.ok { background: rgba(52,199,89,0.16); color: var(--green); }
   .tag.makeup { background: rgba(255,149,0,0.16); color: var(--orange); }
   .tag.op-time { background: rgba(0,122,255,0.14); color: var(--blue); }
@@ -380,37 +409,21 @@
   .tag.warn { background: rgba(255,149,0,0.16); color: var(--orange); }
   .tag.cycle { background: rgba(88,86,214,0.14); color: var(--indigo); }
   .tag.time-tag { background: rgba(88,86,214,0.14); color: var(--indigo); font-variant-numeric: tabular-nums; }
-  .rec-note {
-    margin-top: 8px; font-size: 0.82em; color: var(--label-2);
-    line-height: 1.45; word-break: break-word; white-space: pre-wrap;
-  }
+  .rec-note { margin-top: 8px; font-size: 0.82em; color: var(--label-2); line-height: 1.45; word-break: break-word; white-space: pre-wrap; }
   .actions { display: flex; gap: 4px; flex: none; opacity: 0; align-items: center; }
   .item:hover .actions, .item:focus-within .actions { opacity: 1; }
-  .record-item {
-    -webkit-user-select: none; user-select: none;
-    -webkit-touch-callout: none; touch-action: pan-y;
-  }
+  .record-item { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: pan-y; }
   .record-item.long-pressing {
     transform: scale(0.985);
     background: var(--fill-primary);
     transition: transform 120ms var(--ease-out), background-color 120ms var(--ease-out);
   }
   @media (hover: none) { .actions { opacity: 1; } }
-  .icon {
-    font: inherit; line-height: 1;
-    padding: 8px; border: none; border-radius: 10px;
-    background: transparent; color: var(--label-2); cursor: pointer;
-    transition: background-color var(--dur-1) var(--ease-out),
-                color var(--dur-1) var(--ease-out);
-  }
+  .icon { font: inherit; line-height: 1; padding: 8px; border: none; border-radius: 10px; background: transparent; color: var(--label-2); cursor: pointer; transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out); }
   .icon:hover { background: var(--fill-primary); color: var(--label); }
   .icon.del:hover { color: var(--red); background: rgba(255,59,48,0.12); }
 
-  .seg {
-    display: flex; gap: 0;
-    background: var(--fill-primary);
-    border-radius: 10px; padding: 2px; margin-bottom: 14px;
-  }
+  .seg { display: flex; gap: 0; background: var(--fill-primary); border-radius: 10px; padding: 2px; margin-bottom: 14px; }
   .seg-btn {
     flex: 1; font: inherit; font-size: 0.78em; font-weight: 600;
     color: var(--label-2); background: transparent; border: none;
@@ -422,74 +435,38 @@
     box-shadow: 0 3px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
   }
   @media (prefers-color-scheme: dark) {
-    .seg-btn.active {
-      background: var(--system-gray-4);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-    }
+    .seg-btn.active { background: var(--system-gray-4); box-shadow: 0 3px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3); }
   }
-  .seg.tiny {
-    border-radius: 9px; padding: 2px; margin-bottom: 0;
-    background: var(--fill-secondary);
-  }
+  .seg.tiny { border-radius: 9px; padding: 2px; margin-bottom: 0; background: var(--fill-secondary); }
   .seg.tiny .seg-btn { font-size: 0.73em; padding: 6px 2px; border-radius: 7px; }
 
-  .subpage-header {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 16px; padding: 0 2px;
-  }
+  .subpage-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 0 2px; }
   .subpage-back {
     font: inherit; font-size: 0.94em; font-weight: 500;
     color: var(--blue); background: none; border: none;
     padding: 6px 4px 6px 0; cursor: pointer;
     display: inline-flex; align-items: center; gap: 2px;
   }
-  .subpage-back .back-chevron {
-    font-size: 1.35em; line-height: 0.9;
-    font-weight: 300; margin-right: 2px;
-  }
+  .subpage-back .back-chevron { font-size: 1.35em; line-height: 0.9; font-weight: 300; margin-right: 2px; }
   .subpage-title { margin: 0; font-size: 1.1em; font-weight: 600; letter-spacing: -0.02em; }
 
-  .calendar-head {
-    display:flex; align-items:center; justify-content:space-between;
-    gap:10px; margin-bottom:10px;
-  }
-  .calendar-month-title {
-    flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    font-size:1.02em; font-weight:700; letter-spacing:-0.02em;
-  }
+  .calendar-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; }
+  .calendar-month-title { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:1.02em; font-weight:700; letter-spacing:-0.02em; }
   .calendar-head-actions { display:flex; gap:5px; align-items:center; }
-  .calendar-head-actions .btn.small {
-    min-height:34px; padding:7px 12px;
-    font-family:inherit; font-size:0.78rem; font-weight:600; line-height:1.2;
-  }
-  .calendar-head-actions .calendar-expand-btn {
-    min-width:52px; padding-left:6px; padding-right:6px; text-align:center;
-  }
-  .calendar-card {
-    padding:10px 8px 9px; margin-bottom:12px; overflow:hidden;
-  }
-  .calendar-clip {
-    overflow: hidden;
-    transition: height 320ms cubic-bezier(0.32, 0.72, 0, 1);
-    will-change: height;
-  }
+  .calendar-head-actions .btn.small { min-height:34px; padding:7px 12px; font-family:inherit; font-size:0.78rem; font-weight:600; line-height:1.2; }
+  .calendar-head-actions .calendar-expand-btn { min-width:52px; padding-left:6px; padding-right:6px; text-align:center; }
+  .calendar-card { padding:10px 8px 9px; margin-bottom:12px; overflow:hidden; }
+  .calendar-clip { overflow: hidden; transition: height 320ms cubic-bezier(0.32, 0.72, 0, 1); will-change: height; }
   .calendar-grid {
-    display:grid; grid-template-columns:repeat(7,minmax(0,1fr));
-    gap:4px;
-    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
-    will-change: transform;
+    display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;
+    transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1); will-change: transform;
   }
   .calendar-card.dragging .calendar-clip,
   .calendar-card.dragging .calendar-grid { transition: none; }
-  .calendar-week {
-    display:grid; grid-template-columns:repeat(7,minmax(0,1fr));
-    gap:4px; margin-bottom:0;
-  }
-  .calendar-week span {
-    text-align:center; font:inherit; font-size:.72em; color:var(--label-3);
-    padding:3px 0 5px; font-weight:600;
-  }
+  .calendar-week { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin-bottom:0; }
+  .calendar-week span { text-align:center; font:inherit; font-size:.72em; color:var(--label-3); padding:3px 0 5px; font-weight:600; }
   .calendar-day {
+    position: relative;
     min-width:0; min-height:72px; font:inherit; padding:7px 2px 6px;
     border:1px solid transparent; border-radius:13px;
     background:transparent; color:var(--label); cursor:pointer;
@@ -501,10 +478,7 @@
   .calendar-day.other-month .solar-num,
   .calendar-day.other-month .lunar-text { opacity:.48; }
   .calendar-day.today { background:rgba(0,122,255,.08); }
-  .calendar-day.selected {
-    border-color:var(--blue); background:rgba(0,122,255,.13);
-    box-shadow:0 2px 7px rgba(0,122,255,.10);
-  }
+  .calendar-day.selected { border-color:var(--blue); background:rgba(0,122,255,.13); box-shadow:0 2px 7px rgba(0,122,255,.10); }
   .calendar-day.today.selected { background:rgba(0,122,255,.16); }
   .calendar-day .solar-num {
     width:28px; height:28px; display:grid; place-items:center;
@@ -519,28 +493,32 @@
     color:var(--label-2); white-space:nowrap; overflow:hidden;
     max-width:100%; text-overflow:ellipsis;
   }
-  .calendar-dots {
-    display:flex; justify-content:center; gap:3px;
-    min-height:7px; margin-top:5px;
-  }
+  .calendar-dots { display:flex; justify-content:center; gap:3px; min-height:7px; margin-top:5px; }
   .calendar-dot { width:5px; height:5px; border-radius:50%; display:block; }
   .calendar-dot.task { background:var(--blue); }
   .calendar-dot.habit { background:var(--green); }
   .calendar-dot.cycle { background:var(--indigo); }
   .calendar-dot.done { background:var(--gray); }
 
-  .calendar-selected-info {
-    margin:0 4px 12px; font-size:.78em; color:var(--label-2);
-    display:flex; justify-content:space-between; gap:10px; align-items:center;
+  /* ===== 节假日调休角标 ===== */
+  .holiday-badge {
+    position: absolute;
+    top: 2px; right: 3px;
+    font-size: 0.58em; font-weight: 800; line-height: 1;
+    padding: 2px 4px; border-radius: 5px;
+    pointer-events: none;
+    letter-spacing: 0;
+    z-index: 2;
   }
+  .holiday-badge.off { background: rgba(255, 59, 48, 0.16); color: var(--red); }
+  .holiday-badge.work { background: rgba(255, 149, 0, 0.18); color: var(--orange); }
+
+  .calendar-selected-info { margin:0 4px 12px; font-size:.78em; color:var(--label-2); display:flex; justify-content:space-between; gap:10px; align-items:center; }
   .calendar-selected-info strong { color:var(--label); }
-  .schedule-list { display: flex; flex-direction: column; }
-  .schedule-list .item { padding: 14px 16px; margin-bottom: 12px; }
+  .schedule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
+  .schedule-list .item { padding: 12px 12px; margin: 0; min-width: 0; }
   .schedule-list .item:last-child { margin-bottom: 0; }
-  .schedule-date-group {
-    margin: 18px 4px 10px; font-size:.72em; font-weight:700;
-    color:var(--label-2);
-  }
+  .schedule-date-group { grid-column: 1 / -1; margin: 8px 4px 0; font-size:.72em; font-weight:700; color:var(--label-2); }
   .schedule-date-group:first-child { margin-top:4px; }
   .schedule-kind { font-size:.62em; padding:2px 6px; border-radius:6px; background:var(--fill-primary); color:var(--label-2); white-space:nowrap; }
   .schedule-kind.task { color:var(--blue); background:rgba(0,122,255,.12); }
@@ -558,24 +536,27 @@
   .notify-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
   .notify-grid .field-block { margin:0; }
   .notification-hint { font-size:.68em; color:var(--label-3); margin-top:6px; line-height:1.4; }
+  @media (max-width:560px) {
+    .schedule-dashboard { grid-template-columns: 1fr; }
+    .schedule-side-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   @media (max-width:430px) {
+    .header-title-block { padding-right: 148px; }
+    .header-timer-stack { width: min(218px, calc(100vw - 150px)); }
+    .schedule-list { grid-template-columns: 1fr; }
+    .schedule-date-group { grid-column: 1; }
     .calendar-card { padding-left:5px; padding-right:5px; }
     .calendar-grid, .calendar-week { gap:2px; }
     .calendar-day { min-height:66px; padding-left:1px; padding-right:1px; border-radius:11px; }
     .calendar-day .solar-num { width:30px; height:30px; font-size:calc(var(--font-size-base) * var(--num-scale) * 1.18); }
     .calendar-day .lunar-text { font-size:calc(var(--font-size-base) * .62); }
     .calendar-dot { width:4px; height:4px; }
+    .holiday-badge { font-size: 0.52em; padding: 1px 3px; top: 1px; right: 2px; }
   }
 
   .progress-card { padding: 16px 18px; margin-bottom: 16px; }
-  .progress-head {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-size: 0.86em; color: var(--label-2); margin-bottom: 10px;
-  }
-  .progress-head strong {
-    color: var(--label); font-size: 1.1em; font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
+  .progress-head { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.86em; color: var(--label-2); margin-bottom: 10px; }
+  .progress-head strong { color: var(--label); font-size: 1.1em; font-weight: 700; font-variant-numeric: tabular-nums; }
   .item.checkable { align-items: center; gap: 14px; }
   .item.checkable .content { display: flex; flex-direction: column; gap: 2px; }
   .check-circle {
@@ -602,18 +583,9 @@
   .setting-row { padding: 14px 0; border-bottom: 1px solid var(--separator); }
   .setting-row:last-child { border-bottom: none; padding-bottom: 14px; }
   .setting-row:first-child { padding-top: 14px; }
-  .setting-row-label {
-    font-size: 0.82em; font-weight: 500;
-    color: var(--label); margin-bottom: 10px;
-  }
-  .font-preview {
-    padding: 20px 16px; background: var(--fill-secondary);
-    border-radius: var(--radius-sm); text-align: center;
-  }
-  .font-preview-label {
-    font-size: 0.71em; font-weight: 500; color: var(--label-3);
-    text-transform: uppercase; letter-spacing: 0.006em; margin-bottom: 10px;
-  }
+  .setting-row-label { font-size: 0.82em; font-weight: 500; color: var(--label); margin-bottom: 10px; }
+  .font-preview { padding: 20px 16px; background: var(--fill-secondary); border-radius: var(--radius-sm); text-align: center; }
+  .font-preview-label { font-size: 0.71em; font-weight: 500; color: var(--label-3); text-transform: uppercase; letter-spacing: 0.006em; margin-bottom: 10px; }
   .font-preview-text { color: var(--label); margin-bottom: 8px; line-height: 1.4; word-break: break-word; }
   .font-preview-num { color: var(--label); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.2; }
   .font-hint { margin: 14px 4px 0; font-size: 0.78em; color: var(--label-2); line-height: 1.5; text-align: center; }
@@ -621,10 +593,7 @@
   .data-card h3 { margin: 0 0 4px; font-size: 0.94em; font-weight: 600; }
   .data-card p { margin: 0 0 14px; font-size: 0.8em; line-height: 1.5; color: var(--label-2); }
   .data-card .row { display: flex; gap: 10px; flex-wrap: wrap; }
-  .setting-item {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 14px; padding: 15px 18px; margin-bottom: 10px;
-  }
+  .setting-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 18px; margin-bottom: 10px; }
   .setting-item.clickable { cursor: pointer; }
   .setting-item.clickable:active { transform: scale(0.99); }
   .setting-title { font-size: 0.94em; font-weight: 500; }
@@ -633,14 +602,9 @@
 
   .switch { position: relative; display: inline-block; width: 51px; height: 31px; flex: none; }
   .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .slider {
-    position: absolute; inset: 0; background: var(--fill-primary);
-    border-radius: 999px; cursor: pointer;
-    transition: background-color var(--dur-2) var(--ease-out);
-  }
+  .slider { position: absolute; inset: 0; background: var(--fill-primary); border-radius: 999px; cursor: pointer; transition: background-color var(--dur-2) var(--ease-out); }
   .slider::before {
-    content: ''; position: absolute;
-    width: 27px; height: 27px; left: 2px; top: 2px;
+    content: ''; position: absolute; width: 27px; height: 27px; left: 2px; top: 2px;
     background: #fff; border-radius: 50%;
     box-shadow: 0 3px 8px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.16);
     transition: transform var(--dur-2) var(--ease-spring);
@@ -648,18 +612,10 @@
   .switch input:checked + .slider { background: var(--green); }
   .switch input:checked + .slider::before { transform: translateX(20px); }
   .switch.mini { width: 42px; height: 26px; }
-  .switch.mini .slider::before {
-    width: 22px; height: 22px; left: 2px; top: 2px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.16);
-  }
+  .switch.mini .slider::before { width: 22px; height: 22px; left: 2px; top: 2px; box-shadow: 0 2px 5px rgba(0,0,0,0.15), 0 1px 1px rgba(0,0,0,0.16); }
   .switch.mini input:checked + .slider::before { transform: translateX(16px); }
 
-  .danger-btn {
-    font: inherit; font-size: 0.88em; font-weight: 600;
-    color: var(--red); background: rgba(255,59,48,0.12);
-    border: none; border-radius: var(--radius-sm);
-    padding: 12px 20px; cursor: pointer;
-  }
+  .danger-btn { font: inherit; font-size: 0.88em; font-weight: 600; color: var(--red); background: rgba(255,59,48,0.12); border: none; border-radius: var(--radius-sm); padding: 12px 20px; cursor: pointer; }
   .modal-backdrop {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.28);
@@ -685,17 +641,10 @@
   }
   .modal-backdrop.show .modal { transform: scale(1) translateY(0); opacity: 1; }
   .modal h3 { margin: 0 0 6px; font-size: 1.2em; font-weight: 700; letter-spacing: -0.028em; }
-  .modal-sub {
-    margin: 0 0 18px; font-size: 0.82em; color: var(--label-2);
-    word-break: break-word; line-height: 1.5;
-  }
+  .modal-sub { margin: 0 0 18px; font-size: 0.82em; color: var(--label-2); word-break: break-word; line-height: 1.5; }
   .modal p { margin: 0 0 20px; font-size: 0.94em; line-height: 1.55; white-space: pre-line; }
   .modal .field { margin-bottom: 12px; }
-  .field-label {
-    font-size: 0.74em; font-weight: 600; color: var(--label-2);
-    text-transform: uppercase; letter-spacing: 0.006em;
-    margin-bottom: 6px; margin-left: 4px;
-  }
+  .field-label { font-size: 0.74em; font-weight: 600; color: var(--label-2); text-transform: uppercase; letter-spacing: 0.006em; margin-bottom: 6px; margin-left: 4px; }
   .field-block { margin-bottom: 14px; }
   .field-block .field { margin-bottom: 0; }
   .field-row { display: flex; gap: 10px; }
@@ -705,55 +654,38 @@
   #makeup-date { flex: 1.25; }
   #makeup-time { flex: 1; }
   .common-section { margin-bottom: 16px; }
-  .common-label {
-    font-size: 0.71em; font-weight: 600; color: var(--label-2);
-    letter-spacing: 0.006em; text-transform: uppercase;
-    margin-bottom: 8px; margin-left: 4px;
-  }
+  .common-label { font-size: 0.71em; font-weight: 600; color: var(--label-2); letter-spacing: 0.006em; text-transform: uppercase; margin-bottom: 8px; margin-left: 4px; }
+  .common-label::after { content: ' · 长按可拖动排序'; font-size: 0.88em; font-weight: 400; color: var(--label-3); text-transform: none; letter-spacing: 0; }
   .common-chips {
-    display: flex; flex-wrap: wrap; gap: 8px;
+    display: flex; flex-wrap: wrap; gap: 9px;
     max-height: 120px; overflow-y: auto; padding: 2px;
-    scrollbar-width: none;
+    scrollbar-width: none; touch-action: pan-y;
   }
   .common-chips::-webkit-scrollbar { display: none; }
   .chip-item {
-    font: inherit; font-size: 0.82em; font-weight: 500;
+    font: inherit; font-size: 0.86em; font-weight: 500;
     color: var(--blue); background: rgba(0,122,255,0.10);
     border: none; border-radius: 999px;
-    padding: 8px 15px; cursor: pointer; white-space: nowrap;
+    padding: 10px 17px; min-height: 40px; cursor: pointer; white-space: nowrap;
+    touch-action: pan-y; -webkit-user-select: none; user-select: none;
+    transition: transform 140ms var(--ease-spring), box-shadow 140ms var(--ease-out), opacity 140ms var(--ease-out);
   }
-  .chip-item:active { transform: scale(0.92); }
+  .chip-item:active { transform: scale(0.96); }
   .chip-item.used { background: rgba(52,199,89,0.18); color: var(--green); }
+  .chip-item.reordering { opacity: 0.72; transform: scale(1.04); box-shadow: 0 5px 14px rgba(0,0,0,0.14); }
+  .common-chips.reordering { touch-action: none; overflow: hidden; }
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
-  .modal-actions button {
-    font: inherit; font-size: 0.94em; font-weight: 500;
-    border-radius: var(--radius-sm); padding: 11px 22px;
-    cursor: pointer; border: none;
-    background: var(--fill-primary); color: var(--blue);
-  }
+  .modal-actions button { font: inherit; font-size: 0.94em; font-weight: 500; border-radius: var(--radius-sm); padding: 11px 22px; cursor: pointer; border: none; background: var(--fill-primary); color: var(--blue); }
   .modal-actions button.primary { background: var(--blue); color: #fff; font-weight: 600; }
   .modal-actions button.primary.ok { background: var(--green); }
   .modal-actions button.danger { background: var(--red); color: #fff; }
 
-  .period-bar {
-    display: grid; grid-template-columns: 42px 1fr 42px;
-    align-items: center; gap: 8px;
-  }
-  .period-title {
-    min-width: 0; text-align: center;
-    font-size: 0.9em; font-weight: 600;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .period-bar { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; gap: 8px; }
+  .period-title { min-width: 0; text-align: center; font-size: 0.9em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .summary-card { padding: 20px 18px; margin-top: 14px; }
   .summary-label { font-size: 0.76em; font-weight: 500; color: var(--label-2); }
-  .summary-total {
-    font-size: 2em; font-weight: 700; letter-spacing: -0.028em;
-    margin: 6px 0 12px; font-variant-numeric: tabular-nums; word-break: break-all;
-  }
-  .summary-sub {
-    display: flex; flex-wrap: wrap; gap: 6px 14px;
-    font-size: 0.8em; color: var(--label-2);
-  }
+  .summary-total { font-size: 2em; font-weight: 700; letter-spacing: -0.028em; margin: 6px 0 12px; font-variant-numeric: tabular-nums; word-break: break-all; }
+  .summary-sub { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.8em; color: var(--label-2); }
   .summary-sub b { color: var(--label); font-weight: 600; font-variant-numeric: tabular-nums; }
   .group-card {
     background: var(--glass-1);
@@ -764,58 +696,29 @@
     padding: 14px 16px; margin-bottom: 10px;
     box-shadow: var(--shadow-sm);
   }
-  .group-head {
-    display: flex; justify-content: space-between;
-    align-items: baseline; gap: 10px; margin-bottom: 8px;
-  }
+  .group-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
   .group-name { font-size: 0.92em; font-weight: 600; word-break: break-word; }
-  .group-total {
-    font-size: 0.92em; font-weight: 700; color: var(--blue);
-    white-space: nowrap; font-variant-numeric: tabular-nums;
-  }
-  .group-meta {
-    display: flex; gap: 12px; flex-wrap: wrap;
-    margin-top: 8px; font-size: 0.76em; color: var(--label-2);
-  }
+  .group-total { font-size: 0.92em; font-weight: 700; color: var(--blue); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .group-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 0.76em; color: var(--label-2); }
   .picker-row { margin-bottom: 12px; }
   .chart-card { padding: 14px 10px 10px; margin-top: 10px; }
   .chart-canvas-wrap { width: 100%; }
   #trend-canvas, #timer-trend-canvas { display: block; width: 100%; height: 200px; }
-  .chart-legend {
-    display: flex; justify-content: center; align-items: center;
-    gap: 6px; padding: 10px 6px 4px;
-    font-size: 0.76em; color: var(--label-2);
-  }
-  .legend-dot {
-    display: inline-block; width: 8px; height: 8px;
-    border-radius: 50%; background: var(--blue);
-    margin-right: 5px; vertical-align: middle;
-  }
+  .chart-legend { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 10px 6px 4px; font-size: 0.76em; color: var(--label-2); }
+  .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--blue); margin-right: 5px; vertical-align: middle; }
   .cal-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
   .cal-head span { text-align: center; font-size: 0.7em; color: var(--label-3); }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-  .cal-cell {
-    aspect-ratio: 1; display: grid; place-items: center;
-    font-size: 0.76em; border-radius: 9px;
-    background: var(--fill-primary); color: var(--label-3);
-    font-variant-numeric: tabular-nums;
-  }
+  .cal-cell { aspect-ratio: 1; display: grid; place-items: center; font-size: 0.76em; border-radius: 9px; background: var(--fill-primary); color: var(--label-3); font-variant-numeric: tabular-nums; }
   .cal-cell.none { opacity: 0.4; }
   .cal-cell.lv0 { background: rgba(255, 59, 48, 0.18); color: var(--red); }
   .cal-cell.lv1 { background: rgba(255, 149, 0, 0.22); color: var(--orange); }
   .cal-cell.lv2 { background: rgba(52, 199, 89, 0.28); color: var(--green); }
   .cal-cell.lv3 { background: var(--green); color: #fff; font-weight: 700; }
   .cal-cell.is-today { outline: 2px solid var(--blue); outline-offset: -2px; }
-  .cal-legend {
-    display: flex; align-items: center; gap: 6px;
-    margin-top: 12px; font-size: 0.7em;
-    color: var(--label-3); flex-wrap: wrap;
-  }
+  .cal-legend { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 0.7em; color: var(--label-3); flex-wrap: wrap; }
   .cal-legend .sw { width: 13px; height: 13px; border-radius: 4px; display: inline-block; }
-  .month-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 10px;
-  }
+  .month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
   .month-card {
     background: var(--glass-1);
     backdrop-filter: blur(var(--blur)) saturate(180%);
@@ -886,8 +789,13 @@
 
 <div class="app">
   <header class="header">
-    <h1>时间记录</h1>
-    <p class="sub">日程 · 打卡 · 统计</p>
+    <div class="header-row">
+      <div class="header-title-block">
+        <h1>时间记录</h1>
+        <p class="sub">日程 · 打卡 · 统计</p>
+      </div>
+      <div class="header-timer-stack" id="timer-list" hidden aria-label="正在计时"></div>
+    </div>
   </header>
 
   <nav class="tabs">
@@ -922,15 +830,28 @@
           <button class="btn small" id="open-task-page-schedule" type="button">＋ 添加</button>
         </div>
 
-        <div class="card progress-card" id="schedule-progress-card">
-          <div class="progress-head">
-            <span>今日完成度</span>
-            <strong id="sch-rate">0 / 0</strong>
+        <div class="schedule-dashboard">
+          <div class="schedule-main-column">
+            <div class="card progress-card" id="schedule-progress-card">
+              <div class="progress-head">
+                <span>今日完成度</span>
+                <strong id="sch-rate">0 / 0</strong>
+              </div>
+              <div class="bar"><div class="bar-fill" id="sch-bar"></div></div>
+            </div>
+            <div class="schedule-list" id="schedule-list"></div>
           </div>
-          <div class="bar"><div class="bar-fill" id="sch-bar"></div></div>
+          <aside class="schedule-side-column">
+            <div class="card recent-card">
+              <h3>最近打卡</h3>
+              <ul class="recent-list" id="recent-checkins"></ul>
+            </div>
+            <div class="card recent-card">
+              <h3>最近计时</h3>
+              <ul class="recent-list" id="recent-timers"></ul>
+            </div>
+          </aside>
         </div>
-
-        <div class="schedule-list" id="schedule-list"></div>
       </section>
 
       <section id="view-stats" class="main-section" hidden>
@@ -1071,6 +992,16 @@
           </div>
           <label class="switch">
             <input type="checkbox" id="set-show-schedule-progress">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="card setting-item">
+          <div>
+            <div class="setting-title">显示节假日调休</div>
+            <div class="setting-desc">在日历上标记法定节假日（休）和调休上班（班）</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="set-show-holiday">
             <span class="slider"></span>
           </label>
         </div>
@@ -1230,9 +1161,11 @@
               <option value="1">星期一</option><option value="2">星期二</option><option value="3">星期三</option><option value="4">星期四</option><option value="5">星期五</option><option value="6">星期六</option><option value="0">星期日</option>
             </select>
             <input class="field" id="newhabit-solar-date" type="date" hidden style="margin-top:8px;">
+            <!-- 阴历生日：年份 + 农历月 + 农历日（月在前、日在后） -->
+            <input class="field" id="newhabit-lunar-year" type="number" min="1900" max="2100" placeholder="出生年（选填，仅备注用）" hidden style="margin-top:8px;">
             <div class="task-form-row" id="newhabit-month-rule" hidden style="margin-top:8px;">
+              <select class="field" id="newhabit-month"><option value="1">正月</option><option value="2">二月</option><option value="3">三月</option><option value="4">四月</option><option value="5">五月</option><option value="6">六月</option><option value="7">七月</option><option value="8">八月</option><option value="9">九月</option><option value="10">十月</option><option value="11">冬月</option><option value="12">腊月</option></select>
               <select class="field" id="newhabit-monthday"></select>
-              <select class="field" id="newhabit-month"><option value="1">1月</option><option value="2">2月</option><option value="3">3月</option><option value="4">4月</option><option value="5">5月</option><option value="6">6月</option><option value="7">7月</option><option value="8">8月</option><option value="9">9月</option><option value="10">10月</option><option value="11">11月</option><option value="12">12月</option></select>
             </div>
           </div>
           <div class="notify-grid">
@@ -1394,8 +1327,7 @@
   </div>
 </div>
 
-<div class="fab-group" id="fab-group">
-  <div class="fab-timers" id="timer-list"></div>
+<div class="fab-group" id="fab-group" hidden>
   <div class="fab-buttons">
     <button class="fab-btn makeup" id="btn-makeup" type="button">补 卡</button>
     <button class="fab-btn checkin" id="btn-checkin" type="button">打 卡</button>
@@ -1403,6 +1335,7 @@
   </div>
 </div>
 
+<!-- modals -->
 <div class="modal-backdrop" id="edit-record-modal" hidden>
   <div class="modal">
     <h3>编辑记录</h3>
@@ -1554,11 +1487,139 @@
   var CYCLE_LABEL = { daily: '每日', weekly: '每周', monthly: '每月', yearly: '生日' };
   var CYCLE_ORDER = { daily: 0, weekly: 1, monthly: 2, yearly: 3 };
 
+  /* =========================================================
+     法定节假日 + 调休上班安排
+     - type: 'off' = 放假（休）；'work' = 调休上班（班）
+     - 数据来源为历年国务院办公厅公告。如需更新 / 修改，
+       直接编辑下面这个对象即可（key 用 YYYY-MM-DD）。
+     ========================================================= */
+  var HOLIDAY_SCHEDULE = {
+    /* ===== 2024 ===== */
+    '2024-01-01': { type: 'off', name: '元旦' },
+    '2024-02-04': { type: 'work', name: '春节调休' },
+    '2024-02-10': { type: 'off', name: '春节' },
+    '2024-02-11': { type: 'off', name: '春节' },
+    '2024-02-12': { type: 'off', name: '春节' },
+    '2024-02-13': { type: 'off', name: '春节' },
+    '2024-02-14': { type: 'off', name: '春节' },
+    '2024-02-15': { type: 'off', name: '春节' },
+    '2024-02-16': { type: 'off', name: '春节' },
+    '2024-02-17': { type: 'off', name: '春节' },
+    '2024-02-18': { type: 'work', name: '春节调休' },
+    '2024-04-04': { type: 'off', name: '清明节' },
+    '2024-04-05': { type: 'off', name: '清明节' },
+    '2024-04-06': { type: 'off', name: '清明节' },
+    '2024-04-07': { type: 'work', name: '清明调休' },
+    '2024-04-28': { type: 'work', name: '劳动节调休' },
+    '2024-05-01': { type: 'off', name: '劳动节' },
+    '2024-05-02': { type: 'off', name: '劳动节' },
+    '2024-05-03': { type: 'off', name: '劳动节' },
+    '2024-05-04': { type: 'off', name: '劳动节' },
+    '2024-05-05': { type: 'off', name: '劳动节' },
+    '2024-05-11': { type: 'work', name: '劳动节调休' },
+    '2024-06-10': { type: 'off', name: '端午节' },
+    '2024-09-14': { type: 'work', name: '中秋调休' },
+    '2024-09-15': { type: 'off', name: '中秋节' },
+    '2024-09-16': { type: 'off', name: '中秋节' },
+    '2024-09-17': { type: 'off', name: '中秋节' },
+    '2024-09-29': { type: 'work', name: '国庆调休' },
+    '2024-10-01': { type: 'off', name: '国庆节' },
+    '2024-10-02': { type: 'off', name: '国庆节' },
+    '2024-10-03': { type: 'off', name: '国庆节' },
+    '2024-10-04': { type: 'off', name: '国庆节' },
+    '2024-10-05': { type: 'off', name: '国庆节' },
+    '2024-10-06': { type: 'off', name: '国庆节' },
+    '2024-10-07': { type: 'off', name: '国庆节' },
+    '2024-10-12': { type: 'work', name: '国庆调休' },
+
+    /* ===== 2025 ===== */
+    '2025-01-01': { type: 'off', name: '元旦' },
+    '2025-01-26': { type: 'work', name: '春节调休' },
+    '2025-01-28': { type: 'off', name: '春节' },
+    '2025-01-29': { type: 'off', name: '春节' },
+    '2025-01-30': { type: 'off', name: '春节' },
+    '2025-01-31': { type: 'off', name: '春节' },
+    '2025-02-01': { type: 'off', name: '春节' },
+    '2025-02-02': { type: 'off', name: '春节' },
+    '2025-02-03': { type: 'off', name: '春节' },
+    '2025-02-04': { type: 'off', name: '春节' },
+    '2025-02-08': { type: 'work', name: '春节调休' },
+    '2025-04-04': { type: 'off', name: '清明节' },
+    '2025-04-05': { type: 'off', name: '清明节' },
+    '2025-04-06': { type: 'off', name: '清明节' },
+    '2025-04-27': { type: 'work', name: '劳动节调休' },
+    '2025-05-01': { type: 'off', name: '劳动节' },
+    '2025-05-02': { type: 'off', name: '劳动节' },
+    '2025-05-03': { type: 'off', name: '劳动节' },
+    '2025-05-04': { type: 'off', name: '劳动节' },
+    '2025-05-05': { type: 'off', name: '劳动节' },
+    '2025-05-31': { type: 'off', name: '端午节' },
+    '2025-06-01': { type: 'off', name: '端午节' },
+    '2025-06-02': { type: 'off', name: '端午节' },
+    '2025-09-28': { type: 'work', name: '国庆调休' },
+    '2025-10-01': { type: 'off', name: '国庆节' },
+    '2025-10-02': { type: 'off', name: '国庆节' },
+    '2025-10-03': { type: 'off', name: '国庆节' },
+    '2025-10-04': { type: 'off', name: '国庆节' },
+    '2025-10-05': { type: 'off', name: '国庆节' },
+    '2025-10-06': { type: 'off', name: '中秋节' },
+    '2025-10-07': { type: 'off', name: '国庆节' },
+    '2025-10-08': { type: 'off', name: '国庆节' },
+    '2025-10-11': { type: 'work', name: '国庆调休' },
+
+    /* ===== 2026 ===== */
+    /* ===== 2026（来源：国办发明电〔2025〕7号） ===== */
+    '2026-01-01': { type: 'off', name: '元旦' },
+    '2026-01-02': { type: 'off', name: '元旦' },
+    '2026-01-03': { type: 'off', name: '元旦' },
+    '2026-01-04': { type: 'work', name: '元旦调休' },
+    '2026-02-14': { type: 'work', name: '春节调休' },
+    '2026-02-15': { type: 'off', name: '春节' },
+    '2026-02-16': { type: 'off', name: '春节' },
+    '2026-02-17': { type: 'off', name: '春节' },
+    '2026-02-18': { type: 'off', name: '春节' },
+    '2026-02-19': { type: 'off', name: '春节' },
+    '2026-02-20': { type: 'off', name: '春节' },
+    '2026-02-21': { type: 'off', name: '春节' },
+    '2026-02-22': { type: 'off', name: '春节' },
+    '2026-02-23': { type: 'off', name: '春节' },
+    '2026-02-28': { type: 'work', name: '春节调休' },
+    '2026-04-04': { type: 'off', name: '清明节' },
+    '2026-04-05': { type: 'off', name: '清明节' },
+    '2026-04-06': { type: 'off', name: '清明节' },
+    '2026-05-01': { type: 'off', name: '劳动节' },
+    '2026-05-02': { type: 'off', name: '劳动节' },
+    '2026-05-03': { type: 'off', name: '劳动节' },
+    '2026-05-04': { type: 'off', name: '劳动节' },
+    '2026-05-05': { type: 'off', name: '劳动节' },
+    '2026-05-09': { type: 'work', name: '劳动节调休' },
+    '2026-06-19': { type: 'off', name: '端午节' },
+    '2026-06-20': { type: 'off', name: '端午节' },
+    '2026-06-21': { type: 'off', name: '端午节' },
+    '2026-09-20': { type: 'work', name: '国庆调休' },
+    '2026-09-25': { type: 'off', name: '中秋节' },
+    '2026-09-26': { type: 'off', name: '中秋节' },
+    '2026-09-27': { type: 'off', name: '中秋节' },
+    '2026-10-01': { type: 'off', name: '国庆节' },
+    '2026-10-02': { type: 'off', name: '国庆节' },
+    '2026-10-03': { type: 'off', name: '国庆节' },
+    '2026-10-04': { type: 'off', name: '国庆节' },
+    '2026-10-05': { type: 'off', name: '国庆节' },
+    '2026-10-06': { type: 'off', name: '国庆节' },
+    '2026-10-07': { type: 'off', name: '国庆节' },
+    '2026-10-10': { type: 'work', name: '国庆调休' }
+  };
+
+  function getHolidayInfo(ds) {
+    return HOLIDAY_SCHEDULE[ds] || null;
+  }
+
   var state = {
     timers: [], records: [], checkins: [], habits: [], cycles: [], daily: {},
     settings: {
       showTotalCard: true,
       showScheduleProgress: true,
+      showHolidayBadge: true,
       confirmComplete: true,
       lockCompleted: false,
       notificationsEnabled: false,
@@ -1580,6 +1641,9 @@
   var searchQuery = '';
   var scheduleDate = todayStr();
   var calendarExpanded = false;
+  var timerPanelExpanded = false;
+  var timerPanelTouchY = 0;
+  var timerPanelTouchMoved = false;
   var pendingCheckin = null;
   var pendingStopTimerId = null;
   var confirmResolve = null;
@@ -1612,10 +1676,6 @@
   function fmtTime(ts) { var d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
   function fmtTimeSec(ts) { var d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
   function fmtDateTime(ts) { var d = new Date(ts); return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
-  function fmtDateTimeFull(ts) {
-    var d = new Date(ts);
-    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
   function WEEK_CN(d) { return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]; }
   function fmtDateFull(ts) { var d = new Date(ts); return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + WEEK_CN(d); }
   function fmtClock(ms) {
@@ -1666,13 +1726,8 @@
     var d = new Date();
     return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
   }
-  function dateStr(d) {
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-  }
-  function parseDate(s) {
-    var p = s.split('-').map(Number);
-    return new Date(p[0], p[1] - 1, p[2]);
-  }
+  function dateStr(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parseDate(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
   function sortNames(arr) {
     return arr.slice().sort(function (a, b) {
       try { return a.localeCompare(b, 'zh-Hans-CN', { sensitivity: 'base' }); }
@@ -1727,12 +1782,12 @@
     var range = cycleRange(habit.type, refDate);
     var cur = parseDate(range.start);
     var endD = parseDate(range.end);
-    var today = todayStr();
+    var cutoff = parseDate(refDate);
     var count = 0;
     var lastTs = 0;
     while (cur <= endD) {
       var ds = dateStr(cur);
-      if (ds > today) break;
+      if (cur > cutoff) break;
       var rec = state.daily[ds];
       if (rec) {
         var list = habitDoneList(rec, habit.id);
@@ -1796,9 +1851,11 @@
     state.settings = state.settings || {};
     if (typeof state.settings.showTotalCard !== 'boolean') state.settings.showTotalCard = true;
     if (typeof state.settings.showScheduleProgress !== 'boolean') state.settings.showScheduleProgress = true;
+    if (typeof state.settings.showHolidayBadge !== 'boolean') state.settings.showHolidayBadge = true;
     if (typeof state.settings.confirmComplete !== 'boolean') state.settings.confirmComplete = true;
     if (typeof state.settings.lockCompleted !== 'boolean') state.settings.lockCompleted = false;
     if (typeof state.settings.notificationsEnabled !== 'boolean') state.settings.notificationsEnabled = false;
+    if (!Array.isArray(state.settings.commonNameOrder)) state.settings.commonNameOrder = [];
     if (typeof state.settings.animSpeed !== 'string') state.settings.animSpeed = 'normal';
     state.settings.font = Object.assign({}, DEFAULT_FONT, state.settings.font || {});
     draftFont = Object.assign({}, state.settings.font);
@@ -1833,6 +1890,12 @@
     if (typeof h.notifyMode !== 'string') h.notifyMode = 'none';
     if (typeof h.remindDaysBefore !== 'number') h.remindDaysBefore = 0;
     if (typeof h.showDot !== 'boolean') h.showDot = true;
+    // 生日（阴历）可选记录出生年，仅备注用
+    if (h.type === 'yearly' && h.calendar === 'lunar') {
+      if (typeof h.birthYear !== 'number' || !isFinite(h.birthYear)) h.birthYear = null;
+    } else {
+      h.birthYear = null;
+    }
     return h;
   }
 
@@ -1885,9 +1948,7 @@
   function normalizeRecord(r) {
     if (!r || typeof r.start !== 'number' || typeof r.end !== 'number' || !r.name) return null;
     if (!r.id) r.id = uid();
-    if (typeof r.duration !== 'number' || !isFinite(r.duration) || r.duration < 0) {
-      r.duration = Math.max(0, r.end - r.start);
-    }
+    if (typeof r.duration !== 'number' || !isFinite(r.duration) || r.duration < 0) r.duration = Math.max(0, r.end - r.start);
     if (typeof r.pausedMs !== 'number' || !isFinite(r.pausedMs) || r.pausedMs < 0) r.pausedMs = 0;
     if (typeof r.note !== 'string') r.note = '';
     if (typeof r.createdAt !== 'number') r.createdAt = r.end;
@@ -1946,9 +2007,7 @@
               var r = sd.records[date];
               var t = ensureDaily(date);
               if (r.habits) {
-                Object.keys(r.habits).forEach(function (hid) {
-                  t.habits[hid] = r.habits[hid] || Date.now();
-                });
+                Object.keys(r.habits).forEach(function (hid) { t.habits[hid] = r.habits[hid] || Date.now(); });
               }
               if (Array.isArray(r.tasks)) {
                 r.tasks.forEach(function (tk) {
@@ -2096,9 +2155,7 @@
     if (!t) return 0;
     var total = 0;
     (t.pauses || []).forEach(function (p) {
-      if (typeof p.start === 'number' && typeof p.end === 'number') {
-        total += Math.max(0, p.end - p.start);
-      }
+      if (typeof p.start === 'number' && typeof p.end === 'number') total += Math.max(0, p.end - p.start);
     });
     if (t.pausedAt) total += Math.max(0, Date.now() - t.pausedAt);
     return total;
@@ -2116,20 +2173,125 @@
   }
   function getAllKnownNames() {
     var seen = {}, names = [];
-    state.timers.forEach(function (t) {
-      if (t.name && !seen[t.name]) { seen[t.name] = 1; names.push(t.name); }
+    state.timers.forEach(function (t) { if (t.name && !seen[t.name]) { seen[t.name] = 1; names.push(t.name); } });
+    state.checkins.forEach(function (c) { if (c.name && !seen[c.name]) { seen[c.name] = 1; names.push(c.name); } });
+    state.records.forEach(function (r) { if (r.name && !seen[r.name]) { seen[r.name] = 1; names.push(r.name); } });
+    var order = Array.isArray(state.settings.commonNameOrder) ? state.settings.commonNameOrder : [];
+    var rank = {};
+    order.forEach(function (n, i) { rank[n] = i; });
+    return names.slice().sort(function (a, b) {
+      var ai = Object.prototype.hasOwnProperty.call(rank, a) ? rank[a] : 100000;
+      var bi = Object.prototype.hasOwnProperty.call(rank, b) ? rank[b] : 100000;
+      if (ai !== bi) return ai - bi;
+      return sortNames([a, b])[0] === a ? -1 : 1;
     });
-    state.checkins.forEach(function (c) {
-      if (c.name && !seen[c.name]) { seen[c.name] = 1; names.push(c.name); }
+  }
+  function persistCommonNameOrder(names) {
+    var clean = [];
+    var seen = {};
+    (Array.isArray(names) ? names : []).forEach(function (n) {
+      n = String(n || '').trim();
+      if (n && !seen[n]) { seen[n] = 1; clean.push(n); }
     });
-    state.records.forEach(function (r) {
-      if (r.name && !seen[r.name]) { seen[r.name] = 1; names.push(r.name); }
+    (Array.isArray(state.settings.commonNameOrder) ? state.settings.commonNameOrder : []).forEach(function (n) {
+      n = String(n || '').trim();
+      if (n && !seen[n]) { seen[n] = 1; clean.push(n); }
     });
-    return sortNames(names);
+    state.settings.commonNameOrder = clean;
+    save();
+  }
+  function setupCommonChipReorder(container, inputId) {
+    if (!container || container.dataset.reorderBound === '1') return;
+    container.dataset.reorderBound = '1';
+    var pressTimer = null;
+    var dragging = null;
+    var pointerId = null;
+    var startX = 0, startY = 0;
+    var movedBeforeLongPress = false;
+    var suppressClick = false;
+
+    function clearPressTimer() {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    }
+    function finishDrag() {
+      clearPressTimer();
+      if (!dragging) return;
+      dragging.classList.remove('reordering');
+      container.classList.remove('reordering');
+      var names = Array.prototype.map.call(container.querySelectorAll('.chip-item'), function (el) { return el.dataset.name; });
+      persistCommonNameOrder(names);
+      suppressClick = true;
+      setTimeout(function () { suppressClick = false; }, 120);
+      dragging = null; pointerId = null;
+    }
+    function cancelDrag() {
+      clearPressTimer();
+      if (dragging) {
+        dragging.classList.remove('reordering');
+        container.classList.remove('reordering');
+      }
+      dragging = null; pointerId = null;
+    }
+
+    container.addEventListener('pointerdown', function (e) {
+      var chip = e.target.closest('.chip-item');
+      if (!chip || e.button !== 0) return;
+      clearPressTimer();
+      dragging = null; pointerId = e.pointerId;
+      startX = e.clientX; startY = e.clientY; movedBeforeLongPress = false;
+      pressTimer = setTimeout(function () {
+        dragging = chip;
+        dragging.classList.add('reordering');
+        container.classList.add('reordering');
+        try { dragging.setPointerCapture(pointerId); } catch (err) {}
+      }, 450);
+    });
+
+    container.addEventListener('pointermove', function (e) {
+      if (pointerId !== e.pointerId) return;
+      var dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) movedBeforeLongPress = true;
+      if (!dragging) {
+        if (movedBeforeLongPress) clearPressTimer();
+        return;
+      }
+      e.preventDefault();
+      var target = document.elementFromPoint(e.clientX, e.clientY);
+      if (!target || !target.closest) return;
+      var chip = target.closest('.chip-item');
+      if (!chip || chip === dragging || chip.parentNode !== container) return;
+      var rect = chip.getBoundingClientRect();
+      var before = (e.clientY < rect.top + rect.height / 2) ||
+                   (Math.abs(e.clientY - (rect.top + rect.height / 2)) < rect.height / 2 && e.clientX < rect.left + rect.width / 2);
+      if (before) container.insertBefore(dragging, chip);
+      else container.insertBefore(dragging, chip.nextSibling);
+    }, { passive: false });
+
+    container.addEventListener('pointerup', function (e) {
+      if (pointerId !== e.pointerId) return;
+      if (dragging) finishDrag();
+      else clearPressTimer();
+    });
+    container.addEventListener('pointercancel', function (e) {
+      if (pointerId !== e.pointerId) return;
+      cancelDrag();
+    });
+
+    container.addEventListener('click', function (e) {
+      if (suppressClick) { e.preventDefault(); e.stopPropagation(); return; }
+      var chip = e.target.closest('.chip-item');
+      if (!chip) return;
+      var input = $('#' + inputId);
+      if (!input) return;
+      input.value = chip.dataset.name;
+      chip.classList.add('used');
+      setTimeout(function () { chip.classList.remove('used'); }, 420);
+    });
   }
   function renderChips(containerId, inputId) {
     var container = $('#' + containerId);
     if (!container) return;
+    container.dataset.inputId = inputId;
     var names = getAllKnownNames();
     if (!names.length) {
       container.innerHTML = '<span style="font-size:0.76em;color:var(--label-3);">还没有历史事项，输入后会出现在这里</span>';
@@ -2138,16 +2300,7 @@
     container.innerHTML = names.map(function (n) {
       return '<button type="button" class="chip-item" data-name="' + esc(n) + '">' + esc(n) + '</button>';
     }).join('');
-    container.onclick = function (e) {
-      var chip = e.target.closest('.chip-item');
-      if (!chip) return;
-      var input = $('#' + inputId);
-      if (!input) return;
-      input.value = chip.dataset.name;
-      chip.classList.add('used');
-      setTimeout(function () { chip.classList.remove('used'); }, 420);
-      input.focus();
-    };
+    setupCommonChipReorder(container, inputId);
   }
   function refreshAllChips() {
     renderChips('checkin-chips', 'checkin-input');
@@ -2165,13 +2318,11 @@
 
   function openCheckinModal() {
     pendingCheckin = Date.now();
-    $('#checkin-time-show').textContent =
-      '打卡时间：' + fmtDateFull(pendingCheckin) + ' ' + fmtTimeSec(pendingCheckin);
+    $('#checkin-time-show').textContent = '打卡时间：' + fmtDateFull(pendingCheckin) + ' ' + fmtTimeSec(pendingCheckin);
     $('#checkin-input').value = '';
     $('#checkin-note').value = '';
     refreshAllChips();
     showModal('#checkin-modal');
-    setTimeout(function () { $('#checkin-input').focus(); }, 240);
   }
   function saveCheckin() {
     if (!pendingCheckin) return;
@@ -2195,7 +2346,6 @@
     $('#makeup-note').value = '';
     refreshAllChips();
     showModal('#makeup-modal');
-    setTimeout(function () { $('#makeup-input').focus(); }, 240);
   }
   function saveMakeup() {
     var dStr = $('#makeup-date').value;
@@ -2221,7 +2371,6 @@
     $('#start-note').value = '';
     refreshAllChips();
     showModal('#start-modal');
-    setTimeout(function () { $('#start-input').focus(); }, 240);
   }
   function confirmStartTimer() {
     var name = $('#start-input').value.trim();
@@ -2321,9 +2470,21 @@
   function renderTimers() {
     var list = $('#timer-list');
     if (!list) return;
-    if (!state.timers.length) { list.innerHTML = ''; return; }
-    var sorted = state.timers.slice().sort(function (a, b) { return a.start - b.start; });
+    if (!state.timers.length) {
+      list.innerHTML = '';
+      list.hidden = true;
+      list.classList.remove('expanded');
+      return;
+    }
+    var sorted = state.timers.slice().sort(function (a, b) { return b.start - a.start; });
     list.innerHTML = sorted.map(timerCardHTML).join('');
+    list.hidden = !(activeTab === 'schedule' && !currentSubpage);
+    list.classList.toggle('expanded', timerPanelExpanded);
+    list.setAttribute('aria-expanded', timerPanelExpanded ? 'true' : 'false');
+    Array.prototype.forEach.call(list.querySelectorAll('.timer-card'), function (card, idx) {
+      card.style.zIndex = String(20 - idx);
+    });
+    tickTimers();
   }
   function tickTimers() {
     if (!state.timers.length) return;
@@ -2471,9 +2632,7 @@
     if (!h || h.createdAt > ds) return false;
     var d = parseDate(ds);
     if (h.type === 'daily') return true;
-    if (h.type === 'weekly') {
-      return d.getDay() === (typeof h.weekday === 'number' ? h.weekday : 0);
-    }
+    if (h.type === 'weekly') return d.getDay() === (typeof h.weekday === 'number' ? h.weekday : 0);
     if (h.type === 'monthly') {
       var lastDay = daysInMonthOf(d.getFullYear(), d.getMonth());
       var md = Math.min(Number(h.monthday) || 31, lastDay);
@@ -2490,7 +2649,6 @@
     return false;
   }
 
-  /* 判断循环事项某天是否是某个周期的结束日 */
   function cycleOccursOnDate(c, ds) {
     if (!c || c.createdAt > ds) return false;
     var d = parseDate(ds);
@@ -2513,12 +2671,7 @@
     var cycles = state.cycles.filter(function (c) {
       return c.showDot !== false && c.createdAt <= ds && cycleOccursOnDate(c, ds);
     });
-    return {
-      tasks: taskCount,
-      done: doneCount,
-      habits: habits.length,
-      cycles: cycles.length
-    };
+    return { tasks: taskCount, done: doneCount, habits: habits.length, cycles: cycles.length };
   }
 
   function renderCalendar() {
@@ -2541,6 +2694,7 @@
     var expandBtn = $('#calendar-expand');
     if (expandBtn) expandBtn.textContent = calendarExpanded ? '月' : '周';
 
+    var showHoliday = state.settings.showHolidayBadge !== false;
     var html = '';
     var selectedRow = 0;
     for (var i = 0; i < count; i++) {
@@ -2554,7 +2708,17 @@
       try { info = calendarInfo(ds) || info; } catch (e) {}
       try { stat = dateHasSchedule(ds) || stat; } catch (e) {}
 
-      /* 组装 dots：task → habit → cycle 最多 3 个；全部任务完成时显示灰点 */
+      // 节假日 / 调休角标
+      var holidayBadgeHTML = '';
+      if (showHoliday) {
+        var hv = getHolidayInfo(ds);
+        if (hv) {
+          var lbl = hv.type === 'off' ? '休' : '班';
+          var cls = hv.type === 'off' ? 'off' : 'work';
+          holidayBadgeHTML = '<span class="holiday-badge ' + cls + '" title="' + esc(hv.name || '') + '">' + lbl + '</span>';
+        }
+      }
+
       var dots = '';
       var items = [];
       var taskN = Math.min(stat.tasks || 0, 3);
@@ -2581,6 +2745,7 @@
         + (ds === scheduleDate ? ' selected' : '');
 
       html += '<button type="button" class="' + cls + '" data-calendar-date="' + ds + '">' +
+        holidayBadgeHTML +
         '<span class="solar-num">' + d.getDate() + '</span>' +
         '<span class="lunar-text">' + esc(secondary) + '</span>' +
         '<span class="calendar-dots">' + dots + '</span></button>';
@@ -2610,7 +2775,10 @@
     if (selectedInfo) {
       var si = { solar: y + '年' + (m + 1) + '月' + selected.getDate() + '日' };
       try { si = calendarInfo(scheduleDate) || si; } catch (e) {}
-      selectedInfo.textContent = (scheduleDate === todayStr() ? '今天 · ' : '') + si.solar.replace(/^\d+年/, '');
+      var hvInfo = showHoliday ? getHolidayInfo(scheduleDate) : null;
+      var suffix = '';
+      if (hvInfo) suffix = ' · ' + hvInfo.name + (hvInfo.type === 'off' ? '（休）' : '（班）');
+      selectedInfo.textContent = (scheduleDate === todayStr() ? '今天 · ' : '') + si.solar.replace(/^\d+年/, '') + suffix;
     }
   }
 
@@ -2665,8 +2833,7 @@
           }
           var time = h.reminderTime || '23:59';
           var p = time.split(':');
-          var ts = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate(),
-                            Number(p[0]) || 0, Number(p[1]) || 0).getTime();
+          var ts = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate(), Number(p[0]) || 0, Number(p[1]) || 0).getTime();
           out.push({ date: ds, kind: h.type, id: h.id, name: h.name, done: done, startAt: ts, endAt: null, note: '', data: h });
         }
         cur.setDate(cur.getDate() + 1);
@@ -2674,6 +2841,27 @@
     });
     return out;
   }
+  function renderRecentCheckins() {
+    var el = $('#recent-checkins');
+    if (!el) return;
+    var list = state.checkins.slice().sort(function (a, b) { return (b.time || 0) - (a.time || 0); }).slice(0, 5);
+    if (!list.length) { el.innerHTML = '<li class="recent-empty">暂无打卡</li>'; return; }
+    el.innerHTML = list.map(function (c) {
+      var detail = fmtDateTime(c.time) + (c.makeup ? ' · 补卡' : '');
+      return '<li class="recent-item"><div class="name">' + esc(c.name) + '</div><div class="detail">' + esc(detail) + '</div></li>';
+    }).join('');
+  }
+  function renderRecentTimers() {
+    var el = $('#recent-timers');
+    if (!el) return;
+    var list = state.records.slice().sort(function (a, b) { return (b.end || b.start || 0) - (a.end || a.start || 0); }).slice(0, 5);
+    if (!list.length) { el.innerHTML = '<li class="recent-empty">暂无计时记录</li>'; return; }
+    el.innerHTML = list.map(function (r) {
+      var detail = fmtDurExact(r.duration) + ' · ' + fmtDateTime(r.start);
+      return '<li class="recent-item"><div class="name">' + esc(r.name) + '</div><div class="detail">' + esc(detail) + '</div></li>';
+    }).join('');
+  }
+
   function renderScheduleList() {
     var start = scheduleDate;
     var items = allTaskEntriesFrom(start).concat(currentCycleHabitEntries(start));
@@ -2705,26 +2893,23 @@
       if (it.date !== lastDate) {
         lastDate = it.date;
         var di = calendarInfo(it.date);
-        html += '<div class="schedule-date-group">' + (it.date === todayStr() ? '今天' : it.date) + (di.term ? ' · ' + esc(di.term) : '') + '</div>';
+        var hvi = state.settings.showHolidayBadge !== false ? getHolidayInfo(it.date) : null;
+        var hvSuffix = hvi ? ' · ' + hvi.name + (hvi.type === 'off' ? '（休）' : '（班）') : '';
+        html += '<div class="schedule-date-group">' + (it.date === todayStr() ? '今天' : it.date) + (di.term ? ' · ' + esc(di.term) : '') + esc(hvSuffix) + '</div>';
       }
       var kindLabel = it.kind === 'cycle' ? '循环' : (it.kind === 'task' ? '待办' : CYCLE_LABEL[it.kind] || '日程');
       var timeText = '';
       var countdown = '';
       if (it.kind === 'cycle' && it.cycleInfo) {
         var ci = it.cycleInfo;
-        if (ci.completed) {
-          countdown = '本周期已完成 · 新周期 ' + it.data.currentCycleStart + ' 开始';
-        } else {
-          countdown = '第 ' + ci.dayInCycle + '/' + it.data.cycleDays + ' 天 · 剩余 ' + ci.daysLeft + ' 天';
-        }
+        if (ci.completed) countdown = '本周期已完成 · 新周期 ' + it.data.currentCycleStart + ' 开始';
+        else countdown = '第 ' + ci.dayInCycle + '/' + it.data.cycleDays + ' 天 · 剩余 ' + ci.daysLeft + ' 天';
       } else {
         timeText = typeof it.startAt === 'number' ? fmtTime(it.startAt) : '';
         var target = typeof it.startAt === 'number' ? it.startAt : it.endAt;
         if (!it.done && target) {
           countdown = fmtCountdownMDHM(target, now);
-          if (it.startAt && it.endAt && now >= it.startAt && now < it.endAt) {
-            countdown = fmtCountdownMDHM(it.endAt, now);
-          }
+          if (it.startAt && it.endAt && now >= it.startAt && now < it.endAt) countdown = fmtCountdownMDHM(it.endAt, now);
         }
       }
       var countdownCls = countdown.indexOf('已过') === 0 ? ' urgent' : '';
@@ -2758,6 +2943,7 @@
     $('#sch-bar').style.width = pct + '%';
     try { renderCalendar(); } catch (e) { console.error('renderCalendar failed:', e); }
     try { renderScheduleList(); } catch (e) { console.error('renderScheduleList failed:', e); }
+    try { renderRecentCheckins(); renderRecentTimers(); } catch (e) { console.error('render recent panels failed:', e); }
   }
 
   async function toggleTaskDoneByDate(taskId, date) {
@@ -2809,13 +2995,9 @@
         }
         var rec2 = ensureDaily(scheduleDate);
         var curVal = rec2.habits[habitId];
-        if (typeof curVal === 'number') {
-          rec2.habits[habitId] = [curVal, Date.now()];
-        } else if (Array.isArray(curVal)) {
-          curVal.push(Date.now());
-        } else {
-          rec2.habits[habitId] = [Date.now()];
-        }
+        if (typeof curVal === 'number') rec2.habits[habitId] = [curVal, Date.now()];
+        else if (Array.isArray(curVal)) curVal.push(Date.now());
+        else rec2.habits[habitId] = [Date.now()];
       }
     }
     save();
@@ -2966,8 +3148,7 @@
     var countEl = $('#record-count');
     function match(name, note) {
       if (!q) return true;
-      return (name || '').toLowerCase().indexOf(q) >= 0 ||
-             (note || '').toLowerCase().indexOf(q) >= 0;
+      return (name || '').toLowerCase().indexOf(q) >= 0 || (note || '').toLowerCase().indexOf(q) >= 0;
     }
     if (recType === 'timer') {
       var recs = state.records.filter(function (r) { return match(r.name, r.note); })
@@ -2997,28 +3178,17 @@
   }
   function getPeriod(mode, base) {
     var start, end;
-    if (mode === 'week') {
-      start = startOfWeek(base);
-      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
-    } else if (mode === 'month') {
-      start = new Date(base.getFullYear(), base.getMonth(), 1);
-      end = new Date(base.getFullYear(), base.getMonth() + 1, 1);
-    } else {
-      start = new Date(base.getFullYear(), 0, 1);
-      end = new Date(base.getFullYear() + 1, 0, 1);
-    }
+    if (mode === 'week') { start = startOfWeek(base); end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7); }
+    else if (mode === 'month') { start = new Date(base.getFullYear(), base.getMonth(), 1); end = new Date(base.getFullYear(), base.getMonth() + 1, 1); }
+    else { start = new Date(base.getFullYear(), 0, 1); end = new Date(base.getFullYear() + 1, 0, 1); }
     return { start: start, end: end };
   }
   function periodLabel(mode, p) {
     if (mode === 'week') {
       var s = p.start;
       var e = new Date(p.end.getFullYear(), p.end.getMonth(), p.end.getDate() - 1);
-      if (s.getFullYear() !== e.getFullYear()) {
-        return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' + e.getFullYear() + '年' + (e.getMonth() + 1) + '月' + e.getDate() + '日';
-      }
-      if (s.getMonth() !== e.getMonth()) {
-        return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' + (e.getMonth() + 1) + '月' + e.getDate() + '日';
-      }
+      if (s.getFullYear() !== e.getFullYear()) return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' + e.getFullYear() + '年' + (e.getMonth() + 1) + '月' + e.getDate() + '日';
+      if (s.getMonth() !== e.getMonth()) return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' + (e.getMonth() + 1) + '月' + e.getDate() + '日';
       return s.getFullYear() + '年' + (s.getMonth() + 1) + '月' + s.getDate() + '日 - ' + e.getDate() + '日';
     }
     if (mode === 'month') return p.start.getFullYear() + '年' + (p.start.getMonth() + 1) + '月';
@@ -3083,10 +3253,7 @@
     });
     var groups = Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return b.total - a.total; });
     var gEl = $('#stat-groups');
-    if (!groups.length) {
-      gEl.innerHTML = '<div class="empty"><span class="emoji">📊</span>该周期暂无记录</div>';
-      return;
-    }
+    if (!groups.length) { gEl.innerHTML = '<div class="empty"><span class="emoji">📊</span>该周期暂无记录</div>'; return; }
     var maxTotal = groups[0].total || 1;
     gEl.innerHTML = groups.map(function (g) {
       var avg = g.total / g.count;
@@ -3287,11 +3454,8 @@
         '</div>';
       }).join('');
     }
-    if (statMode === 'year') {
-      renderScheduleMonths(p.start.getFullYear());
-    } else {
-      renderMonthHeatmap(parseDate(startDate), parseDate(endDate));
-    }
+    if (statMode === 'year') renderScheduleMonths(p.start.getFullYear());
+    else renderMonthHeatmap(parseDate(startDate), parseDate(endDate));
   }
   function renderMonthHeatmap(firstD, lastD) {
     var today = todayStr();
@@ -3492,6 +3656,7 @@
   function renderSettings() {
     $('#set-show-total').checked = !!state.settings.showTotalCard;
     $('#set-show-schedule-progress').checked = !!state.settings.showScheduleProgress;
+    $('#set-show-holiday').checked = state.settings.showHolidayBadge !== false;
     $('#set-confirm-complete').checked = !!state.settings.confirmComplete;
     $('#set-notifications-enabled').checked = state.settings.notificationsEnabled === true;
     $('#set-lock-completed').checked = !!state.settings.lockCompleted;
@@ -3523,6 +3688,9 @@
     if (h.type === 'monthly') cycleTag += '<span class="tag">每月末</span>';
     if (h.type === 'yearly') {
       cycleTag += '<span class="tag">' + (h.calendar === 'lunar' ? '阴历' : '阳历') + '</span>';
+      if (h.calendar === 'lunar' && h.birthYear) {
+        cycleTag += '<span class="tag">' + h.birthYear + '年</span>';
+      }
       cycleTag += '<span class="tag">' + (h.month || 1) + '月' + (h.monthday || 1) + '日</span>';
     }
     if (h.reminderTime && h.notifyMode !== 'none') {
@@ -3601,6 +3769,7 @@
       monthday: opts.monthday,
       month: opts.month,
       calendar: opts.calendar,
+      birthYear: opts.birthYear || null,
       reminderTime: opts.reminderTime || '23:59',
       remindDaysBefore: opts.remindDaysBefore || 0,
       notifyMode: opts.notifyMode || 'none',
@@ -3686,10 +3855,49 @@
     });
   }
 
+  function syncScheduleChrome() {
+    var scheduleVisible = activeTab === 'schedule' && !currentSubpage;
+    var fab = $('#fab-group');
+    if (fab) fab.hidden = !scheduleVisible;
+    var timerList = $('#timer-list');
+    if (timerList) timerList.hidden = !scheduleVisible || !state.timers.length;
+  }
+  function toggleTimerPanel(force) {
+    if (!state.timers.length) return;
+    timerPanelExpanded = typeof force === 'boolean' ? force : !timerPanelExpanded;
+    renderTimers();
+  }
+  function bindHeaderTimerGesture() {
+    var panel = $('#timer-list');
+    if (!panel || panel.dataset.gestureBound === '1') return;
+    panel.dataset.gestureBound = '1';
+    panel.addEventListener('touchstart', function (e) {
+      if (e.touches.length !== 1) return;
+      if (e.target.closest && e.target.closest('button')) { panel.dataset.touchControls = '1'; return; }
+      panel.dataset.touchControls = '0';
+      timerPanelTouchY = e.touches[0].clientY;
+      timerPanelTouchMoved = false;
+    }, { passive: true });
+    panel.addEventListener('touchmove', function (e) {
+      if (panel.dataset.touchControls === '1' || !e.touches[0]) return;
+      timerPanelTouchMoved = Math.abs(e.touches[0].clientY - timerPanelTouchY) > 10;
+      if (timerPanelTouchMoved) e.preventDefault();
+    }, { passive: false });
+    panel.addEventListener('touchend', function (e) {
+      if (panel.dataset.touchControls === '1') { panel.dataset.touchControls = '0'; return; }
+      var dy = (e.changedTouches[0] ? e.changedTouches[0].clientY : timerPanelTouchY) - timerPanelTouchY;
+      if (dy > 24) toggleTimerPanel(true);
+      else if (dy < -24) toggleTimerPanel(false);
+      else if (!timerPanelTouchMoved) toggleTimerPanel();
+      panel.dataset.touchControls = '0';
+    }, { passive: true });
+  }
+
   function renderAll() {
     if (activeTab === 'schedule') renderSchedule();
     else if (activeTab === 'stats') renderStats();
     else if (activeTab === 'settings') renderSettings();
+    syncScheduleChrome();
     renderTimers();
     if (currentSubpage === 'records') renderRecords();
     else if (currentSubpage === 'habit') renderHabitManage();
@@ -3740,6 +3948,7 @@
     }
     activeTab = tab;
     $$('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+    if (tab !== 'schedule') timerPanelExpanded = false;
     renderAll();
     var wrap = $('#main-wrap');
     if (wrap) wrap.scrollTop = 0;
@@ -3766,6 +3975,7 @@
       var wrap1 = $('#main-wrap');
       if (wrap1) wrap1.scrollTo({ top: 0, behavior: 'auto' });
     }
+    syncScheduleChrome();
     if (name === 'font') {
       draftFont = Object.assign({}, state.settings.font);
       syncDraftFontButtons();
@@ -3818,6 +4028,7 @@
       var wrap2 = $('#main-wrap');
       if (wrap2) wrap2.scrollTo({ top: 0, behavior: 'auto' });
     }
+    syncScheduleChrome();
     if (hadHistory && !fromHistory) {
       skipSubpagePop = true;
       try { history.back(); } catch (e) { skipSubpagePop = false; }
@@ -3948,6 +4159,7 @@
       applyAnimSpeed();
       updateSuggestions();
       renderAll();
+      syncNotifications();
       toast('导入完成：+' + res.records + ' 计时、+' + res.checkins + ' 打卡、+' + res.habits + ' 固定事项');
     } catch (e) { toast('导入失败：' + (e.message || e)); }
   }
@@ -4071,9 +4283,9 @@
   }
 
   function bindScheduleGesture() {
-    var view = document.querySelector('#view-schedule');
-    if (!view || view.dataset.gestureBound === '1') return;
-    view.dataset.gestureBound = '1';
+    var card = document.querySelector('#calendar-card');
+    if (!card || card.dataset.gestureBound === '1') return;
+    card.dataset.gestureBound = '1';
     var startY = 0;
     var startClipH = 0;
     var startRowOffset = 0;
@@ -4084,9 +4296,9 @@
     var maxH = 380;
     var ignore = false;
     var dragging = false;
-    var clip = null, grid = null, card = null;
+    var clip = null, grid = null;
 
-    view.addEventListener('touchstart', function (e) {
+    card.addEventListener('touchstart', function (e) {
       if (!e.touches || e.touches.length !== 1) { ignore = true; return; }
       var t = e.target;
       if (t.closest && t.closest('button, a, input, textarea, select')) { ignore = true; return; }
@@ -4107,15 +4319,12 @@
       startY = e.touches[0].clientY;
     }, { passive: true });
 
-    view.addEventListener('touchmove', function (e) {
+    card.addEventListener('touchmove', function (e) {
       if (ignore) return;
       var t = e.touches[0];
       var dy = t.clientY - startY;
       if (!dragging) {
         if (Math.abs(dy) < 6) return;
-        var wrap = document.getElementById('main-wrap');
-        var atTop = wrap ? wrap.scrollTop < 5 : true;
-        if (dy > 0 && !atTop) { ignore = true; return; }
         dragging = true;
         card.classList.add('dragging');
       }
@@ -4128,7 +4337,7 @@
       e.preventDefault();
     }, { passive: false });
 
-    view.addEventListener('touchend', function (e) {
+    card.addEventListener('touchend', function (e) {
       if (ignore) { ignore = false; dragging = false; return; }
       if (!dragging) return;
       dragging = false;
@@ -4244,6 +4453,7 @@
     $('#newhabit-calendar-wrap').hidden = !isBirthday;
     $('#newhabit-weekday').hidden = (newHabitType !== 'weekly');
     $('#newhabit-solar-date').hidden = !showSolarDate;
+    $('#newhabit-lunar-year').hidden = !showLunarRule;
     $('#newhabit-month-rule').hidden = !(showLunarRule || showMonthly);
     $('#newhabit-month').hidden = !showLunarRule;
     $('#newhabit-rule-label').textContent =
@@ -4253,7 +4463,7 @@
     if (hint) {
       if (isBirthday) {
         hint.textContent = isLunar
-          ? '选择农历月日；提醒默认提前一天晚 7 点，条幅震动。'
+          ? '按农历选月 + 日，出生年选填（仅备注用）；提醒默认提前一天晚 7 点，条幅震动。'
           : '选择公历月日；提醒默认提前一天晚 7 点，条幅震动。';
       } else if (newHabitType === 'daily') {
         hint.textContent = '每日事项默认在当天 23:59 提醒，即当天结束前完成。';
@@ -4275,6 +4485,7 @@
     $('#newhabit-monthday').value = '31';
     $('#newhabit-month').value = '1';
     $('#newhabit-solar-date').value = '';
+    $('#newhabit-lunar-year').value = '';
     $('#newhabit-time').value = '23:59';
     $('#newhabit-notify').value = 'none';
     $$('#view-habit .seg[data-newhabit="type"] .seg-btn').forEach(function (b) {
@@ -4302,8 +4513,13 @@
     if (newHabitType === 'yearly' && newHabitCalendar === 'solar') {
       var yy = new Date().getFullYear();
       $('#newhabit-solar-date').value = yy + '-' + pad(h.month || 1) + '-' + pad(h.monthday || 1);
+      $('#newhabit-lunar-year').value = '';
+    } else if (newHabitType === 'yearly' && newHabitCalendar === 'lunar') {
+      $('#newhabit-solar-date').value = '';
+      $('#newhabit-lunar-year').value = h.birthYear || '';
     } else {
       $('#newhabit-solar-date').value = '';
+      $('#newhabit-lunar-year').value = '';
     }
     $('#newhabit-time').value = h.reminderTime || '23:59';
     $('#newhabit-notify').value = h.notifyMode || 'none';
@@ -4397,8 +4613,11 @@
 
     $('#timer-list').addEventListener('click', async function (e) {
       var btn = e.target.closest('[data-act]');
-      if (!btn) return;
       var card = e.target.closest('.timer-card');
+      if (!btn) {
+        if (card) toggleTimerPanel();
+        return;
+      }
       if (!card) return;
       var id = card.dataset.id;
       var act = btn.dataset.act;
@@ -4423,6 +4642,7 @@
     $('#stop-modal').addEventListener('click', function (e) { if (e.target.id === 'stop-modal') { pendingStopTimerId = null; hideModal('#stop-modal'); } });
 
     bindCalendarEvents();
+    bindHeaderTimerGesture();
 
     $('#schedule-list').addEventListener('click', function (e) {
       var li = e.target.closest('.schedule-entry'); if (!li) return;
@@ -4461,6 +4681,7 @@
         weekday: Number($('#newhabit-weekday').value),
         monthday: 1, month: 1,
         calendar: newHabitCalendar,
+        birthYear: null,
         reminderTime: $('#newhabit-time').value || '23:59',
         notifyMode: $('#newhabit-notify').value || 'none',
         remindDaysBefore: 0
@@ -4477,6 +4698,8 @@
       } else if (newHabitType === 'yearly' && newHabitCalendar === 'lunar') {
         opts.month = Number($('#newhabit-month').value) || 1;
         opts.monthday = Number($('#newhabit-monthday').value) || 1;
+        var by = parseInt($('#newhabit-lunar-year').value);
+        if (isFinite(by) && by >= 1900 && by <= 2100) opts.birthYear = by;
         opts.remindDaysBefore = 1;
         if (!opts.reminderTime || opts.reminderTime === '23:59') opts.reminderTime = '19:00';
         if (opts.notifyMode === 'none') opts.notifyMode = 'vibrate';
@@ -4493,6 +4716,7 @@
           h.monthday = opts.monthday;
           h.month = opts.month;
           h.calendar = opts.calendar;
+          h.birthYear = opts.birthYear;
           h.reminderTime = opts.reminderTime;
           h.notifyMode = opts.notifyMode;
           h.remindDaysBefore = opts.remindDaysBefore;
@@ -4544,7 +4768,6 @@
       });
     })();
 
-    /* 固定事项：日历圆点开关 */
     $('#habit-manage-list').addEventListener('change', function (e) {
       var inp = e.target.closest('input[data-habit-dot]');
       if (!inp) return;
@@ -4582,7 +4805,6 @@
       toast('已添加：' + name);
     });
 
-    /* 循环事项：日历圆点开关 */
     $('#cycle-manage-list').addEventListener('change', function (e) {
       var inp = e.target.closest('input[data-cycle-dot]');
       if (!inp) return;
@@ -4670,6 +4892,12 @@
       if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
       toast(e.target.checked ? '今日完成度已显示' : '今日完成度已隐藏');
     });
+    $('#set-show-holiday').addEventListener('change', function (e) {
+      state.settings.showHolidayBadge = e.target.checked;
+      save();
+      if (activeTab === 'schedule' && !currentSubpage) renderSchedule();
+      toast(e.target.checked ? '节假日调休标记已显示' : '节假日调休标记已隐藏');
+    });
     $('#set-notifications-enabled').addEventListener('change', async function (e) { state.settings.notificationsEnabled = e.target.checked; save(); if (e.target.checked) await ensureNotificationPermission(); else await cancelAllNotifications(); toast(e.target.checked ? '系统提醒已开启' : '系统提醒已关闭'); });
     $('#set-confirm-complete').addEventListener('change', function (e) { state.settings.confirmComplete = e.target.checked; save(); toast(e.target.checked ? '完成时二次确认已开启' : '完成时二次确认已关闭'); });
     $('#set-lock-completed').addEventListener('change', function (e) { state.settings.lockCompleted = e.target.checked; save(); if (activeTab === 'schedule') renderSchedule(); toast(e.target.checked ? '完成后不可撤销已开启' : '完成后不可撤销已关闭'); });
@@ -4683,13 +4911,14 @@
       state = {
         timers: [], records: [], checkins: [], habits: [], cycles: [], daily: {},
         settings: {
-          showTotalCard: true, showScheduleProgress: true,
+          showTotalCard: true, showScheduleProgress: true, showHolidayBadge: true,
           confirmComplete: true, lockCompleted: false, notificationsEnabled: false,
           animSpeed: 'normal', font: Object.assign({}, DEFAULT_FONT)
         }
       };
       try { localStorage.removeItem(KEY); } catch (e2) {}
       save();
+      cancelAllNotifications();
       draftFont = Object.assign({}, DEFAULT_FONT);
       applyFontSettings();
       applyAnimSpeed();
@@ -4734,6 +4963,7 @@
   try { bindEvents(); } catch (e) { console.error('bindEvents failed:', e); }
   try { bindCalendarEvents(); } catch (e) { console.error('bindCalendarEvents failed:', e); }
   try { bindScheduleGesture(); } catch (e) { console.error('bindScheduleGesture failed:', e); }
+  try { bindHeaderTimerGesture(); } catch (e) { console.error('bindHeaderTimerGesture failed:', e); }
   bindSwipe();
   bindBackButton();
   updateSuggestions();
@@ -4748,7 +4978,7 @@
     if (s) s.hidden = true;
   });
   $$('.tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === 'schedule'); });
-  try { renderSchedule(); } catch (e) { console.error('renderSchedule failed:', e); }
+  try { renderAll(); } catch (e) { console.error('initial render failed:', e); }
 
   setInterval(tickTimers, 1000);
 
