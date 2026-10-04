@@ -166,9 +166,9 @@
   .recent-list { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; min-height: 0; overflow: hidden; }
   .recent-item { padding: 8px 1px; min-width: 0; border-bottom: 1px solid var(--separator); }
   .recent-item:last-child { border-bottom: none; }
-  .recent-item .recent-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; min-width: 0; }
-  .recent-item .name { flex: 1; min-width: 0; font-size: 0.76em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .recent-item .detail { flex: none; max-width: 58%; font-size: 0.65em; color: var(--label-2); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .recent-item .recent-row { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+  .recent-item .name { display: block; width: 100%; min-width: 0; font-size: 0.82em; font-weight: 600; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recent-item .detail { display: block; width: 100%; min-width: 0; max-width: 100%; font-size: 0.68em; color: var(--label-2); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
   .recent-empty { padding: 12px 6px; text-align: center; color: var(--label-3); font-size: 0.7em; }
   .tabs {
     display: flex; gap: 0; background: var(--fill-primary);
@@ -459,7 +459,7 @@
   .calendar-head-actions { display:flex; gap:5px; align-items:center; }
   .calendar-head-actions .btn.small { min-height:34px; padding:7px 12px; font-family:inherit; font-size:0.78rem; font-weight:600; line-height:1.2; }
   .calendar-head-actions .calendar-expand-btn { min-width:52px; padding-left:6px; padding-right:6px; text-align:center; }
-  .calendar-card { padding:10px 8px 9px; margin-bottom:12px; overflow:hidden; }
+  .calendar-card { padding:10px 8px 9px; margin-bottom:12px; overflow:hidden; touch-action:none; }
   .calendar-clip { overflow: hidden; transition: height 320ms cubic-bezier(0.32, 0.72, 0, 1); will-change: height; }
   .calendar-grid {
     display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px;
@@ -519,25 +519,74 @@
 
   .calendar-selected-info { margin:0 4px 12px; font-size:.78em; color:var(--label-2); display:flex; justify-content:space-between; gap:10px; align-items:center; }
   .calendar-selected-info strong { color:var(--label); }
-  .schedule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
-  .schedule-list .item { padding: 12px 12px; margin: 0; min-width: 0; }
+  .schedule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+  .schedule-list .item { padding: 0; margin: 0; min-width: 0; }
   .schedule-list .schedule-entry {
-    min-height: 78px; align-items: flex-start; gap: 9px;
-    padding: 11px 11px; border-radius: 15px;
+    position: relative; min-height: 76px; align-items: stretch; gap: 0;
+    padding: 9px 12px 8px; border-radius: 15px;
+    background: var(--glass-1);
+    border: 1px solid rgba(60,60,67,.07);
+    box-shadow: 0 4px 14px rgba(0,0,0,.045), 0 1px 2px rgba(0,0,0,.03);
   }
-  .schedule-list .schedule-entry .check-circle { width: 23px; height: 23px; margin-top: 1px; }
-  .schedule-list .schedule-entry .content { min-width: 0; gap: 0; }
-  .schedule-list .schedule-entry .schedule-item-top { gap: 6px; align-items: flex-start; }
+  .schedule-list .schedule-entry.done { opacity: .78; }
+  .schedule-list .schedule-entry .content {
+    min-width: 0; width: 100%; display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows: auto 18px 18px auto;
+    grid-template-areas:
+      "title title"
+      "kind time"
+      "check countdown"
+      "note note";
+    column-gap: 12px; row-gap: 0;
+  }
+  .schedule-list .schedule-entry .schedule-item-top {
+    grid-area: title; display: block; min-width: 0; margin: 0 0 5px;
+  }
   .schedule-list .schedule-entry .schedule-item-top .text {
-    flex: 1; min-width: 0; font-size: 0.9em; font-weight: 600; line-height: 1.28;
+    display: block; min-width: 0; font-size: 0.88em; font-weight: 700; line-height: 1.25;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0;
+    color: var(--label);
   }
-  .schedule-list .schedule-entry .schedule-kind { flex: none; margin-top: 1px; }
-  .schedule-list .schedule-entry .schedule-item-time { margin-top: 5px; font-size: 0.68em; }
-  .schedule-list .schedule-entry .schedule-countdown { margin-top: 3px; font-size: 0.64em; line-height: 1.25; }
-  .schedule-list .schedule-entry .rec-note { margin-top: 4px; font-size: 0.7em; line-height: 1.3; }
+  .schedule-list .schedule-entry .check-circle {
+    grid-area: check; position: static; align-self: center; justify-self: start;
+    width: 18px; height: 18px; margin: 0; z-index: 2;
+  }
+  .schedule-list .schedule-entry .check-circle::after { left: 4px; top: 1px; width: 5px; height: 9px; }
+  .schedule-list .schedule-entry .schedule-item-time {
+    grid-area: time; align-self: center; justify-self: end; margin: 0; padding: 0;
+    font-size: 0.68em; line-height: 18px; text-align: right;
+    color: var(--label-2); font-variant-numeric: tabular-nums;
+  }
+  .schedule-list .schedule-entry .schedule-kind {
+    grid-area: kind; align-self: center; justify-self: start; margin: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: max-content; max-width: 100%; min-height: 18px;
+    font-size: 0.62em; font-weight: 650; padding: 2px 7px; line-height: 14px;
+    border: 0; border-radius: 7px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .schedule-list .schedule-entry .schedule-kind.task { color: var(--blue); background: rgba(0,122,255,.12); }
+  .schedule-list .schedule-entry .schedule-kind.daily { color: var(--green); background: rgba(52,199,89,.13); }
+  .schedule-list .schedule-entry .schedule-kind.weekly { color: var(--indigo); background: rgba(88,86,214,.12); }
+  .schedule-list .schedule-entry .schedule-kind.monthly { color: var(--orange); background: rgba(255,149,0,.13); }
+  .schedule-list .schedule-entry .schedule-kind.yearly { color: var(--pink); background: rgba(255,45,85,.12); }
+  .schedule-list .schedule-entry .schedule-kind.cycle { color: var(--teal); background: rgba(90,200,250,.14); }
+  .schedule-list .schedule-entry .schedule-countdown {
+    grid-area: countdown; align-self: center; justify-self: end; margin: 0;
+    font-size: 0.64em; font-weight: 650; line-height: 18px; text-align: right;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+    color: var(--orange); overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+  }
+  .schedule-list .schedule-entry .schedule-countdown.urgent { color: var(--red); }
+  .schedule-list .schedule-entry .schedule-countdown.done { color: var(--gray); }
+  .schedule-list .schedule-entry .rec-note {
+    grid-area: note; margin: 1px 0 0; font-size: 0.64em; line-height: 1.2;
+  }
+  .schedule-list .schedule-entry .content:has(.rec-note) { grid-template-rows: auto 22px 22px auto; }
 
   .schedule-list .item:last-child { margin-bottom: 0; }
-  .schedule-date-group { grid-column: 1 / -1; margin: 8px 4px 0; font-size:.72em; font-weight:700; color:var(--label-2); }
+  .schedule-date-group { grid-column: 1 / -1; margin: 12px 5px 0; font-size:.73em; font-weight:700; color:var(--label-2); letter-spacing:-.01em; }
   .schedule-date-group:first-child { margin-top:4px; }
   .schedule-kind { font-size:.62em; padding:2px 6px; border-radius:6px; background:var(--fill-primary); color:var(--label-2); white-space:nowrap; }
   .schedule-kind.task { color:var(--blue); background:rgba(0,122,255,.12); }
@@ -567,6 +616,7 @@
     .header-title-block { padding-right: 148px; }
     .header-timer-stack { width: min(218px, calc(100vw - 150px)); }
     .schedule-list { grid-template-columns: 1fr; }
+    .schedule-list .schedule-entry { min-height: 74px; padding: 9px 11px 8px; }
     .schedule-date-group { grid-column: 1; }
     .calendar-card { padding-left:5px; padding-right:5px; }
     .calendar-grid, .calendar-week { gap:2px; }
@@ -582,6 +632,8 @@
   .progress-head strong { color: var(--label); font-size: 1.1em; font-weight: 700; font-variant-numeric: tabular-nums; }
   .item.checkable { align-items: center; gap: 14px; }
   .item.checkable .content { display: flex; flex-direction: column; gap: 2px; }
+  /* 日程卡片内部使用固定网格，避免被通用 checkable 样式覆盖 */
+  .schedule-list .schedule-entry.item.checkable .content { display: grid; }
   .check-circle {
     flex: none; width: 26px; height: 26px;
     border-radius: 50%; border: 2px solid var(--label-3);
@@ -2885,6 +2937,40 @@
 
   function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
   function addMonthsClamped(d, n) { var x = new Date(d); var day = x.getDate(); x.setDate(1); x.setMonth(x.getMonth() + n); x.setDate(Math.min(day, daysInMonth(x.getFullYear(), x.getMonth()))); return x; }
+  function fmtScheduleCountdown(target, now) {
+    if (!target) return '';
+    var t = new Date(target);
+    var n = new Date(now || Date.now());
+    var diff = t.getTime() - n.getTime();
+    var future = diff >= 0;
+    var start = future ? n : t;
+    var end = future ? t : n;
+    var months = 0;
+    var cursor = new Date(start);
+    while (months < 240) {
+      var next = new Date(cursor);
+      var day = next.getDate();
+      next.setDate(1);
+      next.setMonth(next.getMonth() + 1);
+      var last = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate();
+      next.setDate(Math.min(day, last));
+      if (next.getTime() > end.getTime()) break;
+      cursor = next;
+      months++;
+    }
+    var remain = Math.abs(end.getTime() - cursor.getTime());
+    var days = Math.floor(remain / 86400000); remain %= 86400000;
+    var hours = Math.floor(remain / 3600000); remain %= 3600000;
+    var mins = Math.floor(remain / 60000);
+    var compact = '';
+    if (months > 0) compact += months + 'M';
+    if (days > 0) compact += days + 'D';
+    if (hours > 0) compact += hours + 'h';
+    if (mins > 0) compact += mins + "'";
+    if (!compact) compact = '即将';
+    return future ? '剩' + compact : '已过' + compact;
+  }
+
   function fmtCountdownMDHM(target, now) {
     if (!target) return '';
     var t = new Date(target), n = new Date(now || Date.now()), diff = t - n;
@@ -3001,21 +3087,23 @@
       if (it.kind === 'cycle' && it.cycleInfo) {
         var ci = it.cycleInfo;
         if (ci.completed) countdown = '本周期已完成 · 新周期 ' + it.data.currentCycleStart + ' 开始';
-        else countdown = '第 ' + ci.dayInCycle + '/' + it.data.cycleDays + ' 天 · 剩余 ' + ci.daysLeft + ' 天';
+        else countdown = ci.dayInCycle + '/' + it.data.cycleDays + ' D ';
       } else {
         timeText = typeof it.startAt === 'number' ? fmtTime(it.startAt) : '';
         var target = typeof it.startAt === 'number' ? it.startAt : it.endAt;
         if (!it.done && target) {
-          countdown = fmtCountdownMDHM(target, now);
-          if (it.startAt && it.endAt && now >= it.startAt && now < it.endAt) countdown = fmtCountdownMDHM(it.endAt, now);
+          countdown = fmtScheduleCountdown(target, now);
+          if (it.startAt && it.endAt && now >= it.startAt && now < it.endAt) countdown = fmtScheduleCountdown(it.endAt, now);
         }
       }
       var countdownCls = countdown.indexOf('已过') === 0 ? ' urgent' : '';
       var note = it.note ? '<div class="rec-note">' + esc(it.note) + '</div>' : '';
       var disabled = (it.done && state.settings.lockCompleted) ? ' disabled' : '';
       html += '<div class="item checkable schedule-entry ' + (it.done ? 'done' : '') + '" data-schedule-kind="' + it.kind + '" data-schedule-id="' + it.id + '" data-schedule-date="' + it.date + '">' +
-        '<button class="check-circle" type="button"' + disabled + '></button><div class="content">' +
-        '<div class="schedule-item-top"><div class="text">' + esc(it.name) + '</div><span class="schedule-kind ' + it.kind + '">' + esc(kindLabel) + '</span></div>' +
+        '<div class="content">' +
+        '<div class="schedule-item-top"><div class="text">' + esc(it.name) + '</div></div>' +
+        '<button class="check-circle" type="button"' + disabled + '></button>' +
+        '<span class="schedule-kind ' + it.kind + '">' + esc(kindLabel) + '</span>' +
         (timeText ? '<div class="schedule-item-time">' + timeText + '</div>' : '') +
         (countdown ? '<div class="schedule-countdown' + countdownCls + '">' + esc(countdown) + '</div>' : '') +
         note + '</div></div>';
@@ -4426,13 +4514,39 @@
   }
 
   function bindScheduleGesture() {
-    var view = document.querySelector('#view-schedule');
-    if (!view || view.dataset.gestureBound === '1') return;
-    view.dataset.gestureBound = '1';
-    var startY = 0, startClipH = 0, startRowOffset = 0;
-    var rowH = 76, totalRows = 5, minH = 76, maxH = 380;
-    var ignore = true, dragging = false, mode = '';
-    var card = null, clip = null, grid = null;
+    var card = document.querySelector('#calendar-card');
+    if (!card || card.dataset.gestureBound === '1') return;
+    card.dataset.gestureBound = '1';
+
+    var startY = 0;
+    var startClipH = 0;
+    var startRowOffset = 0;
+    var rowH = 76;
+    var totalRows = 5;
+    var minH = 76;
+    var maxH = 380;
+    var dragging = false;
+    var direction = '';
+    var moved = false;
+    var clip = null;
+    var grid = null;
+
+    function prepare() {
+      clip = document.getElementById('calendar-clip');
+      grid = document.getElementById('calendar-grid');
+      if (!clip || !grid) return false;
+      var firstDay = grid.querySelector('.calendar-day');
+      if (!firstDay) return false;
+      rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4);
+      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, Math.ceil(grid.children.length / 7));
+      var selectedRow = parseFloat(grid.dataset.selectedrow);
+      if (!isFinite(selectedRow)) selectedRow = 0;
+      startRowOffset = selectedRow * rowH;
+      minH = rowH;
+      maxH = Math.max(minH, totalRows * rowH - 4);
+      startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH);
+      return true;
+    }
 
     function applyDragHeight(h) {
       if (!clip || !grid) return;
@@ -4444,71 +4558,54 @@
       grid.style.transform = 'translate3d(0, -' + offset + 'px, 0)';
     }
 
-    view.addEventListener('touchstart', function (e) {
-      ignore = true; dragging = false; mode = '';
+    card.addEventListener('touchstart', function (e) {
       if (!e.touches || e.touches.length !== 1) return;
-      var t = e.target;
-      if (t.closest && t.closest('button, a, input, textarea, select')) return;
-      card = document.getElementById('calendar-card');
-      clip = document.getElementById('calendar-clip');
-      grid = document.getElementById('calendar-grid');
-      var wrap = document.getElementById('main-wrap');
-      if (!card || !clip || !grid) return;
-      var firstDay = grid.querySelector('.calendar-day');
-      if (!firstDay) return;
-      rowH = parseFloat(grid.dataset.rowh) || (firstDay.offsetHeight + 4);
-      totalRows = parseFloat(grid.dataset.totalrows) || Math.max(1, Math.ceil(grid.children.length / 7));
-      var selectedRow = parseFloat(grid.dataset.selectedrow) || 0;
-      startRowOffset = selectedRow * rowH;
-      minH = rowH;
-      maxH = Math.max(minH, totalRows * rowH - 4);
-      startClipH = clip.offsetHeight || (calendarExpanded ? maxH : minH);
-      startY = e.touches[0].clientY;
-      var atTop = !wrap || wrap.scrollTop <= 2;
-      if (!atTop) return;
-      if (!calendarExpanded) {
-        mode = 'expand';
-      } else {
-        mode = 'collapse';
-      }
-      ignore = false;
+      if (!prepare()) return;
+      var t = e.touches[0];
+      startY = t.clientY;
+      dragging = false;
+      direction = calendarExpanded ? 'collapse' : 'expand';
+      moved = false;
+      card.classList.remove('dragging');
     }, { passive: true });
 
-    view.addEventListener('touchmove', function (e) {
-      if (ignore || !e.touches || !e.touches[0]) return;
+    card.addEventListener('touchmove', function (e) {
+      if (!e.touches || !e.touches[0]) return;
       var dy = e.touches[0].clientY - startY;
       if (!dragging) {
-        if (Math.abs(dy) < 3) return;
-        if ((mode === 'expand' && dy <= 0) || (mode === 'collapse' && dy >= 0)) {
-          ignore = true;
-          return;
-        }
+        if (Math.abs(dy) < 4) return;
+        if ((direction === 'expand' && dy <= 0) || (direction === 'collapse' && dy >= 0)) return;
         dragging = true;
-        if (card) card.classList.add('dragging');
+        moved = true;
+        card.classList.add('dragging');
       }
       applyDragHeight(startClipH + dy);
       e.preventDefault();
     }, { passive: false });
 
-    function endDrag(e) {
-      if (ignore) { ignore = true; dragging = false; mode = ''; return; }
-      if (!dragging) { ignore = true; mode = ''; return; }
+    function finish(e) {
+      if (!dragging) { dragging = false; return; }
       dragging = false;
-      if (card) card.classList.remove('dragging');
+      card.classList.remove('dragging');
       var touch = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
       var dy = touch ? touch.clientY - startY : 0;
       var finalHeight = Math.max(minH, Math.min(maxH, startClipH + dy));
-      var midpoint = (minH + maxH) / 2;
-      calendarExpanded = finalHeight > midpoint;
-      mode = '';
+      var threshold = Math.max(18, (maxH - minH) * 0.18);
+      if (calendarExpanded) {
+        if (startClipH - finalHeight >= threshold) calendarExpanded = false;
+      } else {
+        if (finalHeight - startClipH >= threshold) calendarExpanded = true;
+      }
       renderCalendar();
-      ignore = true;
     }
-    view.addEventListener('touchend', endDrag, { passive: true });
-    view.addEventListener('touchcancel', function () {
-      if (card) card.classList.remove('dragging');
-      ignore = true; dragging = false; mode = '';
-      renderCalendar();
+
+    card.addEventListener('touchend', finish, { passive: true });
+    card.addEventListener('touchcancel', function () {
+      if (dragging) {
+        dragging = false;
+        card.classList.remove('dragging');
+        renderCalendar();
+      }
     }, { passive: true });
   }
   function bindBackButton() {
