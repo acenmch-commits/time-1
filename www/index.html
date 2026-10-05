@@ -1288,14 +1288,14 @@
       // 仅对“每月 + 每月多次”的固定事项显示进度底色和持续动画。
       var monthlyProgressClass = '';
       var monthlyProgressStyle = '';
-      var monthlyWave = '';
+        // 月度进度只保留静态进度底色。
       if (it.kind === 'monthly' && it.data && Number(it.data.target || 1) > 1) {
         var mp = habitProgress(it.data, it.date);
         var mpPct = mp.target > 0 ? Math.round(mp.count / mp.target * 100) : 0;
         mpPct = Math.max(0, Math.min(100, mpPct));
         monthlyProgressClass = ' monthly-progress';
         monthlyProgressStyle = ' style="--monthly-progress:' + mpPct + '%;"';
-        if (mpPct > 0) monthlyWave = '<span class="monthly-bubbles" aria-hidden="true"><i class="monthly-bubble b1"></i><i class="monthly-bubble b2"></i><i class="monthly-bubble b3"></i></span>';
+        // 月度进度只保留静态进度底色。
       }
 
       html += '<div class="item checkable schedule-entry' + monthlyProgressClass + ' ' + (it.done ? 'done' : '') + '"' + monthlyProgressStyle + ' data-schedule-kind="' + it.kind + '" data-schedule-id="' + it.id + '" data-schedule-date="' + it.date + '">' +
@@ -1448,36 +1448,30 @@
   function removeLatestHabitEntry(habit, refDate) {
     var effectiveDate = refDate || scheduleDate;
     var range = cycleRange(habit.type, effectiveDate);
-    var cur = parseDate(range.start);
-    var endD = parseDate(range.end);
-    var cutoff = parseDate(effectiveDate);
     var latestDate = null, latestIdx = -1;
-    // 只在当前周期、截止到目标日期的记录中寻找最后一次实际完成。
-    // 不依赖完成值是不是时间戳，兼容历史数据。
-    while (cur <= endD && cur <= cutoff) {
-      var ds = dateStr(cur);
+    Object.keys(state.daily || {}).forEach(function (ds) {
+      if (ds < range.start || ds > range.end || ds > effectiveDate) return;
       var rec = state.daily[ds];
-      if (rec && rec.habits) {
-        var v = rec.habits[habit.id];
-        if (Array.isArray(v)) {
-          if (v.length) { latestDate = ds; latestIdx = v.length - 1; }
-        } else if (v != null) {
-          latestDate = ds; latestIdx = 0;
-        }
+      var list = habitDoneList(rec, habit.id);
+      if (!list.length) return;
+      if (latestDate === null || ds > latestDate) {
+        latestDate = ds;
+        latestIdx = list.length - 1;
       }
-      cur.setDate(cur.getDate() + 1);
-    }
-    if (!latestDate) return false;
+    });
+    if (latestDate === null || latestIdx < 0) return false;
     var rec2 = state.daily[latestDate];
-    var v2 = rec2 && rec2.habits ? rec2.habits[habit.id] : null;
-    if (Array.isArray(v2)) {
-      if (latestIdx < 0 || latestIdx >= v2.length) return false;
-      v2.splice(latestIdx, 1);
-      if (!v2.length) delete rec2.habits[habit.id];
-      else if (v2.length === 1) rec2.habits[habit.id] = v2[0];
+    if (!rec2 || !rec2.habits) return false;
+    var v = rec2.habits[habit.id];
+    if (Array.isArray(v)) {
+      if (latestIdx >= v.length) latestIdx = v.length - 1;
+      if (latestIdx < 0) return false;
+      v.splice(latestIdx, 1);
+      if (v.length === 0) delete rec2.habits[habit.id];
+      else if (v.length === 1) rec2.habits[habit.id] = v[0];
       return true;
     }
-    if (v2 != null) {
+    if (typeof v === 'number') {
       delete rec2.habits[habit.id];
       return true;
     }
