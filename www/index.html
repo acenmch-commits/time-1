@@ -5355,6 +5355,8 @@ function bindScheduleGesture() {
       monthlyLongPressStartY = e.clientY;
       monthlyLongPressTimer = setTimeout(async function () {
         monthlyLongPressTimer = null;
+        // 长按一旦成立，立即拦截 Android/WebView 后续可能产生的 click。
+        monthlyLongPressTriggered = true;
         var cardDate = li.dataset.scheduleDate;
         var p = habitProgress(h, cardDate);
         if (p.count <= 0) {
@@ -5370,7 +5372,7 @@ function bindScheduleGesture() {
           '取消一次'
         );
         if (!ok) {
-          monthlyLongPressTriggered = false;
+          setTimeout(function () { monthlyLongPressTriggered = false; }, 300);
           return;
         }
         var done = await undoOneMonthlyCompletion(id, cardDate);
