@@ -1288,7 +1288,7 @@
       // 仅对“每月 + 每月多次”的固定事项显示进度底色和持续动画。
       var monthlyProgressClass = '';
       var monthlyProgressStyle = '';
-        // 月度进度只保留静态进度底色。
+        if (mpPct > 0) monthlyWave = '<span class="monthly-bubbles" aria-hidden="true"><i class="monthly-bubble b1"></i><i class="monthly-bubble b2"></i><i class="monthly-bubble b3"></i></span>';
       if (it.kind === 'monthly' && it.data && Number(it.data.target || 1) > 1) {
         var mp = habitProgress(it.data, it.date);
         var mpPct = mp.target > 0 ? Math.round(mp.count / mp.target * 100) : 0;
@@ -3927,5 +3927,29 @@ function bindBackButton() {
 
 })();
 </script>
+<style>
+    .schedule-list .schedule-entry.monthly-progress .monthly-bubbles {
+      position: absolute; z-index: 1; left: 0; top: 0;
+      width: var(--monthly-progress); height: 100%; overflow: hidden; pointer-events: none;
+    }
+    .schedule-list .schedule-entry.monthly-progress .monthly-bubble {
+      position: absolute; bottom: -8px; width: 7px; height: 7px;
+      border: 1px solid rgba(186,230,253,.75); border-radius: 50%;
+      background: rgba(125,211,252,.18); box-shadow: 0 0 4px rgba(56,189,248,.22);
+      animation: monthlyBubbleRise 3.8s linear infinite;
+    }
+    .schedule-list .schedule-entry.monthly-progress .monthly-bubble.b1 { animation-delay: 0s; }
+    .schedule-list .schedule-entry.monthly-progress .monthly-bubble.b2 { animation-delay: 1.25s; }
+    .schedule-list .schedule-entry.monthly-progress .monthly-bubble.b3 { animation-delay: 2.5s; }
+    @keyframes monthlyBubbleRise {
+      0% { left: 2%; bottom: -10px; opacity: 0; transform: translate(0,0) scale(.55); }
+      10% { opacity: .92; }
+      30% { left: 28%; opacity: .95; transform: translate(3px,-13px) scale(1); }
+      52% { left: 52%; opacity: .82; transform: translate(-4px,-28px) scale(.92); }
+      75% { left: 76%; opacity: .48; transform: translate(5px,-43px) scale(.82); }
+      91% { left: 92%; opacity: .18; transform: translate(-2px,-58px) scale(.68); }
+      100% { left: 103%; bottom: calc(100% + 3px); opacity: 0; transform: translate(4px,-68px) scale(.48); }
+    }
+</style>
 </body>
 </html>
