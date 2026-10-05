@@ -3312,7 +3312,12 @@ function setupCommonChipReorder(container, inputId) {
       toast('当前月还没有完成记录');
       return false;
     }
-    removeLatestHabitEntry(h);
+    var removed = removeLatestHabitEntry(h, scheduleDate);
+    if (!removed) {
+      scheduleDate = oldDate;
+      toast('没有找到可取消的完成记录');
+      return false;
+    }
     save();
     scheduleDate = oldDate;
     renderSchedule();
@@ -3391,15 +3396,17 @@ function setupCommonChipReorder(container, inputId) {
     renderSchedule();
     syncNotifications();
   }
-  function removeLatestHabitEntry(habit) {
-    var range = cycleRange(habit.type, scheduleDate);
+  function removeLatestHabitEntry(habit, refDate) {
+    var effectiveDate = refDate || scheduleDate;
+    var range = cycleRange(habit.type, effectiveDate);
     var cur = parseDate(range.start);
     var endD = parseDate(range.end);
     var today = todayStr();
+    var cutoffDate = effectiveDate < today ? effectiveDate : today;
     var latestDate = null, latestTs = -1, latestIdx = -1;
     while (cur <= endD) {
       var ds = dateStr(cur);
-      if (ds > today) break;
+      if (ds > cutoffDate) break;
       var rec = state.daily[ds];
       if (rec) {
         var list = habitDoneList(rec, habit.id);
