@@ -603,36 +603,38 @@
     pointer-events: none;
   }
   /* 水面：固定在当前进度的右边缘，持续做正弦波/水波摆动。 */
+  /* 波纹固定在进度条右侧边缘，垂直居中，不再贴在卡片顶部。 */
   .schedule-list .schedule-entry.monthly-progress .monthly-wave {
     position: absolute;
-    z-index: 1;
-    left: calc(var(--monthly-progress) - 18px);
-    top: 3px;
-    bottom: 3px;
-    width: 36px;
+    z-index: 2;
+    left: calc(var(--monthly-progress) - 8px);
+    top: 50%;
+    width: 16px;
+    height: 72%;
+    transform: translateY(-50%);
     overflow: visible;
     pointer-events: none;
-    opacity: .95;
+    opacity: .98;
     transform-origin: 50% 50%;
   }
   .schedule-list .schedule-entry.monthly-progress .monthly-wave::before,
   .schedule-list .schedule-entry.monthly-progress .monthly-wave::after {
     content: '';
     position: absolute;
-    left: 9px;
-    top: -8%;
-    width: 18px;
-    height: 116%;
+    left: 5px;
+    top: 0;
+    width: 6px;
+    height: 100%;
     border-radius: 50%;
-    border-right: 2px solid rgba(186,230,253,.88);
-    border-left: 1px solid rgba(125,211,252,.32);
-    filter: drop-shadow(0 0 3px rgba(56,189,248,.28));
+    border-right: 2px solid rgba(186,230,253,.95);
+    border-left: 1px solid rgba(125,211,252,.38);
+    filter: drop-shadow(0 0 3px rgba(56,189,248,.30));
   }
   .schedule-list .schedule-entry.monthly-progress .monthly-wave::before {
     animation: monthlyWaterSine 1.55s ease-in-out infinite;
   }
   .schedule-list .schedule-entry.monthly-progress .monthly-wave::after {
-    left: 5px;
+    left: 3px;
     opacity: .42;
     border-right-width: 1px;
     animation: monthlyWaterSineReverse 2.1s ease-in-out infinite;
@@ -667,26 +669,14 @@
   .monthly-bubble.b2 { width: 10px; height: 10px; animation-delay: -2.9s; animation-duration: 6.1s; }
   .monthly-bubble.b3 { width: 5px; height: 5px; animation-delay: -4.2s; animation-duration: 3.9s; }
   @keyframes monthlyWaterSine {
-    0%   { transform: translateX(-8%) translateY(0) rotate(-1deg); }
-    25%  { transform: translateX(1%) translateY(-3px) rotate(1deg); }
-    50%  { transform: translateX(8%) translateY(0) rotate(-1deg); }
-    75%  { transform: translateX(1%) translateY(3px) rotate(1deg); }
-    100% { transform: translateX(-8%) translateY(0) rotate(-1deg); }
+    0%,100% { transform: translateY(0) rotate(-9deg) scaleX(.82); }
+    25% { transform: translateY(-5px) rotate(8deg) scaleX(1.08); }
+    50% { transform: translateY(2px) rotate(-7deg) scaleX(.86); }
+    75% { transform: translateY(5px) rotate(9deg) scaleX(1.10); }
   }
   @keyframes monthlyWaterSineReverse {
-    0%   { transform: translateX(8%) translateY(2px) rotate(1deg); }
-    50%  { transform: translateX(-8%) translateY(-2px) rotate(-1deg); }
-    100% { transform: translateX(8%) translateY(2px) rotate(1deg); }
-  }
-  @keyframes monthlyWaterSine {
-    0%,100% { transform: translateY(0) rotate(-7deg) scaleX(.86); }
-    25% { transform: translateY(-4px) rotate(5deg) scaleX(1.08); }
-    50% { transform: translateY(1px) rotate(-4deg) scaleX(.9); }
-    75% { transform: translateY(4px) rotate(6deg) scaleX(1.06); }
-  }
-  @keyframes monthlyWaterSineReverse {
-    0%,100% { transform: translateY(3px) rotate(6deg) scaleX(1.05); }
-    50% { transform: translateY(-3px) rotate(-6deg) scaleX(.88); }
+    0%,100% { transform: translateY(3px) rotate(8deg) scaleX(1.05); }
+    50% { transform: translateY(-4px) rotate(-8deg) scaleX(.78); }
   }
   @keyframes monthlyBubbleRise {
     0% { left: 2%; bottom: -10px; opacity: 0; transform: translate(0,0) scale(.55); }
@@ -3403,29 +3393,35 @@ function setupCommonChipReorder(container, inputId) {
     var endD = parseDate(range.end);
     var today = todayStr();
     var cutoffDate = effectiveDate < today ? effectiveDate : today;
-    var latestDate = null, latestTs = -1, latestIdx = -1;
+    var latestDate = null, latestIdx = -1;
+    // 与 habitProgress 使用完全相同的周期/日期范围，删除最后一条实际存在的记录。
+    // 不依赖记录值必须是时间戳，兼容历史数据格式。
     while (cur <= endD) {
       var ds = dateStr(cur);
       if (ds > cutoffDate) break;
       var rec = state.daily[ds];
       if (rec) {
         var list = habitDoneList(rec, habit.id);
-        for (var i = 0; i < list.length; i++) {
-          if (list[i] >= latestTs) { latestTs = list[i]; latestDate = ds; latestIdx = i; }
+        if (list.length) {
+          latestDate = ds;
+          latestIdx = list.length - 1;
         }
       }
       cur.setDate(cur.getDate() + 1);
     }
-    if (!latestDate) return false;
+    if (!latestDate || latestIdx < 0) return false;
     var rec2 = state.daily[latestDate];
     if (!rec2 || !rec2.habits) return false;
     var v = rec2.habits[habit.id];
     if (Array.isArray(v)) {
+      if (latestIdx >= v.length) latestIdx = v.length - 1;
+      if (latestIdx < 0) return false;
       v.splice(latestIdx, 1);
       if (v.length === 0) delete rec2.habits[habit.id];
       else if (v.length === 1) rec2.habits[habit.id] = v[0];
       return true;
-    } else if (typeof v === 'number') {
+    }
+    if (typeof v === 'number') {
       delete rec2.habits[habit.id];
       return true;
     }
