@@ -640,7 +640,10 @@
   .schedule-list .schedule-entry.monthly-progress .monthly-bubbles {
     position: absolute;
     z-index: 1;
-    inset: 0;
+    left: 0;
+    top: 0;
+    width: var(--monthly-progress);
+    height: 100%;
     overflow: hidden;
     pointer-events: none;
   }
@@ -3231,7 +3234,7 @@ function setupCommonChipReorder(container, inputId) {
         mpPct = Math.max(0, Math.min(100, mpPct));
         monthlyProgressClass = ' monthly-progress';
         monthlyProgressStyle = ' style="--monthly-progress:' + mpPct + '%;"';
-        monthlyWave = '<span class="monthly-wave" aria-hidden="true"></span><span class="monthly-bubbles" aria-hidden="true"><i class="monthly-bubble b1"></i><i class="monthly-bubble b2"></i><i class="monthly-bubble b3"></i></span>';
+        if (mpPct > 0) monthlyWave = '<span class="monthly-wave" aria-hidden="true"></span><span class="monthly-bubbles" aria-hidden="true"><i class="monthly-bubble b1"></i><i class="monthly-bubble b2"></i><i class="monthly-bubble b3"></i></span>';
       }
 
       html += '<div class="item checkable schedule-entry' + monthlyProgressClass + ' ' + (it.done ? 'done' : '') + '"' + monthlyProgressStyle + ' data-schedule-kind="' + it.kind + '" data-schedule-id="' + it.id + '" data-schedule-date="' + it.date + '">' +
