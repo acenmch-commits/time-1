@@ -3288,34 +3288,32 @@ function setupCommonChipReorder(container, inputId) {
     }
     save(); renderSchedule(); syncNotifications();
   }
-  function undoOneMonthlyCompletion(habitId) {
+  async function undoOneMonthlyCompletion(habitId, targetDate) {
     var h = state.habits.filter(function (x) { return x.id === habitId; })[0];
     if (!h || h.type !== 'monthly' || Number(h.target || 1) <= 1) return false;
-    if (state.settings.lockCompleted) {
-      toast('该事项已完成且不可撤销');
-      return false;
-    }
+    if (state.settings.lockCompleted) { toast('该事项已完成且不可撤销'); return false; }
+    var oldDate = scheduleDate;
+    scheduleDate = targetDate || oldDate;
     var prog = habitProgress(h, scheduleDate);
     if (prog.count <= 0) {
+      scheduleDate = oldDate;
       toast('当前月还没有完成记录');
       return false;
     }
-    var removed = removeLatestHabitEntry(h);
-    if (!removed) {
-      toast('未找到可取消的完成记录');
-      return false;
-    }
+    removeLatestHabitEntry(h);
     save();
+    scheduleDate = oldDate;
     renderSchedule();
     syncNotifications();
-    var nextCount = Math.max(0, prog.count - 1);
-    toast('已取消一次完成 · 当前进度 ' + nextCount + '/' + prog.target);
+    toast('已取消一次完成 · 当前进度 ' + Math.max(0, prog.count - 1) + '/' + prog.target);
     return true;
   }
 
-  async function toggleHabitDone(habitId) {
+  async function toggleHabitDone(habitId, targetDate) {
     var h = state.habits.filter(function (x) { return x.id === habitId; })[0];
     if (!h) return;
+    var oldScheduleDate = scheduleDate;
+    if (targetDate) scheduleDate = targetDate;
     if (h.type === 'daily') {
       var rec = ensureDaily(scheduleDate);
       var isDone = rec.habits[habitId] != null;
@@ -3351,6 +3349,7 @@ function setupCommonChipReorder(container, inputId) {
       }
     }
     save();
+    scheduleDate = oldScheduleDate;
     renderSchedule();
     syncNotifications();
   }
@@ -5356,9 +5355,8 @@ function bindScheduleGesture() {
       monthlyLongPressStartY = e.clientY;
       monthlyLongPressTimer = setTimeout(async function () {
         monthlyLongPressTimer = null;
-        // 长按已经成立，先拦截随后由 Android/WebView 产生的 click。
-        monthlyLongPressTriggered = true;
-        var p = habitProgress(h, scheduleDate);
+        var cardDate = li.dataset.scheduleDate;
+        var p = habitProgress(h, cardDate);
         if (p.count <= 0) {
           toast('当前月还没有完成记录');
           return;
@@ -5372,11 +5370,15 @@ function bindScheduleGesture() {
           '取消一次'
         );
         if (!ok) {
-          toast('已取消操作');
+          monthlyLongPressTriggered = false;
           return;
         }
-        undoOneMonthlyCompletion(id);
-      }, 520);
+        var done = await undoOneMonthlyCompletion(id, cardDate);
+        if (done) {
+          monthlyLongPressTriggered = true;
+          setTimeout(function () { monthlyLongPressTriggered = false; }, 900);
+        }
+      }, 520);;
     });
     $('#schedule-list').addEventListener('pointermove', function (e) {
       if (!monthlyLongPressTimer) return;
@@ -5396,20 +5398,23 @@ function bindScheduleGesture() {
       if (!h || Number(h.target || 1) <= 1 || state.settings.lockCompleted) return;
       e.preventDefault();
       clearMonthlyLongPress();
-      monthlyLongPressTriggered = true;
-      (async function () {
-        var p = habitProgress(h, scheduleDate);
-        if (p.count <= 0) {
-          toast('当前月还没有完成记录');
-          return;
+      var cardDate = li.dataset.scheduleDate;
+      var p2 = habitProgress(h, cardDate);
+      if (p2.count <= 0) {
+        toast('当前月还没有完成记录');
+        return;
+      }
+      confirmDialog(
+        '确定取消「' + h.name + '」一次完成记录吗？\n当前进度 ' + p2.count + '/' + p2.target,
+        '取消一次'
+      ).then(async function (ok) {
+        if (!ok) return;
+        var done = await undoOneMonthlyCompletion(id, cardDate);
+        if (done) {
+          monthlyLongPressTriggered = true;
+          setTimeout(function () { monthlyLongPressTriggered = false; }, 900);
         }
-        var ok = await confirmDialog(
-          '确定取消「' + h.name + '」一次完成记录吗？\n当前进度 ' + p.count + '/' + p.target,
-          '取消一次'
-        );
-        if (ok) undoOneMonthlyCompletion(id);
-        else toast('已取消操作');
-      })();
+      });
     });
 
     $('#open-task-page-schedule').addEventListener('click', function () { openTaskManager(true); });
