@@ -3285,6 +3285,27 @@ function setupCommonChipReorder(container, inputId) {
     }
     save(); renderSchedule(); syncNotifications();
   }
+  function undoOneMonthlyCompletion(habitId) {
+    var h = state.habits.filter(function (x) { return x.id === habitId; })[0];
+    if (!h || h.type !== 'monthly' || Number(h.target || 1) <= 1) return false;
+    if (state.settings.lockCompleted) {
+      toast('该事项已完成且不可撤销');
+      return false;
+    }
+    var prog = habitProgress(h, scheduleDate);
+    if (prog.count <= 0) {
+      toast('当前月还没有完成记录');
+      return false;
+    }
+    removeLatestHabitEntry(h);
+    save();
+    renderSchedule();
+    syncNotifications();
+    var nextCount = Math.max(0, prog.count - 1);
+    toast('已取消一次完成 · 当前进度 ' + nextCount + '/' + prog.target);
+    return true;
+  }
+
   async function toggleHabitDone(habitId) {
     var h = state.habits.filter(function (x) { return x.id === habitId; })[0];
     if (!h) return;
