@@ -3300,7 +3300,11 @@ function setupCommonChipReorder(container, inputId) {
       toast('当前月还没有完成记录');
       return false;
     }
-    removeLatestHabitEntry(h);
+    var removed = removeLatestHabitEntry(h);
+    if (!removed) {
+      toast('未找到可取消的完成记录');
+      return false;
+    }
     save();
     renderSchedule();
     syncNotifications();
@@ -3394,17 +3398,20 @@ function setupCommonChipReorder(container, inputId) {
       }
       cur.setDate(cur.getDate() + 1);
     }
-    if (!latestDate) return;
+    if (!latestDate) return false;
     var rec2 = state.daily[latestDate];
-    if (!rec2 || !rec2.habits) return;
+    if (!rec2 || !rec2.habits) return false;
     var v = rec2.habits[habit.id];
     if (Array.isArray(v)) {
       v.splice(latestIdx, 1);
       if (v.length === 0) delete rec2.habits[habit.id];
       else if (v.length === 1) rec2.habits[habit.id] = v[0];
+      return true;
     } else if (typeof v === 'number') {
       delete rec2.habits[habit.id];
+      return true;
     }
+    return false;
   }
   function formatTaskInputDateTime(ts) {
     if (typeof ts !== 'number' || !isFinite(ts)) return '';
@@ -5319,8 +5326,14 @@ function bindScheduleGesture() {
       var btn = e.target.closest('.check-circle'); if (!btn || btn.disabled) return;
       var kind = li.dataset.scheduleKind, id = li.dataset.scheduleId, ds = li.dataset.scheduleDate;
       if (kind === 'cycle') { toggleCycleDone(id); return; }
-      scheduleDate = ds;
-      if (kind === 'task') toggleTaskDoneByDate(id, ds); else toggleHabitDone(id);
+      if (kind === 'task') {
+        scheduleDate = ds;
+        toggleTaskDoneByDate(id, ds);
+      } else {
+        // 固定/循环事项卡片上的日期只是规则日期提示，不改变当前选中的日历日期。
+        // 完成与撤销都必须作用于当前日历周期的数据。
+        toggleHabitDone(id);
+      }
     });
     // 月度多次固定事项：长按一次只撤销一次完成次数。
     // 与普通点击分开，避免长按结束后再次触发一次“完成”。
@@ -5341,16 +5354,28 @@ function bindScheduleGesture() {
       monthlyLongPressTriggered = false;
       monthlyLongPressStartX = e.clientX;
       monthlyLongPressStartY = e.clientY;
-      monthlyLongPressTimer = setTimeout(function () {
+      monthlyLongPressTimer = setTimeout(async function () {
         monthlyLongPressTimer = null;
+        // 长按已经成立，先拦截随后由 Android/WebView 产生的 click。
+        monthlyLongPressTriggered = true;
         var p = habitProgress(h, scheduleDate);
         if (p.count <= 0) {
           toast('当前月还没有完成记录');
           return;
         }
-        if (undoOneMonthlyCompletion(id)) {
-          monthlyLongPressTriggered = true;
+        if (state.settings.lockCompleted) {
+          toast('该事项已完成且不可撤销');
+          return;
         }
+        var ok = await confirmDialog(
+          '确定取消「' + h.name + '」一次完成记录吗？\n当前进度 ' + p.count + '/' + p.target,
+          '取消一次'
+        );
+        if (!ok) {
+          toast('已取消操作');
+          return;
+        }
+        undoOneMonthlyCompletion(id);
       }, 520);
     });
     $('#schedule-list').addEventListener('pointermove', function (e) {
@@ -5371,7 +5396,20 @@ function bindScheduleGesture() {
       if (!h || Number(h.target || 1) <= 1 || state.settings.lockCompleted) return;
       e.preventDefault();
       clearMonthlyLongPress();
-      if (undoOneMonthlyCompletion(id)) monthlyLongPressTriggered = true;
+      monthlyLongPressTriggered = true;
+      (async function () {
+        var p = habitProgress(h, scheduleDate);
+        if (p.count <= 0) {
+          toast('当前月还没有完成记录');
+          return;
+        }
+        var ok = await confirmDialog(
+          '确定取消「' + h.name + '」一次完成记录吗？\n当前进度 ' + p.count + '/' + p.target,
+          '取消一次'
+        );
+        if (ok) undoOneMonthlyCompletion(id);
+        else toast('已取消操作');
+      })();
     });
 
     $('#open-task-page-schedule').addEventListener('click', function () { openTaskManager(true); });
