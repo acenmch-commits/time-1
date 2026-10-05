@@ -576,22 +576,116 @@
   .schedule-list .schedule-entry .schedule-kind.weekly { color: var(--indigo); background: rgba(88,86,214,.12); }
   .schedule-list .schedule-entry .schedule-kind.monthly { color: var(--orange); background: rgba(255,149,0,.13); }
   /* 每月多次固定事项：进度底色 + 持续移动气泡 + 右端持续波浪 */
-  .schedule-list .schedule-entry.monthly-progress { position: relative; overflow: hidden; isolation: isolate; --monthly-progress: 0%; }
-  .schedule-list .schedule-entry.monthly-progress::before { content: ''; position: absolute; z-index: 0; inset: 0 auto 0 0; width: var(--monthly-progress); border-radius: inherit; background: linear-gradient(90deg, rgba(255,149,0,.08), rgba(255,149,0,.24)); transition: width 420ms var(--ease-out); pointer-events: none; }
-  .schedule-list .schedule-entry.monthly-progress::after { content: ''; position: absolute; z-index: 1; top: 50%; left: -14px; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 4px rgba(255,149,0,.10), 0 2px 8px rgba(255,149,0,.28); animation: monthlyProgressBubble 3.2s linear infinite; pointer-events: none; }
-  .schedule-list .schedule-entry.monthly-progress .monthly-wave { position: absolute; z-index: 1; right: -2px; top: 0; width: 24px; height: 100%; overflow: hidden; pointer-events: none; opacity: .72; background: radial-gradient(13px 10px at 0 50%, transparent 55%, rgba(255,149,0,.22) 58%, rgba(255,149,0,.22) 72%, transparent 75%) 0 0 / 18px 20px repeat-y; animation: monthlyProgressWave 1.1s linear infinite; }
-  .schedule-list .schedule-entry.monthly-progress .content { position: relative; z-index: 2; }
-  @keyframes monthlyProgressBubble { 0% { left: -14px; opacity: 0; transform: scale(.72); } 8% { opacity: 1; } 48% { transform: scale(1); } 92% { opacity: 1; } 100% { left: calc(100% + 4px); opacity: 0; transform: scale(.82); } }
-  @keyframes monthlyProgressWave { 0% { transform: translateY(0) skewX(0deg); background-position: 0 0; } 50% { transform: translateY(-2px) skewX(-6deg); background-position: 0 10px; } 100% { transform: translateY(0) skewX(0deg); background-position: 0 20px; } }
-  .schedule-list .schedule-entry .schedule-kind.yearly { color: var(--pink); background: rgba(255,45,85,.12); }
-  .schedule-list .schedule-entry .schedule-kind.cycle { color: var(--teal); background: rgba(90,200,250,.14); }
-  .schedule-list .schedule-entry .schedule-countdown {
-    grid-area: countdown; align-self: center; justify-self: end; margin: 0;
-    font-size: 0.64em; font-weight: 650; line-height: 18px; text-align: right;
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-    color: var(--orange); overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+  .schedule-list .schedule-entry.monthly-progress {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    --monthly-progress: 0%;
+    --water-a: rgba(56, 189, 248, .10);
+    --water-b: rgba(14, 165, 233, .28);
+    --water-c: rgba(37, 99, 235, .16);
   }
-  .schedule-list .schedule-entry .schedule-countdown.urgent { color: var(--red); }
+  /* 月度多次事项：进度不是橙色圆点，而是一层真正的“水”。 */
+  .schedule-list .schedule-entry.monthly-progress::before {
+    content: '';
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--monthly-progress);
+    height: 100%;
+    border-radius: inherit;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.04), transparent 35%),
+      linear-gradient(90deg, var(--water-a), var(--water-b) 68%, var(--water-c));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    transition: width 520ms var(--ease-out);
+    pointer-events: none;
+  }
+  /* 水面：连续正弦波，不是一次性动画。 */
+  .schedule-list .schedule-entry.monthly-progress .monthly-wave {
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    bottom: calc(100% - 12px);
+    width: max(72px, var(--monthly-progress));
+    height: 24px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: .95;
+  }
+  .schedule-list .schedule-entry.monthly-progress .monthly-wave::before,
+  .schedule-list .schedule-entry.monthly-progress .monthly-wave::after {
+    content: '';
+    position: absolute;
+    left: -12%;
+    width: 124%;
+    height: 18px;
+    border-radius: 50%;
+    border-top: 2px solid rgba(125, 211, 252, .70);
+    border-bottom: 0;
+    transform-origin: 50% 50%;
+  }
+  .schedule-list .schedule-entry.monthly-progress .monthly-wave::before {
+    top: 5px;
+    animation: monthlyWaterSine 2.15s linear infinite;
+  }
+  .schedule-list .schedule-entry.monthly-progress .monthly-wave::after {
+    top: 8px;
+    opacity: .45;
+    border-top-width: 1px;
+    animation: monthlyWaterSineReverse 2.8s linear infinite;
+  }
+  /* 多个玻璃气泡：从水体左侧进入，向右上方漂移，到顶部淡出后重新循环。 */
+  .schedule-list .schedule-entry.monthly-progress .monthly-bubbles {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .monthly-bubble {
+    position: absolute;
+    left: -18px;
+    bottom: -10px;
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.72);
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.96) 0 13%, rgba(255,255,255,.45) 14% 22%, transparent 23%),
+      radial-gradient(circle at 55% 60%, rgba(186,230,253,.34), rgba(14,165,233,.08) 65%, rgba(255,255,255,.18));
+    box-shadow: inset 0 0 2px rgba(255,255,255,.7), 0 1px 5px rgba(14,165,233,.20);
+    animation: monthlyBubbleRise 4.8s linear infinite;
+  }
+  .monthly-bubble.b1 { width: 7px; height: 7px; animation-delay: -1.1s; animation-duration: 4.8s; }
+  .monthly-bubble.b2 { width: 10px; height: 10px; animation-delay: -2.9s; animation-duration: 6.1s; }
+  .monthly-bubble.b3 { width: 5px; height: 5px; animation-delay: -4.2s; animation-duration: 3.9s; }
+  @keyframes monthlyWaterSine {
+    0%   { transform: translateX(-8%) translateY(0) rotate(-1deg); }
+    25%  { transform: translateX(1%) translateY(-3px) rotate(1deg); }
+    50%  { transform: translateX(8%) translateY(0) rotate(-1deg); }
+    75%  { transform: translateX(1%) translateY(3px) rotate(1deg); }
+    100% { transform: translateX(-8%) translateY(0) rotate(-1deg); }
+  }
+  @keyframes monthlyWaterSineReverse {
+    0%   { transform: translateX(8%) translateY(2px) rotate(1deg); }
+    50%  { transform: translateX(-8%) translateY(-2px) rotate(-1deg); }
+    100% { transform: translateX(8%) translateY(2px) rotate(1deg); }
+  }
+  @keyframes monthlyBubbleRise {
+    0%   { left: -18px; bottom: -10px; opacity: 0; transform: translate(0,0) scale(.65); }
+    8%   { opacity: .85; }
+    35%  { opacity: .92; transform: translate(24%, -18px) scale(1); }
+    65%  { opacity: .72; transform: translate(58%, -34px) scale(.92); }
+    88%  { opacity: .25; transform: translate(92%, -52px) scale(.78); }
+    100% { left: calc(100% + 12px); bottom: calc(100% + 4px); opacity: 0; transform: translate(0,-8px) scale(.55); }
+  }
+  .schedule-list .schedule-entry.monthly-progress .content {
+    position: relative;
+    z-index: 2;
+  }
   .schedule-list .schedule-entry .schedule-countdown.done { color: var(--gray); }
   .schedule-list .schedule-entry .rec-note {
     grid-area: note; margin: 1px 0 0; font-size: 0.64em; line-height: 1.2;
@@ -3137,7 +3231,7 @@ function setupCommonChipReorder(container, inputId) {
         mpPct = Math.max(0, Math.min(100, mpPct));
         monthlyProgressClass = ' monthly-progress';
         monthlyProgressStyle = ' style="--monthly-progress:' + mpPct + '%;"';
-        monthlyWave = '<span class="monthly-wave" aria-hidden="true"></span>';
+        monthlyWave = '<span class="monthly-wave" aria-hidden="true"></span><span class="monthly-bubbles" aria-hidden="true"><i class="monthly-bubble b1"></i><i class="monthly-bubble b2"></i><i class="monthly-bubble b3"></i></span>';
       }
 
       html += '<div class="item checkable schedule-entry' + monthlyProgressClass + ' ' + (it.done ? 'done' : '') + '"' + monthlyProgressStyle + ' data-schedule-kind="' + it.kind + '" data-schedule-id="' + it.id + '" data-schedule-date="' + it.date + '">' +
@@ -5190,6 +5284,11 @@ function bindScheduleGesture() {
     bindCalendarEvents();
     bindHeaderTimerGesture();
 
+    var monthlyLongPressTimer = null;
+    var monthlyLongPressTriggered = false;
+    var monthlyLongPressStartX = 0;
+    var monthlyLongPressStartY = 0;
+
     $('#schedule-list').addEventListener('click', function (e) {
       if (monthlyLongPressTriggered) { monthlyLongPressTriggered = false; e.preventDefault(); return; }
       var li = e.target.closest('.schedule-entry'); if (!li) return;
@@ -5199,6 +5298,58 @@ function bindScheduleGesture() {
       scheduleDate = ds;
       if (kind === 'task') toggleTaskDoneByDate(id, ds); else toggleHabitDone(id);
     });
+    // 月度多次固定事项：长按一次只撤销一次完成次数。
+    // 与普通点击分开，避免长按结束后再次触发一次“完成”。
+    function clearMonthlyLongPress() {
+      if (monthlyLongPressTimer) {
+        clearTimeout(monthlyLongPressTimer);
+        monthlyLongPressTimer = null;
+      }
+    }
+    $('#schedule-list').addEventListener('pointerdown', function (e) {
+      var li = e.target.closest('.schedule-entry');
+      if (!li || e.target.closest('.check-circle')) return;
+      var kind = li.dataset.scheduleKind;
+      var id = li.dataset.scheduleId;
+      var h = kind === 'monthly' ? state.habits.filter(function (x) { return x.id === id; })[0] : null;
+      if (!h || Number(h.target || 1) <= 1 || state.settings.lockCompleted) return;
+      clearMonthlyLongPress();
+      monthlyLongPressTriggered = false;
+      monthlyLongPressStartX = e.clientX;
+      monthlyLongPressStartY = e.clientY;
+      monthlyLongPressTimer = setTimeout(function () {
+        monthlyLongPressTimer = null;
+        var p = habitProgress(h, scheduleDate);
+        if (p.count <= 0) {
+          toast('当前月还没有完成记录');
+          return;
+        }
+        if (undoOneMonthlyCompletion(id)) {
+          monthlyLongPressTriggered = true;
+        }
+      }, 520);
+    });
+    $('#schedule-list').addEventListener('pointermove', function (e) {
+      if (!monthlyLongPressTimer) return;
+      if (Math.abs(e.clientX - monthlyLongPressStartX) > 10 || Math.abs(e.clientY - monthlyLongPressStartY) > 10) {
+        clearMonthlyLongPress();
+      }
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (type) {
+      $('#schedule-list').addEventListener(type, clearMonthlyLongPress);
+    });
+    $('#schedule-list').addEventListener('contextmenu', function (e) {
+      var li = e.target.closest('.schedule-entry');
+      if (!li || e.target.closest('.check-circle')) return;
+      var kind = li.dataset.scheduleKind, id = li.dataset.scheduleId;
+      if (kind !== 'monthly') return;
+      var h = state.habits.filter(function (x) { return x.id === id; })[0];
+      if (!h || Number(h.target || 1) <= 1 || state.settings.lockCompleted) return;
+      e.preventDefault();
+      clearMonthlyLongPress();
+      if (undoOneMonthlyCompletion(id)) monthlyLongPressTriggered = true;
+    });
+
     $('#open-task-page-schedule').addEventListener('click', function () { openTaskManager(true); });
     $('#open-task-page').addEventListener('click', function () { openTaskManager(false); });
     $('#tasks-back').addEventListener('click', function () { closeSubpage(); });
