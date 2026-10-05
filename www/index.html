@@ -3344,8 +3344,8 @@ function setupCommonChipReorder(container, inputId) {
     var range = cycleRange(habit.type, effectiveDate);
     var cur = parseDate(range.start);
     var endD = parseDate(range.end);
-    var today = todayStr();
-    var cutoffDate = effectiveDate < today ? effectiveDate : today;
+    
+    var cutoffDate = effectiveDate;
     var latestDate = null, latestIdx = -1;
     // 与 habitProgress 使用完全相同的周期/日期范围，删除最后一条实际存在的记录。
     // 不依赖记录值必须是时间戳，兼容历史数据格式。
